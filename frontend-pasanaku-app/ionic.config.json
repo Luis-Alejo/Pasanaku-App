@@ -1,0 +1,7 @@
+{
+  "name": "frontend-pasanaku-app",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
