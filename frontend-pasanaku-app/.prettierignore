@@ -3,3 +3,7 @@
 # Gradle's build output.
 android/
 ios/
+
+# Skills de agentes de IA (no son código del proyecto).
+.agents/
+.claude/
