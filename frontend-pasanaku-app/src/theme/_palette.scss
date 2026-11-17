@@ -1,0 +1,114 @@
+// Paleta de Pasanaku (CLAUDE.md, sección 6). Única fuente de los colores:
+// variables.scss y global.scss la usan para generar las variables de Ionic.
+@use 'sass:color';
+@use 'sass:list';
+@use 'sass:map';
+@use 'sass:math';
+@use 'sass:string';
+
+$light: (
+  background: #f7f9fa,
+  card: #ffffff,
+  step: #ecf0f2,
+  text: #1f3038,
+  text-muted: #5d6b72,
+  contrast: #ffffff,
+  // Color, shade y tint tal cual la tabla de CLAUDE.md.
+  colors: (
+    primary: (#0d7480, #0b6671, #25828d),
+    secondary: (#3c4f57, #35464d, #506168),
+    success: (#1e7a46, #1a6b3e, #348758),
+    warning: (#9a5b00, #885000, #a46b1a),
+    danger: (#c0362c, #a93027, #c64a41),
+  ),
+);
+
+$dark: (
+  background: #0b1215,
+  card: #141d21,
+  step: #1d282d,
+  text: #e8eef0,
+  text-muted: #93a3a9,
+  contrast: #0b1215,
+  colors: (
+    primary: (#4fc1cc, #46aab4, #61c7d1),
+    secondary: (#a9bac0, #95a4a9, #b2c1c6),
+    success: (#4cc38a, #43ac79, #5ec996),
+    warning: (#f0b45a, #d39e4f, #f2bc6a),
+    danger: (#f07a70, #d36b63, #f2877e),
+  ),
+);
+
+
+@function -channel($c, $channel) {
+  @return math.round(color.channel($c, $channel, $space: rgb));
+}
+
+@function -hex-byte($n) {
+  $digits: '0123456789abcdef';
+  @return string.slice($digits, math.div($n - $n % 16, 16) + 1, math.div($n - $n % 16, 16) + 1) +
+    string.slice($digits, $n % 16 + 1, $n % 16 + 1);
+}
+
+// Redondea los canales y escribe el color en hex (#rrggbb), como en CLAUDE.md.
+@function -round($c) {
+  @return string.unquote(
+    '#' + -hex-byte(-channel($c, 'red')) + -hex-byte(-channel($c, 'green')) + -hex-byte(-channel($c, 'blue'))
+  );
+}
+
+@function rgb-list($c) {
+  @return #{-channel($c, 'red')}, #{-channel($c, 'green')}, #{-channel($c, 'blue')};
+}
+
+// Mezcla $weight de $top sobre $base (como color.mix, con canales enteros).
+@function mix($top, $base, $weight) {
+  @return -round(color.mix($top, $base, $weight));
+}
+
+// Un color de Ionic con sus 6 variables.
+@mixin ion-color($name, $c, $shade, $tint, $contrast) {
+  --ion-color-#{$name}: #{$c};
+  --ion-color-#{$name}-rgb: #{rgb-list($c)};
+  --ion-color-#{$name}-contrast: #{$contrast};
+  --ion-color-#{$name}-contrast-rgb: #{rgb-list($contrast)};
+  --ion-color-#{$name}-shade: #{$shade};
+  --ion-color-#{$name}-tint: #{$tint};
+}
+
+@mixin ion-colors($p) {
+  $contrast: map.get($p, contrast);
+  @each $name, $c in map.get($p, colors) {
+    @include ion-color($name, list.nth($c, 1), list.nth($c, 2), list.nth($c, 3), $contrast);
+  }
+  // "medium" = texto secundario. No está en la tabla: shade = 12 % negro,
+  // tint = 10 % blanco (fórmula de Ionic).
+  $muted: map.get($p, text-muted);
+  @include ion-color(medium, $muted, mix(#000000, $muted, 12%), mix(#ffffff, $muted, 10%), $contrast);
+}
+
+// Fondos, texto y superficies. Los "steps" siguen la fórmula de Ionic:
+// background-step-N = N/10 % de texto sobre el fondo; text-step-N = al revés.
+@mixin ion-surfaces($p) {
+  $bg: map.get($p, background);
+  $text: map.get($p, text);
+
+  --ion-background-color: #{$bg};
+  --ion-background-color-rgb: #{rgb-list($bg)};
+  --ion-text-color: #{$text};
+  --ion-text-color-rgb: #{rgb-list($text)};
+  --ion-card-background: #{map.get($p, card)};
+  --ion-item-background: #{map.get($p, card)};
+  --ion-toolbar-background: #{$bg};
+  --ion-tab-bar-background: #{map.get($p, card)};
+  --ion-tab-bar-background-focused: #{map.get($p, step)};
+
+  // Escalón: inputs, segmentos y barras secundarias.
+  --app-step-background: #{map.get($p, step)};
+
+  @for $i from 1 through 19 {
+    $n: $i * 50;
+    --ion-background-color-step-#{$n}: #{mix($text, $bg, math.percentage(math.div($n, 1000)))};
+    --ion-text-color-step-#{$n}: #{mix($bg, $text, math.percentage(math.div($n, 1000)))};
+  }
+}

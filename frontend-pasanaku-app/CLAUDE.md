@@ -355,7 +355,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
   - Configurar los alias en `tsconfig.json`.
   - Crear `core/providers.ts` y usarlo desde `main.ts`.
   - Mover las tabs a `layout/tabs/` con 3 pestañas (Inicio, Grupos, Perfil) como páginas vacías.
-- [ ] **Paso 2 — Tema y ajustes móviles**
+- [x] **Paso 2 — Tema y ajustes móviles**
   - Paleta claro/oscuro de la sección 6 en `theme/variables.scss` y anulaciones en `global.scss`.
   - `theme-color` por esquema y los arreglos imprescindibles de la skill **mobile-native** (tap highlight, safe areas, zoom de inputs).
 - [ ] **Paso 3 — Modelos, mocks y componentes base**

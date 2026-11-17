@@ -1,2 +1,18 @@
-// For information on how to create your own theme, please refer to:
-// https://ionicframework.com/docs/theming/
+// Tema de Pasanaku. Los valores salen de _palette.scss (CLAUDE.md, sección 6).
+// Angular carga este archivo después de global.scss, así que estos :root
+// reemplazan los colores por defecto de Ionic y los de dark.system.css.
+// Los fondos y el texto del modo oscuro van en global.scss, porque Ionic los
+// define con :root.ios / :root.md y hace falta la misma especificidad.
+// Info: https://ionicframework.com/docs/theming/
+@use 'palette';
+
+:root {
+  @include palette.ion-colors(palette.$light);
+  @include palette.ion-surfaces(palette.$light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    @include palette.ion-colors(palette.$dark);
+  }
+}
