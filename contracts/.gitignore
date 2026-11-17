@@ -1,0 +1,44 @@
+# Rust / Cargo
+/target/
+**/target/
+**/*.rs.bk
+
+# Compilados de Soroban
+**/*.wasm
+**/*.wat
+
+# Archivos de pruebas y snapshots generados
+**/test_snapshots/
+**/*.snap.new
+
+# Archivos temporales
+*.tmp
+*.temp
+*.log
+.DS_Store
+Thumbs.db
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+**/*.secret
+**/*secret*.json
+**/*mnemonic*
+
+# Wallets y credenciales
+**/identity/
+**/wallets/
+**/*.key
+**/*.pem
+**/*.seed
+
+# Configuración local
+stellar.local.toml
