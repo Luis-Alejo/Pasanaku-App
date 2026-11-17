@@ -350,7 +350,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
   - `index.html`: `lang="es"`, título "Pasanaku".
   - `capacitor.config.ts`: `appName: 'Pasanaku'`; `appId` **POR CONFIRMAR** (sugerencia: `com.pasanaku.app`). Pregúntame antes de cambiarlo.
   - Quitar `explore-container` y el contenido de ejemplo de las pestañas (tab1/tab2/tab3).
-- [ ] **Paso 1 — Estructura de carpetas y alias**
+- [x] **Paso 1 — Estructura de carpetas y alias**
   - Crear las carpetas de la sección 4 (con un `.gitkeep` en las vacías).
   - Configurar los alias en `tsconfig.json`.
   - Crear `core/providers.ts` y usarlo desde `main.ts`.
