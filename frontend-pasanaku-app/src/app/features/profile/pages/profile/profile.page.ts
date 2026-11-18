@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
+import { ThemeService } from '@core/services/theme.service';
 import { ToastService } from '@core/services/toast.service';
 import { explorerAccountUrl } from '@core/stellar/explorer';
 import type { WalletBalance } from '@core/stellar/stellar.service';
@@ -16,6 +17,7 @@ import {
   IonNote,
   IonSpinner,
   IonTitle,
+  IonToggle,
   IonToolbar,
 } from '@ionic/angular';
 import { formatMoneyParts } from '@shared/pipes/money.pipe';
@@ -39,12 +41,14 @@ type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
     IonButton,
     IonIcon,
     IonSpinner,
+    IonToggle,
   ],
 })
 export class ProfilePage {
   private readonly auth = inject(AuthService);
   private readonly stellar = inject(StellarService);
   private readonly toast = inject(ToastService);
+  protected readonly theme = inject(ThemeService);
 
   protected readonly user = this.auth.currentUser;
   protected readonly balances = signal<WalletBalance[]>([]);

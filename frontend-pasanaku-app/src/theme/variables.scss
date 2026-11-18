@@ -1,18 +1,30 @@
 // Tema de Pasanaku. Los valores salen de _palette.scss (CLAUDE.md, sección 6).
-// Angular carga este archivo después de global.scss, así que estos :root
-// reemplazan los colores por defecto de Ionic y los de dark.system.css.
+// Angular carga este archivo después de global.scss, así que estas reglas
+// reemplazan los colores por defecto de Ionic y los de dark.class.css.
+//
+// Claro en :root; oscuro bajo la clase .ion-palette-dark en <html>, que pone y
+// quita ThemeService (botón de tema en la app; no depende del dispositivo).
 // Los fondos y el texto del modo oscuro van en global.scss, porque Ionic los
-// define con :root.ios / :root.md y hace falta la misma especificidad.
+// define con .ion-palette-dark.ios / .md y hace falta la misma especificidad.
 // Info: https://ionicframework.com/docs/theming/
 @use 'palette';
 
 :root {
   @include palette.ion-colors(palette.$light);
   @include palette.ion-surfaces(palette.$light);
+  @include palette.pk-tokens(palette.$light);
+
+  // --- Tipografía (Poppins, local con @fontsource; ver global.scss)
+  --pk-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ion-font-family: var(--pk-font-family);
+
+  // --- Formas
+  --pk-radius-card: 15px;
+  --pk-radius-control: 15px;
+  --pk-radius-pill: 999px;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    @include palette.ion-colors(palette.$dark);
-  }
+.ion-palette-dark {
+  @include palette.ion-colors(palette.$dark);
+  @include palette.pk-tokens(palette.$dark);
 }

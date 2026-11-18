@@ -6,9 +6,21 @@
 
     <base href="/" />
 
-    <meta name="color-scheme" content="light dark" />
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f9fa" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b1215" />
+    <!-- Color de la barra del navegador/sistema. ThemeService lo actualiza según el tema elegido. -->
+    <meta name="theme-color" content="#ffffff" />
+    <!-- Aplica el tema guardado antes de pintar, para que no destelle el tema equivocado.
+         Misma clave y regla que ThemeService (core/services/theme.service.ts). -->
+    <script>
+      try {
+        var pkTheme =
+          localStorage.getItem('pk-theme') ||
+          (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        if (pkTheme === 'dark') {
+          document.documentElement.classList.add('ion-palette-dark');
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0f0e1f');
+        }
+      } catch (e) {}
+    </script>
     <meta
       name="viewport"
       content="viewport-fit=cover, width=device-width, initial-scale=1.0, interactive-widget=resizes-content"

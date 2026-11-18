@@ -11,6 +11,11 @@
 
 @use './theme/palette';
 
+/* Poppins local (pesos 400, 500 y 600): funciona sin internet en la app nativa. */
+@import '@fontsource/poppins/400.css';
+@import '@fontsource/poppins/500.css';
+@import '@fontsource/poppins/600.css';
+
 /* Core CSS required for Ionic components to work properly */
 @import "@ionic/angular/css/core.css";
 
@@ -34,21 +39,96 @@
  * https://ionicframework.com/docs/theming/dark-mode
  */
 
-/* @import "@ionic/angular/css/palettes/dark.always.css"; */
-/* @import "@ionic/angular/css/palettes/dark.class.css"; */
-@import '@ionic/angular/css/palettes/dark.system.css';
+/* El tema lo elige la persona en la app (ThemeService pone .ion-palette-dark
+   en <html>); no depende del tema del dispositivo. */
+@import '@ionic/angular/css/palettes/dark.class.css';
 
 /**
  * Modo oscuro de Pasanaku
  * -----------------------------------------------------
- * dark.system.css define fondos y texto con :root.ios / :root.md. Estas
+ * dark.class.css define fondos y texto con .ion-palette-dark.ios / .md. Estas
  * anulaciones usan la misma especificidad y van después de ese import.
  */
-@media (prefers-color-scheme: dark) {
-  :root.ios,
-  :root.md {
-    @include palette.ion-surfaces(palette.$dark);
-  }
+.ion-palette-dark.ios,
+.ion-palette-dark.md {
+  @include palette.ion-surfaces(palette.$dark);
+}
+
+/* Controles nativos (barras de scroll, inputs) en el esquema elegido. */
+:root {
+  color-scheme: light;
+}
+
+.ion-palette-dark {
+  color-scheme: dark;
+}
+
+/**
+ * Escala tipográfica (Figma, sección 6). Definida una sola vez: usa estas
+ * clases en vez de tamaños sueltos. En rem, para que respete el zoom.
+ */
+.pk-title-1 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pk-title-2 {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pk-title-3 {
+  font-size: 1rem; /* 16px */
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.pk-body-1 {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.pk-body-2 {
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.pk-body-3 {
+  font-size: 0.875rem; /* 14px */
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.pk-caption-1 {
+  font-size: 0.75rem; /* 12px */
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pk-caption-2 {
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+/**
+ * Formas base del kit: tarjetas redondeadas con sombra índigo (sin sombra en
+ * oscuro) y botones redondeados.
+ */
+ion-card {
+  border-radius: var(--pk-radius-card);
+  box-shadow: var(--pk-shadow-card);
+}
+
+ion-button {
+  --border-radius: var(--pk-radius-control);
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /**

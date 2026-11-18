@@ -96,7 +96,7 @@ Rama de trabajo del frontend: `frontend-pasanaku`.
 - **TypeScript 6**, modo `strict` y `noImplicitOverride` activos.
 - Pruebas: **Vitest** (unitarias) y **Playwright** (e2e).
 - Lint/format: ESLint (`@ionic/eslint-config`) + Prettier (`@ionic/prettier-config`).
-- Modo oscuro: actualmente `dark.system.css` (sigue la preferencia del sistema).
+- Modo oscuro: hasta el paso 8 sigue al sistema (`dark.system.css`). Desde el paso 8.5.b se elige dentro de la app con un botón (`dark.class.css`), sin depender del tema del dispositivo.
 
 ### Convenciones de Angular a seguir
 - `inject()` en lugar de inyección por constructor.
@@ -245,9 +245,9 @@ crear grupo → invitar/unirse → definir turnos (acuerdo con un intercambio, o
   - Página **Style** (`391:32700`): tipografía, sombras y colores.
   - Página **Components** (`14:0`): botones, tarjetas, tabs, barra inferior, filas, campos de texto, íconos e ilustraciones.
   - Página **Design** (`2:20347`): más de 200 pantallas de referencia.
-- **Las capturas exportadas son la referencia principal:** `docs/design-ref/*.png` (las exporto yo desde Figma). Léelas como imágenes. Los valores exactos (colores, tipografía, sombras) ya están en esta sección.
-- **MCP de Figma: úsalo con mucha moderación.** La cuenta está en el plan Starter de Figma, que permite muy pocas consultas de lectura por mes. Úsalo solo si una captura no basta para un detalle concreto, **pídeme permiso antes de cada llamada** y nunca recorras páginas enteras. Si alcanzas el límite, sigue con las capturas.
-- Si falta la captura de alguna pantalla, pídemela por su nombre en vez de inventar el diseño.
+- **El MCP de Figma es la referencia principal** (no hay capturas exportadas). La cuenta está en el plan **Education (student)** con asiento **Full**: 200 consultas de lectura por día y 10 por minuto (`whoami` no cuenta). Los valores exactos (colores, tipografía, sombras) ya están en esta sección.
+- **Úsalo con moderación, sin pedir permiso en cada llamada:** consulta solo los marcos que necesites para la pantalla o componente en curso, nunca recorras páginas enteras, y prefiere `get_metadata` (nombres e ids) antes de pedir imágenes o código de un marco. Si alcanzas el límite, avísame.
+- Si no encuentras en Figma la referencia de alguna pantalla, pregúntame en vez de inventar el diseño.
 
 ### Qué manda en cada cosa (prioridad)
 1. **Figma manda** en lo visual: colores, tipografía, formas, radios, sombras, espaciados, iconografía, ilustraciones y la composición de cada pantalla.
@@ -353,8 +353,8 @@ Todos los pares de texto/fondo de esta sección cumplen WCAG AA (≥ 4.5:1 en te
 
 ### Reglas de implementación del tema
 - Define cada color con sus 6 variables de Ionic: `--ion-color-X`, `-rgb`, `-contrast`, `-contrast-rgb`, `-shade`, `-tint`.
-- Claro en `:root`; oscuro dentro de `@media (prefers-color-scheme: dark)`.
-- Revisa `node_modules/@ionic/angular/css/palettes/dark.system.css`: allí los fondos oscuros se definen con selectores `:root.ios` / `:root.md`. Las anulaciones de fondo y texto deben tener la misma especificidad y cargarse **después** de ese import en `global.scss`.
+- Claro en `:root`; oscuro bajo la clase `.ion-palette-dark` en `<html>` (paleta `dark.class.css` de Ionic), que activa y desactiva el botón de tema (`ThemeService` en `core/services/`). No uses `@media (prefers-color-scheme: dark)` para los colores: el tema lo elige la persona en la app.
+- Revisa `node_modules/@ionic/angular/css/palettes/dark.class.css`: allí los fondos oscuros se definen con selectores `.ion-palette-dark.ios` / `.ion-palette-dark.md`. Las anulaciones de fondo y texto deben tener la misma especificidad y cargarse **después** de ese import en `global.scss`.
 - Tokens propios con prefijo `--pk-` (ej. `--pk-info`, `--pk-step`, `--pk-shadow-card`, `--pk-badge-success-bg`) en `theme/variables.scss`. **Ningún componente usa hex directos.**
 - `theme-color` por esquema en `index.html` (skill **mobile-native**): claro `#281c9d` si la pantalla empieza con encabezado índigo, si no `#ffffff`; oscuro `#0f0e1f`. Ajusta también `@capacitor/status-bar`.
 - **Un solo botón principal (primary) por pantalla.** El resto: `secondary`, `outline` o `clear`.
@@ -431,8 +431,9 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
 - [ ] **Paso 8.5 — Rediseño visual a partir de Figma (hacer ANTES del paso 9)**
   Objetivo: que toda la app use el diseño de Figma (sección 6) **sin cambiar la lógica, los stores, los mocks ni las rutas**. Es un cambio de piel, no de funcionamiento.
   Hazlo en estas sub-etapas. **Al terminar cada una, dame el resumen corto y espera mi OK**:
-  - [ ] **8.5.a — Lectura y plan.** Revisa las capturas de `docs/design-ref/` y esta sección 6 (sin usar el MCP de Figma salvo que te lo autorice). Entrégame un plan breve: qué captura usarás como referencia para cada pantalla nuestra, qué componentes de `shared/ui` cambiarán y qué capturas faltan. No edites código todavía.
-  - [ ] **8.5.b — Tema base.** Reemplaza la paleta turquesa por la de la sección 6 (claro y oscuro), instala y aplica Poppins, define la escala tipográfica, sombras, radios y tokens `--pk-*`. Actualiza `theme-color` y la status bar.
+  - [x] **8.5.a — Lectura y plan.** Revisa en el MCP de Figma (con moderación, sección 6) los marcos necesarios y esta sección 6. Entrégame un plan breve: qué marco de Figma usarás como referencia para cada pantalla nuestra, qué componentes de `shared/ui` cambiarán y qué referencias faltan. No edites código todavía.
+  - [x] **8.5.b — Tema base.** Reemplaza la paleta turquesa por la de la sección 6 (claro y oscuro), instala y aplica Poppins, define la escala tipográfica, sombras, radios y tokens `--pk-*`. Actualiza `theme-color` y la status bar.
+    - **Extra:** botón para cambiar entre modo claro y oscuro dentro de la app, que **no dependa del tema del dispositivo**. La elección se guarda y se respeta al volver a abrir la app.
   - [ ] **8.5.c — Componentes compartidos.** Rediseña `shared/ui` (badges de estado, tarjeta de monto, tarjeta de grupo, línea de turnos, estados vacíos, filas de lista) y el tab bar con pastilla activa. Revísalos con **break-ui**.
   - [ ] **8.5.d — Pantallas, una por una:** Inicio → Grupos (lista) → Detalle de grupo → Crear grupo → Unirse → Turnos → Registrar aporte → Historial → Perfil. Para cada una, toma la referencia en Figma y adáptala al contenido real de Pasanaku.
   - [ ] **8.5.e — Revisión final** con `mobile-android-design` (MD3) y `mobile-native`: áreas táctiles de 48 px, botón "atrás", `aria-label`, contraste en **claro y oscuro**, y que no quede ningún resto del kit (nombres, VISA, datos falsos). Verifica `npm run build` y `npm run lint`, y prueba en el celular.

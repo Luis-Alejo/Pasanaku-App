@@ -1,5 +1,6 @@
-// Paleta de Pasanaku (CLAUDE.md, sección 6). Única fuente de los colores:
-// variables.scss y global.scss la usan para generar las variables de Ionic.
+// Paleta de Pasanaku (CLAUDE.md, sección 6: diseño de Figma). Única fuente de
+// los colores: variables.scss y global.scss la usan para generar las variables
+// de Ionic y los tokens propios `--pk-*`. Ningún componente usa hex directos.
 @use 'sass:color';
 @use 'sass:list';
 @use 'sass:map';
@@ -7,38 +8,74 @@
 @use 'sass:string';
 
 $light: (
-  background: #f7f9fa,
+  background: #ffffff,
   card: #ffffff,
-  step: #ecf0f2,
-  text: #1f3038,
-  text-muted: #5d6b72,
-  contrast: #ffffff,
-  // Color, shade y tint tal cual la tabla de CLAUDE.md.
+  // Escalón: inputs inactivos, segmentos, chips.
+  step: #f2f1f9,
+  border: #e0e0e0,
+  border-strong: #cacaca,
+  text: #343434,
+  text-muted: #6b6b6b,
+  text-muted-contrast: #ffffff,
+  info: #0067c2,
+  // Encabezado y tarjeta índigo (en oscuro pasan a una superficie con borde).
+  brand-surface: #281c9d,
+  brand-surface-border: #281c9d,
+  on-brand: #ffffff,
+  shadow-card: (0 4px 30px rgba(54, 41, 183, 0.07)),
+  shadow-card-sm: (0 -5px 30px rgba(54, 41, 183, 0.07)),
+  // Color, shade, tint y contraste, tal cual la tabla de CLAUDE.md.
   colors: (
-    primary: (#0d7480, #0b6671, #25828d),
-    secondary: (#3c4f57, #35464d, #506168),
-    success: (#1e7a46, #1a6b3e, #348758),
-    warning: (#9a5b00, #885000, #a46b1a),
-    danger: (#c0362c, #a93027, #c64a41),
+    primary: (#281c9d, #23198a, #3e33a7, #ffffff),
+    secondary: (#5655b9, #4c4ba3, #6766c0, #ffffff),
+    tertiary: (#a8a3d7, #948fbd, #b1acdb, #281c9d),
+    success: (#0f7a64, #0d6b58, #278774, #ffffff),
+    warning: (#9a5b00, #885000, #a46b1a, #ffffff),
+    danger: (#c8264b, #b02142, #ce3c5d, #ffffff),
+  ),
+  // Badges de estado: fondo suave + texto oscuro del mismo color.
+  badges: (
+    success: (#dcf7f1, #0f7a64),
+    warning: (#fff0d6, #9a5b00),
+    danger: (#ffe3e9, #c8264b),
+    info: (#e0f0ff, #0067c2),
+    neutral: (#f2f1f9, #281c9d),
   ),
 );
 
 $dark: (
-  background: #0b1215,
-  card: #141d21,
-  step: #1d282d,
-  text: #e8eef0,
-  text-muted: #93a3a9,
-  contrast: #0b1215,
+  background: #0f0e1f,
+  card: #1a1833,
+  step: #252244,
+  border: #3a3666,
+  border-strong: #3a3666,
+  text: #ecebf7,
+  text-muted: #a3a0c2,
+  text-muted-contrast: #0f0e1f,
+  info: #4fb0ff,
+  brand-surface: #252244,
+  brand-surface-border: #3a3666,
+  on-brand: #ecebf7,
+  // En oscuro no hay sombras: la elevación la dan las superficies más claras.
+  shadow-card: none,
+  shadow-card-sm: none,
   colors: (
-    primary: (#4fc1cc, #46aab4, #61c7d1),
-    secondary: (#a9bac0, #95a4a9, #b2c1c6),
-    success: (#4cc38a, #43ac79, #5ec996),
-    warning: (#f0b45a, #d39e4f, #f2bc6a),
-    danger: (#f07a70, #d36b63, #f2877e),
+    primary: (#a8a3d7, #948fbd, #b1acdb, #0f0e1f),
+    secondary: (#9b96f0, #8884d3, #a5a0f2, #0f0e1f),
+    tertiary: (#5655b9, #4c4ba3, #6766c0, #ffffff),
+    success: (#52d5ba, #48bba4, #63d9c1, #0f0e1f),
+    warning: (#ffaf2a, #e09a25, #ffb73f, #0f0e1f),
+    danger: (#ff6b85, #e05e75, #ff7a91, #0f0e1f),
+  ),
+  // Badges (oscuro): color lleno con texto #0f0e1f.
+  badges: (
+    success: (#52d5ba, #0f0e1f),
+    warning: (#ffaf2a, #0f0e1f),
+    danger: (#ff6b85, #0f0e1f),
+    info: (#4fb0ff, #0f0e1f),
+    neutral: (#a8a3d7, #0f0e1f),
   ),
 );
-
 
 @function -channel($c, $channel) {
   @return math.round(color.channel($c, $channel, $space: rgb));
@@ -77,14 +114,39 @@ $dark: (
 }
 
 @mixin ion-colors($p) {
-  $contrast: map.get($p, contrast);
   @each $name, $c in map.get($p, colors) {
-    @include ion-color($name, list.nth($c, 1), list.nth($c, 2), list.nth($c, 3), $contrast);
+    @include ion-color($name, list.nth($c, 1), list.nth($c, 2), list.nth($c, 3), list.nth($c, 4));
   }
   // "medium" = texto secundario. No está en la tabla: shade = 12 % negro,
   // tint = 10 % blanco (fórmula de Ionic).
   $muted: map.get($p, text-muted);
-  @include ion-color(medium, $muted, mix(#000000, $muted, 12%), mix(#ffffff, $muted, 10%), $contrast);
+  @include ion-color(
+    medium,
+    $muted,
+    mix(#000000, $muted, 12%),
+    mix(#ffffff, $muted, 10%),
+    map.get($p, text-muted-contrast)
+  );
+}
+
+// Tokens propios de Pasanaku (prefijo --pk-).
+@mixin pk-tokens($p) {
+  --pk-step: #{map.get($p, step)};
+  --pk-border: #{map.get($p, border)};
+  --pk-border-strong: #{map.get($p, border-strong)};
+  --pk-info: #{map.get($p, info)};
+  --pk-brand-surface: #{map.get($p, brand-surface)};
+  --pk-brand-surface-border: #{map.get($p, brand-surface-border)};
+  --pk-on-brand: #{map.get($p, on-brand)};
+  --pk-shadow-card: #{map.get($p, shadow-card)};
+  --pk-shadow-card-sm: #{map.get($p, shadow-card-sm)};
+  @each $name, $pair in map.get($p, badges) {
+    --pk-badge-#{$name}-bg: #{list.nth($pair, 1)};
+    --pk-badge-#{$name}-fg: #{list.nth($pair, 2)};
+  }
+  // Color de la barra de estado del sistema (lo lee ThemeService).
+  --pk-statusbar-surface: #{map.get($p, background)};
+  --pk-statusbar-brand: #{map.get($p, brand-surface)};
 }
 
 // Fondos, texto y superficies. Los "steps" siguen la fórmula de Ionic:
@@ -102,9 +164,7 @@ $dark: (
   --ion-toolbar-background: #{$bg};
   --ion-tab-bar-background: #{map.get($p, card)};
   --ion-tab-bar-background-focused: #{map.get($p, step)};
-
-  // Escalón: inputs, segmentos y barras secundarias.
-  --app-step-background: #{map.get($p, step)};
+  --ion-border-color: #{map.get($p, border)};
 
   @for $i from 1 through 19 {
     $n: $i * 50;

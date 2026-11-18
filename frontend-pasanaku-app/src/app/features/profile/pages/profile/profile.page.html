@@ -41,6 +41,17 @@
       </div>
     </section>
 
+    <section class="section" aria-labelledby="appearance-title">
+      <h2 id="appearance-title" class="section-title">Apariencia</h2>
+      <ion-list [inset]="true">
+        <ion-item lines="none">
+          <ion-toggle [checked]="theme.isDark()" (ionChange)="theme.setMode($event.detail.checked ? 'dark' : 'light')">
+            Modo oscuro
+          </ion-toggle>
+        </ion-item>
+      </ion-list>
+    </section>
+
     <section class="section" aria-labelledby="balances-title">
       <h2 id="balances-title" class="section-title">Saldos en Testnet</h2>
       @if (balancesState() === 'loading') {
