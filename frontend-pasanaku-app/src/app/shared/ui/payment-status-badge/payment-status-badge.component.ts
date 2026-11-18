@@ -1,24 +1,22 @@
 import { Component, computed, input } from '@angular/core';
-import { IonBadge } from '@ionic/angular';
 
 /** Estado de un pago: pagado, pendiente o atrasado. */
 export type PaymentStatus = 'PAID' | 'PENDING' | 'LATE';
 
-const STATUS_CONFIG: Record<PaymentStatus, { label: string; color: 'success' | 'warning' | 'danger' }> = {
-  PAID: { label: 'Pagado', color: 'success' },
-  PENDING: { label: 'Pendiente', color: 'warning' },
-  LATE: { label: 'Atrasado', color: 'danger' },
+const STATUS_CONFIG: Record<PaymentStatus, { label: string; tone: 'success' | 'warning' | 'danger' }> = {
+  PAID: { label: 'Pagado', tone: 'success' },
+  PENDING: { label: 'Pendiente', tone: 'warning' },
+  LATE: { label: 'Atrasado', tone: 'danger' },
 };
 
 /**
- * Etiqueta de estado de un pago. El color acompaña al texto, nunca lo
- * reemplaza: el estado se entiende también sin ver colores.
+ * Etiqueta de estado de un pago (fondo suave + texto oscuro del mismo color en
+ * claro; color lleno en oscuro). El color acompaña al texto, nunca lo reemplaza.
  */
 @Component({
   selector: 'app-payment-status-badge',
   templateUrl: './payment-status-badge.component.html',
   styleUrls: ['./payment-status-badge.component.scss'],
-  imports: [IonBadge],
 })
 export class PaymentStatusBadgeComponent {
   readonly status = input.required<PaymentStatus>();

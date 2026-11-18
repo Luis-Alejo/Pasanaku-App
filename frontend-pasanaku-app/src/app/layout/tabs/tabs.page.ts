@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { IonIcon, IonLabel, IonTabBar, IonTabButton, IonTabs } from '@ionic/angular';
-import { addIcons } from 'ionicons';
-import { home, people, person } from 'ionicons/icons';
+import { homeOutline, peopleOutline, personOutline } from 'ionicons/icons';
 
 @Component({
   selector: 'app-tabs',
@@ -10,7 +9,9 @@ import { home, people, person } from 'ionicons/icons';
   imports: [IonTabs, IonTabBar, IonTabButton, IonIcon, IonLabel],
 })
 export class TabsPage {
-  constructor() {
-    addIcons({ home, people, person });
-  }
+  /**
+   * Íconos de línea, como en el kit. (El relleno de la pestaña activa lo da
+   * la pastilla, así que no hace falta cambiar a la versión rellena.)
+   */
+  protected readonly icons = { home: homeOutline, groups: peopleOutline, profile: personOutline };
 }

@@ -1,6 +1,10 @@
 <section class="empty-state">
-  @if (icon()) {
-    <ion-icon class="icon" [icon]="icon()" aria-hidden="true"></ion-icon>
+  @if (illustration(); as name) {
+    <img class="illustration" [src]="'assets/illustrations/' + name + '.svg'" alt="" loading="lazy" decoding="async" />
+  } @else if (icon()) {
+    <span class="icon-box" aria-hidden="true">
+      <ion-icon [icon]="icon()" />
+    </span>
   }
   <h2 class="title">{{ title() }}</h2>
   @if (message()) {

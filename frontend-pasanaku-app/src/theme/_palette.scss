@@ -33,6 +33,16 @@ $light: (
     warning: (#9a5b00, #885000, #a46b1a, #ffffff),
     danger: (#c8264b, #b02142, #ce3c5d, #ffffff),
   ),
+  // Colores vivos del kit: SOLO íconos grandes, gráficos y cuadros de ícono,
+  // nunca como color de texto (CLAUDE.md, sección 6).
+  accents: (
+    'indigo': #3629b7,
+    'teal': #52d5ba,
+    'yellow': #ffaf2a,
+    'pink': #ff4267,
+    'blue': #0890fe,
+    'orange': #fb6b18,
+  ),
   // Badges de estado: fondo suave + texto oscuro del mismo color.
   badges: (
     success: (#dcf7f1, #0f7a64),
@@ -66,6 +76,14 @@ $dark: (
     success: (#52d5ba, #48bba4, #63d9c1, #0f0e1f),
     warning: (#ffaf2a, #e09a25, #ffb73f, #0f0e1f),
     danger: (#ff6b85, #e05e75, #ff7a91, #0f0e1f),
+  ),
+  accents: (
+    'indigo': #a8a3d7,
+    'teal': #52d5ba,
+    'yellow': #ffaf2a,
+    'pink': #ff4267,
+    'blue': #0890fe,
+    'orange': #fb6b18,
   ),
   // Badges (oscuro): color lleno con texto #0f0e1f.
   badges: (
@@ -140,6 +158,9 @@ $dark: (
   --pk-on-brand: #{map.get($p, on-brand)};
   --pk-shadow-card: #{map.get($p, shadow-card)};
   --pk-shadow-card-sm: #{map.get($p, shadow-card-sm)};
+  @each $name, $c in map.get($p, accents) {
+    --pk-accent-#{$name}: #{$c};
+  }
   @each $name, $pair in map.get($p, badges) {
     --pk-badge-#{$name}-bg: #{list.nth($pair, 1)};
     --pk-badge-#{$name}-fg: #{list.nth($pair, 2)};

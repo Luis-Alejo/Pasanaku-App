@@ -1,14 +1,16 @@
 import { Component, computed, input } from '@angular/core';
-import { IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle } from '@ionic/angular';
 import type { MoneyAsset } from '@shared/pipes/money.pipe';
 import { formatMoneyParts } from '@shared/pipes/money.pipe';
 
-/** Tarjeta que muestra un monto destacado con su etiqueta (ej. "Fondo de la ronda"). */
+/**
+ * Tarjeta de saldo del kit (la tarjeta con degradado índigo), sin números de
+ * tarjeta ni logos: muestra un monto destacado con su etiqueta, un texto de
+ * apoyo opcional y, si se quiere, un dato extra arriba a la derecha (`meta`).
+ */
 @Component({
   selector: 'app-amount-card',
   templateUrl: './amount-card.component.html',
   styleUrls: ['./amount-card.component.scss'],
-  imports: [IonCard, IonCardHeader, IonCardSubtitle, IonCardTitle, IonCardContent],
 })
 export class AmountCardComponent {
   readonly label = input.required<string>();
@@ -16,6 +18,8 @@ export class AmountCardComponent {
   readonly asset = input.required<MoneyAsset>();
   /** Texto de apoyo opcional bajo el monto (ej. "4 de 6 aportes"). */
   readonly caption = input<string>();
+  /** Dato corto arriba a la derecha (ej. "Ronda 3 de 6"). */
+  readonly meta = input<string>();
 
   /**
    * Número y código por separado: el salto de línea solo puede caer entre

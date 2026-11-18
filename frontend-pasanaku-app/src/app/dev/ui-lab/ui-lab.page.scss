@@ -3,6 +3,28 @@ ion-content {
   --padding-bottom: 6rem;
 }
 
+.lab-body {
+  padding: 0 1.5rem;
+}
+
+.lab-greeting {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  overflow-wrap: break-word;
+}
+
+.lab-gap {
+  margin-bottom: 0.75rem;
+}
+
+.lab-card {
+  padding: 0.25rem 1rem;
+  border-radius: var(--pk-radius-card);
+  background: var(--ion-card-background);
+  box-shadow: var(--pk-shadow-card);
+}
+
 .lab-heading {
   margin: 1.5rem 0 0.75rem;
   color: var(--ion-color-medium);

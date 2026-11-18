@@ -1,0 +1,32 @@
+:host {
+  display: inline-grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: 50%;
+  background: var(--pk-badge-neutral-bg);
+  color: var(--pk-badge-neutral-fg);
+  font-size: calc(var(--avatar-size) * 0.38);
+  font-weight: 600;
+  line-height: 1;
+  overflow: hidden;
+  user-select: none;
+}
+
+:host(.avatar--sm) {
+  --avatar-size: 2rem;
+}
+
+:host(.avatar--md) {
+  --avatar-size: 2.75rem;
+}
+
+:host(.avatar--lg) {
+  --avatar-size: 5.5rem;
+}
+
+:host(.avatar--highlight) {
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+}

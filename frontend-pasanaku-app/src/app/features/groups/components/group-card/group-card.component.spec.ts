@@ -19,8 +19,8 @@ describe('GroupCardComponent', () => {
     const el = render(MOCK_GROUPS.find((g) => g.id === 'group-familia-quispe') as Group);
     expect(el.querySelector('.name')?.textContent?.trim()).toBe('Pasanaku familia Quispe');
     expect(el.querySelector('.status')?.textContent?.trim()).toBe('En curso');
-    expect(el.querySelector('.value')?.textContent?.trim()).toBe('500,00 BOB');
-    expect(el.querySelector('.meta')?.textContent?.trim()).toBe('6 de 6 miembros · Privado');
+    const values = [...el.querySelectorAll('app-info-row .value')].map((v) => v.textContent?.trim());
+    expect(values).toEqual(['500,00 BOB · Mensual', '6 de 6 miembros · Privado']);
     expect(el.querySelector('.progress')?.textContent).toContain('Tu cobro');
   });
 });

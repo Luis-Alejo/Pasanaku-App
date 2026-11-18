@@ -10,6 +10,8 @@
       <span class="marker" aria-hidden="true">
         @if (step.state === 'done') {
           <ion-icon [icon]="checkIcon"></ion-icon>
+        } @else if (step.avatarName) {
+          {{ initials(step.avatarName) }}
         } @else {
           {{ i + 1 }}
         }

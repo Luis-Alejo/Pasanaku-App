@@ -1,17 +1,19 @@
 <ion-tabs>
+  <!-- Barra inferior del kit: la pestaña activa es una pastilla índigo con ícono y texto;
+       las demás muestran solo el ícono (el texto sigue disponible para lectores de pantalla). -->
   <ion-tab-bar slot="bottom" id="app-tab-bar">
-    <ion-tab-button tab="home" href="/tabs/home">
-      <ion-icon aria-hidden="true" name="home"></ion-icon>
+    <ion-tab-button tab="home" href="/tabs/home" layout="icon-start">
+      <ion-icon aria-hidden="true" [icon]="icons.home"></ion-icon>
       <ion-label>Inicio</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="groups" href="/tabs/groups">
-      <ion-icon aria-hidden="true" name="people"></ion-icon>
+    <ion-tab-button tab="groups" href="/tabs/groups" layout="icon-start">
+      <ion-icon aria-hidden="true" [icon]="icons.groups"></ion-icon>
       <ion-label>Grupos</ion-label>
     </ion-tab-button>
 
-    <ion-tab-button tab="profile" href="/tabs/profile">
-      <ion-icon aria-hidden="true" name="person"></ion-icon>
+    <ion-tab-button tab="profile" href="/tabs/profile" layout="icon-start">
+      <ion-icon aria-hidden="true" [icon]="icons.profile"></ion-icon>
       <ion-label>Perfil</ion-label>
     </ion-tab-button>
   </ion-tab-bar>

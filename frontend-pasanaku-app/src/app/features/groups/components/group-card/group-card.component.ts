@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import type { Group } from '@core/models/domain.models';
 import { IonCard } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
+import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 
 import {
   PERIODICITY_LABELS,
@@ -17,7 +18,7 @@ import {
   selector: 'app-group-card',
   templateUrl: './group-card.component.html',
   styleUrls: ['./group-card.component.scss'],
-  imports: [IonCard, RouterLink, MoneyPipe],
+  imports: [IonCard, RouterLink, MoneyPipe, InfoRowComponent],
 })
 export class GroupCardComponent {
   readonly group = input.required<Group>();

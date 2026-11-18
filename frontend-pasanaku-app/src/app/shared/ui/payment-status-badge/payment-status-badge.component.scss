@@ -3,7 +3,28 @@
   flex-shrink: 0;
 }
 
-ion-badge {
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--pk-radius-pill);
+  font-size: 0.75rem;
   font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
   user-select: none;
+}
+
+.badge--success {
+  background: var(--pk-badge-success-bg);
+  color: var(--pk-badge-success-fg);
+}
+
+.badge--warning {
+  background: var(--pk-badge-warning-bg);
+  color: var(--pk-badge-warning-fg);
+}
+
+.badge--danger {
+  background: var(--pk-badge-danger-bg);
+  color: var(--pk-badge-danger-fg);
 }

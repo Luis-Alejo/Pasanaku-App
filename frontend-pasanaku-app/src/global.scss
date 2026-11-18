@@ -115,6 +115,12 @@
   line-height: 1.4;
 }
 
+/* Poppins se carga hasta 600: la negrita del navegador (700) se vería sintética. */
+b,
+strong {
+  font-weight: 600;
+}
+
 /**
  * Formas base del kit: tarjetas redondeadas con sombra índigo (sin sombra en
  * oscuro) y botones redondeados.

@@ -4,11 +4,12 @@
       <h2 class="name">{{ group().name }}</h2>
       <span class="status" [class]="'status status--' + group().status.toLowerCase()">{{ statusLabel() }}</span>
     </div>
-    <p class="amount">
-      <span class="value">{{ group().contributionAmount | money: group().asset }}</span>
-      <span class="per">· {{ periodicityLabel() }}</span>
-    </p>
-    <p class="meta">{{ membersLabel() }} · {{ visibilityLabel() }}</p>
+    <app-info-row
+      label="Aporte"
+      [value]="(group().contributionAmount | money: group().asset) + ' · ' + periodicityLabel()"
+      tone="brand"
+    />
+    <app-info-row label="Miembros" [value]="membersLabel() + ' · ' + visibilityLabel()" />
     <p class="progress">{{ progressLabel() }}</p>
   </div>
 </ion-card>

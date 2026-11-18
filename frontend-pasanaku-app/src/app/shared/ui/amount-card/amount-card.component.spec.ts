@@ -17,10 +17,11 @@ describe('AmountCardComponent', () => {
 
   it('muestra la etiqueta y el monto con su moneda', () => {
     const el = render();
-    expect(el.querySelector('ion-card-subtitle')?.textContent?.trim()).toBe('Fondo de la ronda');
+    expect(el.querySelector('.label')?.textContent?.trim()).toBe('Fondo de la ronda');
     expect(el.querySelector('.amount-number')?.textContent?.trim()).toBe('3.000,00');
     expect(el.querySelector('.amount-code')?.textContent?.trim()).toBe('BOB');
-    expect(el.querySelector('ion-card-content')).toBeNull();
+    expect(el.querySelector('.caption')).toBeNull();
+    expect(el.querySelector('section')?.getAttribute('aria-label')).toBe('Fondo de la ronda');
   });
 
   it('solo permite saltar de línea después de los puntos de miles', () => {
@@ -38,6 +39,6 @@ describe('AmountCardComponent', () => {
 
   it('muestra el texto de apoyo solo si existe', () => {
     const el = render('4 de 6 aportes');
-    expect(el.querySelector('ion-card-content')?.textContent?.trim()).toBe('4 de 6 aportes');
+    expect(el.querySelector('.caption')?.textContent?.trim()).toBe('4 de 6 aportes');
   });
 });

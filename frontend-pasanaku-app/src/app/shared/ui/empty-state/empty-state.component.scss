@@ -8,31 +8,52 @@
   align-items: center;
   max-width: 22rem;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 2rem 1.5rem;
   text-align: center;
 }
 
-.icon {
-  font-size: 3rem;
-  color: var(--ion-color-medium);
+/* Ilustración del kit: ancho fluido, proporción fija para no mover el contenido al cargar. */
+.illustration {
+  width: min(100%, 16rem);
+  height: auto;
+  aspect-ratio: 327 / 226;
+  margin-bottom: 1.25rem;
+  object-fit: contain;
+}
+
+/* Ícono en cuadro de color suave (contenedor tipo primaryContainer de MD3). */
+.icon-box {
+  display: grid;
+  place-items: center;
+  width: 4rem;
+  height: 4rem;
   margin-bottom: 1rem;
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-badge-neutral-bg);
+  color: var(--pk-badge-neutral-fg);
+  font-size: 2rem;
 }
 
 .title {
   margin: 0;
+  color: var(--ion-color-primary);
   font-size: 1.125rem;
   font-weight: 600;
+  line-height: 1.35;
   text-wrap: balance;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .message {
   margin: 0.5rem 0 0;
   color: var(--ion-color-medium);
+  font-size: 0.9375rem;
+  line-height: 1.5;
   text-wrap: pretty;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
 }
 
 .action:not(:empty) {
   margin-top: 1.5rem;
+  width: 100%;
 }

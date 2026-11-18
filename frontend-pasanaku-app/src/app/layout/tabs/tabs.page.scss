@@ -1,0 +1,69 @@
+/* Barra inferior del kit (Tab bar / Home): blanca con sombra suave hacia arriba. */
+ion-tab-bar {
+  --background: var(--ion-tab-bar-background);
+  --border: 0;
+  height: calc(4.5rem + var(--ion-safe-area-bottom, 0px));
+  box-shadow: var(--pk-shadow-card-sm);
+}
+
+:host-context(.ion-palette-dark) ion-tab-bar {
+  border-top: 1px solid var(--pk-border);
+}
+
+ion-tab-button {
+  --color: var(--ion-color-medium);
+  --color-selected: var(--ion-color-primary-contrast);
+  --ripple-color: transparent;
+  --padding-start: 0;
+  --padding-end: 0;
+  /* Área táctil: todo el ancho de la pestaña y al menos 48px de alto. */
+  min-height: 48px;
+  /* Centra la pastilla de la activa en el alto de la barra. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--pk-font-family);
+}
+
+ion-tab-button ion-icon {
+  font-size: 1.5rem;
+}
+
+/* Pestañas inactivas: solo ícono (el texto queda para lectores de pantalla). */
+ion-tab-button:not(.tab-selected) ion-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Pestaña activa: pastilla índigo con ícono + texto. */
+ion-tab-button.tab-selected::part(native) {
+  flex: 0 0 auto;
+  align-self: center;
+  width: auto;
+  height: 2.5rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+  border-radius: var(--pk-radius-pill);
+  background: var(--ion-color-primary);
+}
+
+ion-tab-button.tab-selected ion-icon {
+  margin-inline-end: 0.5rem;
+  font-size: 1.25rem;
+}
+
+ion-tab-button.tab-selected ion-label {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  ion-tab-button::part(native) {
+    transition: background-color 160ms ease-out;
+  }
+}

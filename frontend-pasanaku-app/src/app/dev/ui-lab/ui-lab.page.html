@@ -1,39 +1,100 @@
-<ion-header>
-  <ion-toolbar>
-    <ion-title>Laboratorio UI</ion-title>
-  </ion-toolbar>
-</ion-header>
+<ion-content>
+  <app-brand-header>
+    <h1 class="lab-greeting">{{ fixture().greeting }}</h1>
+    @if (fixture().amountCards[0]; as c) {
+    <app-amount-card
+      pkOverlap
+      [label]="c.label"
+      [amount]="c.amount"
+      [asset]="c.asset"
+      [caption]="c.caption"
+      [meta]="c.meta"
+    />
+    }
+  </app-brand-header>
 
-<ion-content class="ion-padding">
-  <h2 class="lab-heading">Badge de estado de aporte</h2>
-  <div class="lab-row">
-    @for (status of fixture().statuses; track $index) {
-    <app-payment-status-badge [status]="status" />
+  <div class="lab-body">
+    <h2 class="lab-heading">Accesos rápidos</h2>
+    <app-quick-actions [actions]="fixture().actions" (selected)="lastAction.set($event)" />
+    @if (lastAction()) {
+    <p class="lab-none">Elegido: {{ lastAction() }}</p>
+    }
+
+    <h2 class="lab-heading">Tarjeta de monto (resto)</h2>
+    @for (card of fixture().amountCards.slice(1); track $index) {
+    <app-amount-card
+      class="lab-gap"
+      [label]="card.label"
+      [amount]="card.amount"
+      [asset]="card.asset"
+      [caption]="card.caption"
+    />
     } @empty {
-    <p class="lab-none">(sin badges)</p>
+    <p class="lab-none">(sin tarjetas extra)</p>
     }
+
+    <h2 class="lab-heading">Badge de estado</h2>
+    <div class="lab-row">
+      @for (status of fixture().statuses; track $index) {
+      <app-payment-status-badge [status]="status" />
+      } @empty {
+      <p class="lab-none">(sin badges)</p>
+      }
+    </div>
+
+    <h2 class="lab-heading">Montos rápidos</h2>
+    @if (fixture().amountOptions.length) {
+    <app-amount-options legend="Montos frecuentes" [options]="fixture().amountOptions" [(value)]="amount" />
+    <p class="lab-none">Valor: {{ amount() ?? '—' }}</p>
+    } @else {
+    <p class="lab-none">(sin opciones)</p>
+    }
+
+    <h2 class="lab-heading">Filas etiqueta / valor</h2>
+    <div class="lab-card">
+      @for (r of fixture().infoRows; track $index) {
+      <app-info-row [label]="r.label" [value]="r.value" [tone]="r.brand ? 'brand' : 'default'" />
+      } @empty {
+      <p class="lab-none">(sin filas)</p>
+      }
+    </div>
+
+    <h2 class="lab-heading">Avatares</h2>
+    <div class="lab-row">
+      @for (a of fixture().avatars; track $index; let first = $first) {
+      <app-avatar [name]="a" size="md" [highlight]="first" />
+      } @if (fixture().avatars[0]; as a) {
+      <app-avatar [name]="a" size="lg" />
+      <app-avatar [name]="a" size="sm" />
+      }
+    </div>
+
+    <h2 class="lab-heading">Tarjeta de grupo</h2>
+    @for (g of groups(); track g.id) {
+    <app-group-card [group]="g" userId="user-ana" />
+    } @empty {
+    <p class="lab-none">(sin grupos)</p>
+    }
+
+    <h2 class="lab-heading">Estado vacío</h2>
+    @for (state of fixture().emptyStates; track $index) {
+    <app-empty-state
+      [illustration]="state.illustration"
+      [icon]="state.withIcon ? icon : undefined"
+      [title]="state.title"
+      [message]="state.message"
+    >
+      @if (state.actionLabel) {
+      <ion-button expand="block">{{ state.actionLabel }}</ion-button>
+      }
+    </app-empty-state>
+    } @empty {
+    <p class="lab-none">(sin estados vacíos)</p>
+    }
+
+    <h2 class="lab-heading">Línea de turnos</h2>
+    <app-turn-timeline [steps]="fixture().steps" label="Orden de cobro" />
   </div>
-
-  <h2 class="lab-heading">Tarjeta de monto</h2>
-  @for (card of fixture().amountCards; track $index) {
-  <app-amount-card [label]="card.label" [amount]="card.amount" [asset]="card.asset" [caption]="card.caption" />
-  } @empty {
-  <p class="lab-none">(sin tarjetas)</p>
-  }
-
-  <h2 class="lab-heading">Estado vacío</h2>
-  @for (state of fixture().emptyStates; track $index) {
-  <app-empty-state [icon]="state.withIcon ? icon : undefined" [title]="state.title" [message]="state.message">
-    @if (state.actionLabel) {
-    <ion-button>{{ state.actionLabel }}</ion-button>
-    }
-  </app-empty-state>
-  } @empty {
-  <p class="lab-none">(sin estados vacíos)</p>
-  }
-
-  <h2 class="lab-heading">Línea de turnos</h2>
-  <app-turn-timeline [steps]="fixture().steps" label="Orden de cobro" />
 
   <nav class="lab-toggle" aria-label="Conjunto de datos">
     @for (d of datasets; track d.id) {

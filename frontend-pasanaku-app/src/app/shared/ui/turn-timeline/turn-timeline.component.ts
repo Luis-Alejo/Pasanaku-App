@@ -1,5 +1,6 @@
 import { Component, input } from '@angular/core';
 import { IonIcon } from '@ionic/angular';
+import { initials } from '@shared/utils/initials';
 import { checkmark } from 'ionicons/icons';
 
 /** Estado de un paso de la línea: ya pasó, es el actual o viene después. */
@@ -13,6 +14,11 @@ export interface TimelineStep {
   state: TimelineStepState;
   /** Resalta el paso (ej. el turno del usuario). */
   highlight?: boolean;
+  /**
+   * Nombre para el avatar con iniciales (ej. el miembro que cobra). Sin él,
+   * el marcador muestra el número del paso.
+   */
+  avatarName?: string;
 }
 
 const STATE_LABELS: Record<TimelineStepState, string> = {
@@ -41,4 +47,5 @@ export class TurnTimelineComponent {
 
   protected readonly checkIcon = checkmark;
   protected readonly stateLabels = STATE_LABELS;
+  protected readonly initials = initials;
 }

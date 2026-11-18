@@ -1,0 +1,106 @@
+:host {
+  display: block;
+}
+
+.grid {
+  display: grid;
+  /* 4 accesos entran en una fila en un teléfono de 360px o más; si no, bajan a la siguiente. */
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+/* Tarjeta del kit (Card / 1): blanca, radio 15px, sombra índigo suave. */
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 6.25rem;
+  padding: 0.75rem 0.5rem;
+  border: 0;
+  border-radius: var(--pk-radius-card);
+  background: var(--ion-card-background);
+  box-shadow: var(--pk-shadow-card);
+  color: var(--ion-color-medium);
+  font: inherit;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 120ms ease-out;
+}
+
+/* En oscuro no hay sombra: la tarjeta se separa con un borde suave. */
+:host-context(.ion-palette-dark) .action {
+  border: 1px solid var(--pk-border);
+}
+
+.action:active {
+  transform: scale(0.97);
+}
+
+.action:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+.icon {
+  position: relative;
+  font-size: 1.75rem;
+  line-height: 0;
+}
+
+.action--indigo .icon {
+  color: var(--pk-accent-indigo);
+}
+
+.action--teal .icon {
+  color: var(--pk-accent-teal);
+}
+
+.action--yellow .icon {
+  color: var(--pk-accent-yellow);
+}
+
+.action--pink .icon {
+  color: var(--pk-accent-pink);
+}
+
+.action--blue .icon {
+  color: var(--pk-accent-blue);
+}
+
+.action--orange .icon {
+  color: var(--pk-accent-orange);
+}
+
+.badge {
+  position: absolute;
+  top: -0.375rem;
+  inset-inline-end: -0.75rem;
+  min-width: 1.25rem;
+  padding: 0.125rem 0.3125rem;
+  border-radius: var(--pk-radius-pill);
+  background: var(--ion-color-danger);
+  color: var(--ion-color-danger-contrast);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+}
+
+.label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow-wrap: break-word;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action {
+    transition: none;
+  }
+}

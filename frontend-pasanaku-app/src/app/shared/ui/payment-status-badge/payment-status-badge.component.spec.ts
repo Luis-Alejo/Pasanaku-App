@@ -7,13 +7,13 @@ describe('PaymentStatusBadgeComponent', () => {
     ['PAID', 'Pagado', 'success'],
     ['PENDING', 'Pendiente', 'warning'],
     ['LATE', 'Atrasado', 'danger'],
-  ] as const)('muestra %s como "%s" en color %s', (status, label, color) => {
+  ] as const)('muestra %s como "%s" con el tono %s', (status, label, tone) => {
     const fixture = TestBed.createComponent(PaymentStatusBadgeComponent);
     fixture.componentRef.setInput('status', status);
     fixture.detectChanges();
 
-    const badge = fixture.nativeElement.querySelector('ion-badge') as HTMLElement & { color?: string };
+    const badge = fixture.nativeElement.querySelector('.badge') as HTMLElement;
     expect(badge.textContent?.trim()).toBe(label);
-    expect(badge.color).toBe(color);
+    expect(badge.classList.contains(`badge--${tone}`)).toBe(true);
   });
 });
