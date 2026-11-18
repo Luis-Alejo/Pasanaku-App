@@ -1,0 +1,126 @@
+import { MigrationInterface, QueryRunner } from "typeorm";
+
+export class InitialSchema1795040502399 implements MigrationInterface {
+    name = 'InitialSchema1795040502399'
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`CREATE TABLE "processed_soroban_events" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "eventId" character varying(160) NOT NULL, "contractAddress" character varying(56) NOT NULL, "ledger" integer NOT NULL, "topic" text, "processedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_3333b8bf60e13e7f2cf5718a693" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_processed_soroban_events_event_id" ON "processed_soroban_events"  ("eventId") `);
+        await queryRunner.query(`CREATE TABLE "soroban_event_cursors" ("id" character varying(80) NOT NULL, "lastLedger" integer NOT NULL DEFAULT '0', "pagingToken" text, "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_48023581184c58912e4880449be" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE TABLE "group_members" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "userId" uuid NOT NULL, "groupId" uuid NOT NULL, "initialTurnOrder" integer NOT NULL, "currentQueuePosition" integer NOT NULL, "hasReceivedPayout" boolean NOT NULL DEFAULT false, "guaranteeBalanceStroops" bigint NOT NULL DEFAULT '0', "totalContributedStroops" bigint NOT NULL DEFAULT '0', "totalDebtStroops" bigint NOT NULL DEFAULT '0', "shortfallStroops" bigint NOT NULL DEFAULT '0', "isClean" boolean NOT NULL DEFAULT true, "joinedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "CHK_group_members_current_position_positive" CHECK ("currentQueuePosition" > 0), CONSTRAINT "CHK_group_members_initial_order_positive" CHECK ("initialTurnOrder" > 0), CONSTRAINT "PK_86446139b2c96bfd0f3b8638852" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_group_members_current_position" ON "group_members"  ("groupId", "currentQueuePosition") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_group_members_initial_order" ON "group_members"  ("groupId", "initialTurnOrder") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_group_members_user_group" ON "group_members"  ("userId", "groupId") `);
+        await queryRunner.query(`CREATE TYPE "public"."debt_status_enum" AS ENUM('OPEN', 'PARTIALLY_PAID', 'SETTLED')`);
+        await queryRunner.query(`CREATE TABLE "member_debts" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "groupId" uuid NOT NULL, "originalRoundId" uuid NOT NULL, "debtorMemberId" uuid NOT NULL, "beneficiaryMemberId" uuid NOT NULL, "originalAmountStroops" bigint NOT NULL, "remainingAmountStroops" bigint NOT NULL, "status" "public"."debt_status_enum" NOT NULL DEFAULT 'OPEN', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_ddd1e33fd9295e30f7439ea2d1b" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_member_debts_round_debtor" ON "member_debts"  ("originalRoundId", "debtorMemberId") `);
+        await queryRunner.query(`CREATE INDEX "IDX_member_debts_group_status" ON "member_debts"  ("groupId", "status") `);
+        await queryRunner.query(`CREATE TYPE "public"."frequency_enum" AS ENUM('WEEKLY', 'BIWEEKLY', 'MONTHLY')`);
+        await queryRunner.query(`CREATE TYPE "public"."group_status_enum" AS ENUM('OPEN', 'ACTIVE', 'COMPLETED', 'CANCELLED')`);
+        await queryRunner.query(`CREATE TABLE "pasanaku_groups" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "name" character varying(120) NOT NULL, "description" text, "inviteCodeHash" character varying(128), "isPublic" boolean NOT NULL DEFAULT true, "creatorId" uuid NOT NULL, "contractAddress" character varying(56), "registryAddress" character varying(56) NOT NULL, "adminServerAddress" character varying(56) NOT NULL, "contributionStroops" bigint NOT NULL, "guaranteeStroops" bigint NOT NULL, "maxParticipants" integer NOT NULL DEFAULT '20', "roundDurationSeconds" integer NOT NULL, "graceDurationSeconds" integer NOT NULL DEFAULT '259200', "setupCompleted" boolean NOT NULL DEFAULT false, "frequency" "public"."frequency_enum" NOT NULL DEFAULT 'WEEKLY', "minReputationReq" integer NOT NULL DEFAULT '80', "status" "public"."group_status_enum" NOT NULL DEFAULT 'OPEN', "currentRound" integer NOT NULL DEFAULT '0', "nextDeadline" TIMESTAMP WITH TIME ZONE, "graceDeadline" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "CHK_pasanaku_groups_positive_contribution" CHECK ("contributionStroops" > 0), CONSTRAINT "CHK_pasanaku_groups_max_participants" CHECK ("maxParticipants" BETWEEN 2 AND 20), CONSTRAINT "PK_3ac18c20992566c7ba05b06ba77" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_pasanaku_groups_status_public" ON "pasanaku_groups"  ("status", "isPublic") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_pasanaku_groups_invite_code_hash" ON "pasanaku_groups"  ("inviteCodeHash") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_pasanaku_groups_contract_address" ON "pasanaku_groups"  ("contractAddress") `);
+        await queryRunner.query(`CREATE TYPE "public"."round_payment_status_enum" AS ENUM('PENDING', 'PAID', 'PAID_IN_GRACE', 'COVERED_BY_GUARANTEE', 'DEFAULTED', 'EXEMPT')`);
+        await queryRunner.query(`CREATE TABLE "round_payments" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "roundId" uuid NOT NULL, "memberId" uuid NOT NULL, "status" "public"."round_payment_status_enum" NOT NULL DEFAULT 'PENDING', "transactionId" uuid, "paidAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_2407ccb2e51d8575be7c0318797" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_round_payments_round_member" ON "round_payments"  ("roundId", "memberId") `);
+        await queryRunner.query(`CREATE TABLE "rounds" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "groupId" uuid NOT NULL, "roundNumber" integer NOT NULL, "beneficiaryMemberId" uuid, "deadline" TIMESTAMP WITH TIME ZONE NOT NULL, "graceEnd" TIMESTAMP WITH TIME ZONE NOT NULL, "expectedPoolStroops" bigint NOT NULL, "actualPayoutStroops" bigint NOT NULL DEFAULT '0', "isSettled" boolean NOT NULL DEFAULT false, "settleTxHash" character varying(64), "settledAt" TIMESTAMP WITH TIME ZONE, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_c0042bf146ec2007573dc3c904a" UNIQUE ("settleTxHash"), CONSTRAINT "PK_9d254884a20817016e2f877c7e7" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_rounds_group_number" ON "rounds"  ("groupId", "roundNumber") `);
+        await queryRunner.query(`CREATE TYPE "public"."notification_type_enum" AS ENUM('PAYMENT_REMINDER', 'GRACE_WARNING', 'DEFAULT_ALERT', 'PAYOUT_RECEIVED', 'REFERENCE_REQUEST')`);
+        await queryRunner.query(`CREATE TABLE "notifications" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "userId" uuid NOT NULL, "groupId" uuid, "type" "public"."notification_type_enum" NOT NULL, "title" character varying(140) NOT NULL, "message" text NOT NULL, "isRead" boolean NOT NULL DEFAULT false, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "PK_6a72c3c0f683f6462415e653c3a" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE INDEX "IDX_notifications_user_read_created" ON "notifications"  ("userId", "isRead", "createdAt") `);
+        await queryRunner.query(`CREATE TYPE "public"."transaction_type_enum" AS ENUM('GUARANTEE_DEPOSIT', 'ROUND_PAYMENT', 'ARREARS_PAYMENT', 'PAYOUT', 'GUARANTEE_REFUND', 'PENALTY_SLASH')`);
+        await queryRunner.query(`CREATE TYPE "public"."transaction_status_enum" AS ENUM('PENDING_FIAT', 'PENDING_CHAIN', 'CONFIRMED', 'FAILED')`);
+        await queryRunner.query(`CREATE TYPE "public"."currency_enum" AS ENUM('BOB')`);
+        await queryRunner.query(`CREATE TABLE "transactions" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "userId" uuid NOT NULL, "groupId" uuid, "roundId" uuid, "type" "public"."transaction_type_enum" NOT NULL, "status" "public"."transaction_status_enum" NOT NULL DEFAULT 'PENDING_FIAT', "idempotencyKey" character varying(128) NOT NULL, "amountStroops" bigint NOT NULL, "fiatCurrency" "public"."currency_enum" NOT NULL DEFAULT 'BOB', "fiatAmount" numeric(12,2), "exchangeRate" numeric(10,4), "pollarReference" character varying(160), "stellarTxHash" character varying(64), "feeSponsored" boolean NOT NULL DEFAULT true, "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_86238dd0ae2d79be941104a5842" UNIQUE ("idempotencyKey"), CONSTRAINT "UQ_b517850a92dcc8871bdf46cb99f" UNIQUE ("pollarReference"), CONSTRAINT "UQ_0228cd43c585de1599b3b9fbc05" UNIQUE ("stellarTxHash"), CONSTRAINT "PK_a219afd8dd77ed80f5a862f1db9" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_transactions_pollar_reference" ON "transactions"  ("pollarReference") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_transactions_stellar_hash" ON "transactions"  ("stellarTxHash") `);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_transactions_idempotency_key" ON "transactions"  ("idempotencyKey") `);
+        await queryRunner.query(`CREATE TYPE "public"."reference_relationship_enum" AS ENUM('FAMILIAR', 'AMIGO', 'COLEGA', 'OTRO')`);
+        await queryRunner.query(`CREATE TYPE "public"."reference_status_enum" AS ENUM('PENDING', 'ACCEPTED', 'DECLINED', 'REVOKED')`);
+        await queryRunner.query(`CREATE TABLE "user_references" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "requesterId" uuid NOT NULL, "contactUserId" uuid NOT NULL, "relationship" "public"."reference_relationship_enum" NOT NULL, "status" "public"."reference_status_enum" NOT NULL DEFAULT 'PENDING', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "CHK_user_references_not_self" CHECK ("requesterId" <> "contactUserId"), CONSTRAINT "PK_0a7e184c07fc1802dec3359e2c7" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`CREATE UNIQUE INDEX "UQ_user_references_pair" ON "user_references"  ("requesterId", "contactUserId") `);
+        await queryRunner.query(`CREATE TYPE "public"."kyc_status_enum" AS ENUM('PENDING', 'VERIFIED', 'REJECTED')`);
+        await queryRunner.query(`CREATE TABLE "users" ("id" uuid NOT NULL DEFAULT uuid_generate_v4(), "phone" character varying(20) NOT NULL, "email" character varying(254), "passwordHash" character varying(255) NOT NULL, "fullName" character varying(160) NOT NULL, "encryptedCi" text, "ciHash" character varying(128), "kycStatus" "public"."kyc_status_enum" NOT NULL DEFAULT 'PENDING', "kycProviderRef" character varying(160), "stellarPublicKey" character varying(56) NOT NULL, "encryptedPrivateKey" text NOT NULL, "reputationScore" integer NOT NULL DEFAULT '100', "completedGroups" integer NOT NULL DEFAULT '0', "defaultCount" integer NOT NULL DEFAULT '0', "createdAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), "updatedAt" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(), CONSTRAINT "UQ_a000cca60bcf04454e727699490" UNIQUE ("phone"), CONSTRAINT "UQ_97672ac88f789774dd47f7c8be3" UNIQUE ("email"), CONSTRAINT "UQ_6b669c96f8e0277978e6935d338" UNIQUE ("ciHash"), CONSTRAINT "UQ_8bc9b0048dfefcac4f0259bf3ae" UNIQUE ("stellarPublicKey"), CONSTRAINT "PK_a3ffb1c0c8416b9fc6f907b7433" PRIMARY KEY ("id"))`);
+        await queryRunner.query(`ALTER TABLE "group_members" ADD CONSTRAINT "FK_fdef099303bcf0ffd9a4a7b18f5" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "group_members" ADD CONSTRAINT "FK_1aa8d31831c3126947e7a713c2b" FOREIGN KEY ("groupId") REFERENCES "pasanaku_groups"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "member_debts" ADD CONSTRAINT "FK_2d32c219c0d85692a7a5a7879d5" FOREIGN KEY ("groupId") REFERENCES "pasanaku_groups"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "member_debts" ADD CONSTRAINT "FK_5a951ffe99a0407cc89a6bb6dcc" FOREIGN KEY ("originalRoundId") REFERENCES "rounds"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "member_debts" ADD CONSTRAINT "FK_a4ab27050afde034925add980f2" FOREIGN KEY ("debtorMemberId") REFERENCES "group_members"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "member_debts" ADD CONSTRAINT "FK_ea61c2f8d2b9e2bea23ddb91b37" FOREIGN KEY ("beneficiaryMemberId") REFERENCES "group_members"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "pasanaku_groups" ADD CONSTRAINT "FK_2400b86877111037b5412aa85e9" FOREIGN KEY ("creatorId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "round_payments" ADD CONSTRAINT "FK_5ab904b99f62211b149d604c43f" FOREIGN KEY ("roundId") REFERENCES "rounds"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "round_payments" ADD CONSTRAINT "FK_ac2b5e36c5a65f4f7ac6106d17a" FOREIGN KEY ("memberId") REFERENCES "group_members"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "round_payments" ADD CONSTRAINT "FK_aa5717171dd20e01f5d5433db03" FOREIGN KEY ("transactionId") REFERENCES "transactions"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "rounds" ADD CONSTRAINT "FK_99c5b1936928023c8ecf20ba52c" FOREIGN KEY ("groupId") REFERENCES "pasanaku_groups"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "rounds" ADD CONSTRAINT "FK_84e94614510221e3b2cf64d9621" FOREIGN KEY ("beneficiaryMemberId") REFERENCES "group_members"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "notifications" ADD CONSTRAINT "FK_692a909ee0fa9383e7859f9b406" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "notifications" ADD CONSTRAINT "FK_df2e025c7b9307b32e9cdfbbc10" FOREIGN KEY ("groupId") REFERENCES "pasanaku_groups"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "transactions" ADD CONSTRAINT "FK_6bb58f2b6e30cb51a6504599f41" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "transactions" ADD CONSTRAINT "FK_5f44dd61ef2add2509bdc56f91c" FOREIGN KEY ("groupId") REFERENCES "pasanaku_groups"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "transactions" ADD CONSTRAINT "FK_e43b2a215268ed5072b1564707c" FOREIGN KEY ("roundId") REFERENCES "rounds"("id") ON DELETE SET NULL ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "user_references" ADD CONSTRAINT "FK_1bdafb329e698ce8d9f3176aae1" FOREIGN KEY ("requesterId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+        await queryRunner.query(`ALTER TABLE "user_references" ADD CONSTRAINT "FK_a079e727f68e17a0aabecb746d7" FOREIGN KEY ("contactUserId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE NO ACTION`);
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.query(`ALTER TABLE "user_references" DROP CONSTRAINT "FK_a079e727f68e17a0aabecb746d7"`);
+        await queryRunner.query(`ALTER TABLE "user_references" DROP CONSTRAINT "FK_1bdafb329e698ce8d9f3176aae1"`);
+        await queryRunner.query(`ALTER TABLE "transactions" DROP CONSTRAINT "FK_e43b2a215268ed5072b1564707c"`);
+        await queryRunner.query(`ALTER TABLE "transactions" DROP CONSTRAINT "FK_5f44dd61ef2add2509bdc56f91c"`);
+        await queryRunner.query(`ALTER TABLE "transactions" DROP CONSTRAINT "FK_6bb58f2b6e30cb51a6504599f41"`);
+        await queryRunner.query(`ALTER TABLE "notifications" DROP CONSTRAINT "FK_df2e025c7b9307b32e9cdfbbc10"`);
+        await queryRunner.query(`ALTER TABLE "notifications" DROP CONSTRAINT "FK_692a909ee0fa9383e7859f9b406"`);
+        await queryRunner.query(`ALTER TABLE "rounds" DROP CONSTRAINT "FK_84e94614510221e3b2cf64d9621"`);
+        await queryRunner.query(`ALTER TABLE "rounds" DROP CONSTRAINT "FK_99c5b1936928023c8ecf20ba52c"`);
+        await queryRunner.query(`ALTER TABLE "round_payments" DROP CONSTRAINT "FK_aa5717171dd20e01f5d5433db03"`);
+        await queryRunner.query(`ALTER TABLE "round_payments" DROP CONSTRAINT "FK_ac2b5e36c5a65f4f7ac6106d17a"`);
+        await queryRunner.query(`ALTER TABLE "round_payments" DROP CONSTRAINT "FK_5ab904b99f62211b149d604c43f"`);
+        await queryRunner.query(`ALTER TABLE "pasanaku_groups" DROP CONSTRAINT "FK_2400b86877111037b5412aa85e9"`);
+        await queryRunner.query(`ALTER TABLE "member_debts" DROP CONSTRAINT "FK_ea61c2f8d2b9e2bea23ddb91b37"`);
+        await queryRunner.query(`ALTER TABLE "member_debts" DROP CONSTRAINT "FK_a4ab27050afde034925add980f2"`);
+        await queryRunner.query(`ALTER TABLE "member_debts" DROP CONSTRAINT "FK_5a951ffe99a0407cc89a6bb6dcc"`);
+        await queryRunner.query(`ALTER TABLE "member_debts" DROP CONSTRAINT "FK_2d32c219c0d85692a7a5a7879d5"`);
+        await queryRunner.query(`ALTER TABLE "group_members" DROP CONSTRAINT "FK_1aa8d31831c3126947e7a713c2b"`);
+        await queryRunner.query(`ALTER TABLE "group_members" DROP CONSTRAINT "FK_fdef099303bcf0ffd9a4a7b18f5"`);
+        await queryRunner.query(`DROP TABLE "users"`);
+        await queryRunner.query(`DROP TYPE "public"."kyc_status_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_user_references_pair"`);
+        await queryRunner.query(`DROP TABLE "user_references"`);
+        await queryRunner.query(`DROP TYPE "public"."reference_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."reference_relationship_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_transactions_idempotency_key"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_transactions_stellar_hash"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_transactions_pollar_reference"`);
+        await queryRunner.query(`DROP TABLE "transactions"`);
+        await queryRunner.query(`DROP TYPE "public"."currency_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."transaction_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."transaction_type_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_notifications_user_read_created"`);
+        await queryRunner.query(`DROP TABLE "notifications"`);
+        await queryRunner.query(`DROP TYPE "public"."notification_type_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_rounds_group_number"`);
+        await queryRunner.query(`DROP TABLE "rounds"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_round_payments_round_member"`);
+        await queryRunner.query(`DROP TABLE "round_payments"`);
+        await queryRunner.query(`DROP TYPE "public"."round_payment_status_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_pasanaku_groups_contract_address"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_pasanaku_groups_invite_code_hash"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_pasanaku_groups_status_public"`);
+        await queryRunner.query(`DROP TABLE "pasanaku_groups"`);
+        await queryRunner.query(`DROP TYPE "public"."group_status_enum"`);
+        await queryRunner.query(`DROP TYPE "public"."frequency_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."IDX_member_debts_group_status"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_member_debts_round_debtor"`);
+        await queryRunner.query(`DROP TABLE "member_debts"`);
+        await queryRunner.query(`DROP TYPE "public"."debt_status_enum"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_group_members_user_group"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_group_members_initial_order"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_group_members_current_position"`);
+        await queryRunner.query(`DROP TABLE "group_members"`);
+        await queryRunner.query(`DROP TABLE "soroban_event_cursors"`);
+        await queryRunner.query(`DROP INDEX "public"."UQ_processed_soroban_events_event_id"`);
+        await queryRunner.query(`DROP TABLE "processed_soroban_events"`);
+    }
+
+}

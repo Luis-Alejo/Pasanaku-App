@@ -1,0 +1,283 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type AuthPayload {
+  accessToken: String!
+  user: User!
+}
+
+input CreateGroupInput {
+  """
+  Cuota en USDC, p. ej. "25" o "12.5"
+  """
+  contributionUsdc: String!
+  description: String
+  frequency: Frequency!
+
+  """Solo Testnet/demo"""
+  graceDurationSeconds: Int
+  isPublic: Boolean! = true
+  maxParticipants: Int!
+  name: String!
+
+  """Solo Testnet/demo"""
+  roundDurationSeconds: Int
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+enum DebtStatus {
+  OPEN
+  PARTIALLY_PAID
+  SETTLED
+}
+
+enum Frequency {
+  BIWEEKLY
+  MONTHLY
+  WEEKLY
+}
+
+type GroupDetail {
+  contractAddress: String
+  contributionStroops: String!
+  createdAt: DateTime!
+  creatorId: ID!
+  currentRound: Int!
+  debts: [MemberDebt!]!
+  description: String
+  frequency: Frequency!
+  graceDeadline: DateTime
+  graceDurationSeconds: Int!
+  guaranteeStroops: String!
+  id: ID!
+  isPublic: Boolean!
+  maxParticipants: Int!
+  memberCount: Int!
+  members: [GroupMember!]!
+  minReputationReq: Int!
+  name: String!
+  nextDeadline: DateTime
+  roundDurationSeconds: Int!
+  rounds: [Round!]!
+  setupCompleted: Boolean!
+  status: GroupStatus!
+}
+
+type GroupMember {
+  currentQueuePosition: Int!
+  fullName: String!
+  guaranteeBalanceStroops: String!
+  hasReceivedPayout: Boolean!
+  id: ID!
+  initialTurnOrder: Int!
+  isClean: Boolean!
+  joinedAt: DateTime!
+  reputationScore: Int!
+  shortfallStroops: String!
+  totalContributedStroops: String!
+  totalDebtStroops: String!
+  userId: ID!
+}
+
+enum GroupStatus {
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  OPEN
+}
+
+type GroupSummary {
+  contractAddress: String
+  contributionStroops: String!
+  createdAt: DateTime!
+  creatorId: ID!
+  currentRound: Int!
+  description: String
+  frequency: Frequency!
+  graceDeadline: DateTime
+  graceDurationSeconds: Int!
+  guaranteeStroops: String!
+  id: ID!
+  isPublic: Boolean!
+  maxParticipants: Int!
+  memberCount: Int!
+  minReputationReq: Int!
+  name: String!
+  nextDeadline: DateTime
+  roundDurationSeconds: Int!
+  setupCompleted: Boolean!
+  status: GroupStatus!
+}
+
+input InviteMemberInput {
+  groupId: ID!
+  phone: String!
+}
+
+enum KycStatus {
+  PENDING
+  REJECTED
+  VERIFIED
+}
+
+input LoginInput {
+  password: String!
+  phone: String!
+}
+
+type MemberDebt {
+  beneficiaryMemberId: ID!
+  createdAt: DateTime!
+  debtorMemberId: ID!
+  id: ID!
+  originalAmountStroops: String!
+  originalRoundId: ID!
+  remainingAmountStroops: String!
+  status: DebtStatus!
+}
+
+type Mutation {
+  createGroup(input: CreateGroupInput!): GroupSummary!
+  inviteMember(input: InviteMemberInput!): TxResultType!
+  joinGroup(groupId: ID!): TxResultType!
+  login(input: LoginInput!): AuthPayload!
+  payArrears(input: PayArrearsInput!): TxResultType!
+  payRound(groupId: ID!): TxResultType!
+  register(input: RegisterInput!): AuthPayload!
+  requestReference(input: RequestReferenceInput!): UserReference!
+  respondReference(input: RespondReferenceInput!): UserReference!
+  retryGroupSetup(groupId: ID!): GroupSummary!
+  revokeReference(referenceId: ID!): UserReference!
+  setTurnOrder(input: SetTurnOrderInput!): TxResultType!
+  startGroup(groupId: ID!): TxResultType!
+  submitKyc(input: SubmitKycInput!): User!
+}
+
+input PayArrearsInput {
+  """USDC; si se omite, paga el saldo completo"""
+  amountUsdc: String
+  groupId: ID!
+
+  """Número de la ronda original de la deuda"""
+  round: Int!
+}
+
+type PublicUser {
+  fullName: String!
+  id: ID!
+  phone: String!
+}
+
+type Query {
+  defaulterReferences(groupId: ID!, memberId: ID!): [UserReference!]!
+  groupDetail(groupId: ID!): GroupDetail!
+  me: User!
+  myGroups: [GroupSummary!]!
+  myReferences: [UserReference!]!
+  publicGroups(limit: Int! = 20, offset: Int! = 0): [GroupSummary!]!
+}
+
+enum ReferenceRelationship {
+  AMIGO
+  COLEGA
+  FAMILIAR
+  OTRO
+}
+
+enum ReferenceStatus {
+  ACCEPTED
+  DECLINED
+  PENDING
+  REVOKED
+}
+
+input RegisterInput {
+  email: String
+  fullName: String!
+  password: String!
+  phone: String!
+}
+
+input RequestReferenceInput {
+  contactCi: String
+  contactPhone: String
+  relationship: ReferenceRelationship!
+}
+
+input RespondReferenceInput {
+  accept: Boolean!
+  referenceId: ID!
+}
+
+type Round {
+  actualPayoutStroops: String!
+  beneficiaryMemberId: ID
+  deadline: DateTime!
+  expectedPoolStroops: String!
+  graceEnd: DateTime!
+  id: ID!
+  isSettled: Boolean!
+  payments: [RoundPayment!]!
+  roundNumber: Int!
+  settleTxHash: String
+  settledAt: DateTime
+}
+
+type RoundPayment {
+  id: ID!
+  memberId: ID!
+  paidAt: DateTime
+  status: RoundPaymentStatus!
+}
+
+enum RoundPaymentStatus {
+  COVERED_BY_GUARANTEE
+  DEFAULTED
+  EXEMPT
+  PAID
+  PAID_IN_GRACE
+  PENDING
+}
+
+input SetTurnOrderInput {
+  groupId: ID!
+
+  """userId de TODOS los miembros, en orden de turno"""
+  userIds: [ID!]!
+}
+
+input SubmitKycInput {
+  ciNumber: String!
+}
+
+type TxResultType {
+  txHash: String!
+}
+
+type User {
+  completedGroups: Int!
+  createdAt: DateTime!
+  defaultCount: Int!
+  email: String
+  fullName: String!
+  id: ID!
+  kycStatus: KycStatus!
+  phone: String!
+  reputationScore: Int!
+  stellarPublicKey: String!
+  updatedAt: DateTime!
+}
+
+type UserReference {
+  contactUser: PublicUser!
+  createdAt: DateTime!
+  id: ID!
+  relationship: ReferenceRelationship!
+  requester: PublicUser!
+  status: ReferenceStatus!
+}
