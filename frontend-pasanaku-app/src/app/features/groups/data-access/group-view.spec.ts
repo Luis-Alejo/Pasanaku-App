@@ -1,3 +1,4 @@
+import { MOCK_CONTRIBUTIONS, MOCK_GROUPS } from '@core/data/groups.mock';
 import type { Group } from '@core/models/domain.models';
 
 import {
@@ -8,7 +9,6 @@ import {
   sortMyGroups,
   turnSteps,
 } from './group-view';
-import { MOCK_CONTRIBUTIONS, MOCK_GROUPS } from './groups.mock';
 
 const ANA = 'user-ana';
 const byId = (id: string) => MOCK_GROUPS.find((g) => g.id === id) as Group;

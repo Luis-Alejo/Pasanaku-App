@@ -1,0 +1,133 @@
+.page {
+  padding: 0.5rem 0 calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1rem;
+}
+
+.avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: rgba(var(--ion-color-primary-rgb), 0.14);
+  color: var(--ion-color-primary);
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.person-text {
+  min-width: 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  overflow-wrap: break-word;
+}
+
+.email {
+  margin: 0.125rem 0 0;
+  color: var(--ion-color-medium);
+  overflow-wrap: anywhere;
+}
+
+.section {
+  margin-top: 1.5rem;
+}
+
+.section-title {
+  margin: 0 1rem 0.5rem;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.wallet {
+  margin: 0 1rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: var(--ion-card-background);
+}
+
+.label {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+}
+
+/* La dirección completa, seleccionable y partida en cualquier punto (no tiene espacios). */
+.address {
+  margin: 0.25rem 0 0.75rem;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.wallet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.wallet-actions ion-button {
+  min-height: 48px;
+  margin: 0;
+}
+
+/* Área táctil de 48px. */
+.explorer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 48px;
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0.5rem 1rem 0;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  text-wrap: pretty;
+}
+
+.wallet .hint {
+  margin: 0.75rem 0 0;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 0;
+}
+
+.balances-error {
+  margin: 0 1rem;
+}
+
+.balances-error p {
+  margin: 0 0 0.5rem;
+}
+
+ion-list ion-note {
+  color: var(--ion-text-color);
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+}

@@ -10,4 +10,66 @@
       <ion-title size="large">Perfil</ion-title>
     </ion-toolbar>
   </ion-header>
+
+  @if (user(); as u) {
+  <div class="page">
+    <header class="person">
+      <span class="avatar" aria-hidden="true">{{ initials() }}</span>
+      <div class="person-text">
+        <h1 class="name">{{ u.displayName }}</h1>
+        <p class="email">{{ u.email }}</p>
+      </div>
+    </header>
+
+    <section class="section" aria-labelledby="wallet-title">
+      <h2 id="wallet-title" class="section-title">Billetera Stellar</h2>
+      <div class="wallet">
+        <p id="address-label" class="label">Tu dirección (Testnet)</p>
+        <p class="address" aria-labelledby="address-label">{{ u.walletAddress }}</p>
+        <div class="wallet-actions">
+          <ion-button fill="outline" size="default" (click)="copyAddress()">
+            <ion-icon slot="start" [icon]="copied() ? icons.copied : icons.copy" aria-hidden="true" />
+            {{ copied() ? 'Copiada' : 'Copiar dirección' }}
+          </ion-button>
+          <a class="explorer" [href]="accountUrl()" target="_blank" rel="noopener noreferrer">
+            Ver en el explorador
+            <ion-icon [icon]="icons.external" aria-hidden="true" />
+            <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
+          </a>
+        </div>
+        <p class="hint">Tu cuenta la administra Pasanaku de forma segura: no necesitas guardar claves.</p>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="balances-title">
+      <h2 id="balances-title" class="section-title">Saldos en Testnet</h2>
+      @if (balancesState() === 'loading') {
+      <div class="loading" role="status">
+        <ion-spinner aria-hidden="true" />
+        <span class="visually-hidden">Consultando saldos</span>
+      </div>
+      } @else if (balancesState() === 'error') {
+      <div class="balances-error">
+        <p>No pudimos consultar tus saldos en Stellar.</p>
+        <ion-button fill="outline" (click)="loadBalances()">Reintentar</ion-button>
+      </div>
+      } @else if (balancesState() === 'loaded') { @if (balances().length) {
+      <ion-list [inset]="true" aria-label="Saldos por moneda">
+        @for (b of balanceRows(); track b.code + (b.issuer ?? ''); let last = $last) {
+        <ion-item [lines]="last ? 'none' : undefined">
+          <ion-label>{{ b.code }}</ion-label>
+          <ion-note slot="end" class="amount">{{ b.number }}</ion-note>
+        </ion-item>
+        }
+      </ion-list>
+      } @else {
+      <p class="hint">Tu cuenta todavía no tiene fondos en Testnet.</p>
+      }
+      <p class="hint">
+        Activos de prueba, sin valor real. @if (isMock) { Con datos de prueba, estos saldos son de ejemplo. }
+      </p>
+      }
+    </section>
+  </div>
+  }
 </ion-content>

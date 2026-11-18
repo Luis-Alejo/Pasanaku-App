@@ -1,8 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { MOCK_GROUPS } from '@core/data/groups.mock';
 import type { Group } from '@core/models/domain.models';
-
-import { MOCK_GROUPS } from '../../data-access/groups.mock';
 
 import { GroupCardComponent } from './group-card.component';
 

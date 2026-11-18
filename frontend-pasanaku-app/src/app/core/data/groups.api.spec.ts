@@ -1,7 +1,6 @@
+import { MockGroupsApi } from '@core/data/groups.api';
 import type { User } from '@core/models/domain.models';
 import { JoinGroupError } from '@core/models/domain.models';
-
-import { MockGroupsApi } from './groups.api';
 
 const ANA: User = { id: 'user-ana', displayName: 'Ana', email: 'ana@example.com', walletAddress: 'GANA' };
 const OTHER = (n: number): User => ({

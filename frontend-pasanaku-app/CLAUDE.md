@@ -11,7 +11,7 @@ Léelo completo antes de empezar cualquier tarea.
 - Trabaja **un paso a la vez** del plan de la sección 9. No adelantes pasos ni hagas tareas que no se pidieron.
 - **Al terminar cada paso:**
   1. Verifica que compila (`npm run build`) y que pasa el lint (`npm run lint`). Si algo falla, corrígelo antes de seguir.
-  2. Marca el paso como hecho (`[x]`) en la sección 9 de este archivo.
+  2. Marca el paso como hecho (`[x]`) en la sección 9 de este archivo. **Antes de editar este archivo, vuelve a leerlo completo**: puede haber sido actualizado desde fuera, y no debes borrar esos cambios. Cambia solo la casilla, sin reescribir el resto.
   3. Escríbeme un **resumen corto y general** (3–6 líneas, sin jerga innecesaria): qué hiciste, para qué sirve y qué archivos importantes tocaste.
   4. Propón el mensaje de commit (formato Conventional Commits: `feat(frontend): ...`, `chore(frontend): ...`).
   5. **Detente y espera mi confirmación** antes de pasar al siguiente paso.
@@ -238,66 +238,126 @@ crear grupo → invitar/unirse → definir turnos (acuerdo con un intercambio, o
 
 ---
 
-## 6. Diseño: paleta y temas
+## 6. Diseño: Figma como referencia visual
 
-Paleta verificada con contraste WCAG: texto principal ≥ 7:1, texto secundario ≥ 4.5:1, etiquetas sobre color ≥ 4.5:1 y colores de estado ≥ 3:1 sobre el fondo.
+### Fuente de verdad del diseño
+- **Archivo de Figma:** `https://www.figma.com/design/LfEmxPoxBYwZInCXYzlWTq/` (copia del UI kit comunitario "Bank & Wallet App UI Kit" en la cuenta institucional). `fileKey`: `LfEmxPoxBYwZInCXYzlWTq`.
+  - Página **Style** (`391:32700`): tipografía, sombras y colores.
+  - Página **Components** (`14:0`): botones, tarjetas, tabs, barra inferior, filas, campos de texto, íconos e ilustraciones.
+  - Página **Design** (`2:20347`): más de 200 pantallas de referencia.
+- **Las capturas exportadas son la referencia principal:** `docs/design-ref/*.png` (las exporto yo desde Figma). Léelas como imágenes. Los valores exactos (colores, tipografía, sombras) ya están en esta sección.
+- **MCP de Figma: úsalo con mucha moderación.** La cuenta está en el plan Starter de Figma, que permite muy pocas consultas de lectura por mes. Úsalo solo si una captura no basta para un detalle concreto, **pídeme permiso antes de cada llamada** y nunca recorras páginas enteras. Si alcanzas el límite, sigue con las capturas.
+- Si falta la captura de alguna pantalla, pídemela por su nombre en vez de inventar el diseño.
 
-**Concepto:** base fría y neutra (confianza, dinero) con **un solo acento turquesa** para la acción principal. Los colores de estado (pagado, pendiente, atrasado) solo se usan para comunicar estado, nunca como decoración.
+### Qué manda en cada cosa (prioridad)
+1. **Figma manda** en lo visual: colores, tipografía, formas, radios, sombras, espaciados, iconografía, ilustraciones y la composición de cada pantalla.
+2. **Material Design 3 y las skills mandan** en comportamiento y accesibilidad: áreas táctiles de 48×48 px, botón "atrás" de Android, foco, `aria-label`, animaciones y sensación nativa (`mobile-native`, `mobile-android-design`, `emil-design-eng`).
+3. **Contraste WCAG manda sobre Figma:** si un color del kit no es legible como texto, se usa la versión corregida de la tabla de abajo. El aspecto se mantiene, pero se lee.
+4. **La arquitectura** (sección 4), el dominio (sección 2) y las pantallas del MVP (sección 5) **no cambian**: el kit es de banca y se **adapta** al pasanaku, no se copia.
+5. Si Figma y MD3 chocan de una forma que cambie mucho el aspecto, pregúntame.
 
-### Modo claro
+### Qué NO copiar del kit
+- Marcas y nombres: "iBank", "FinPay", "John Smith", "Amazon Platinum", logos de **VISA**, banderas y datos de ejemplo. La marca es **Pasanaku** y los datos salen de los mocks o de la API.
+- Teclados, barras de estado y diálogos dibujados de iOS (Touch ID, etc.): los pone el sistema.
+- Pantallas de banca que no existen en el MVP (tarjetas de crédito, facturas de luz/agua, sucursales, idiomas).
+- **POR CONFIRMAR (yo):** la licencia del kit en su página de Figma Community. Si pide atribución, añade el crédito en la pantalla "Acerca de" o en el README.
+
+### Cómo se adapta el kit a Pasanaku
+
+| Patrón del kit | Uso en Pasanaku |
+|---|---|
+| Encabezado índigo sólido + tarjeta de saldo | Inicio y detalle de grupo: fondo de la ronda, moneda, turno actual |
+| Tarjeta degradada (estilo tarjeta de crédito) | "Tarjeta" del grupo, sin números de tarjeta ni logos |
+| Cuadrícula de accesos con ícono en cuadro de color | Acciones rápidas: aportar, ver turnos, invitar, historial |
+| Historial por mes con estado | Aportes por periodo: pagado / pendiente / atrasado |
+| Transferencia con montos rápidos ($10 / $20 / $30) | Registrar aporte y elegir monto al crear grupo |
+| Beneficiarios con avatar | Miembros del grupo y línea de turnos |
+| Tabs tipo pastilla | Segmento Mis grupos / Públicos; modo acuerdo / sorteo |
+| Pantalla de cambio de divisas | Selector USDC / BOB |
+| Login, registro, OTP | Autenticación |
+| Barra inferior con pastilla activa (ícono + texto) | Tabs Inicio · Grupos · Perfil (encaja con la barra de navegación de MD3) |
+| Ilustraciones (alcancía, monedas, teléfono) | Estados vacíos, bienvenida y confirmaciones |
+
+### Tipografía
+- Fuente **Poppins**, instalada localmente con `npm i @fontsource/poppins` (pesos 400, 500 y 600) para que funcione sin internet en la app nativa. No usar la CDN de Google Fonts.
+- Escala del kit: Título 1 = 600/24 px · Título 2 = 600/20 px · Título 3 = 600/16 px · Cuerpo 1 = 500/16 px · Cuerpo 2 = 400/16 px · Cuerpo 3 = 500/14 px · Caption 1 = 600/12 px · Caption 2 = 500/14 px.
+- Define la escala una sola vez como clases o variables en `global.scss`. Montos con `font-variant-numeric: tabular-nums`.
+
+### Formas y sombras
+- Tarjetas: fondo blanco, radio de unos 15 px y sombra `0 4px 30px rgba(54, 41, 183, 0.07)`. Versión pequeña: `0 -5px 30px rgba(54, 41, 183, 0.07)`.
+- Botones principales llenos, índigo y redondeados, de ancho completo en formularios.
+- Campos de texto con borde fino gris claro y caption índigo debajo.
+- En **modo oscuro** no hay sombras: la elevación se marca con superficies un poco más claras (`card` y `step` de la tabla).
+
+### Paleta — modo claro
 
 | Token | Hex | Uso |
 |---|---|---|
-| Fondo app | `#f7f9fa` | `--ion-background-color` |
-| Tarjeta | `#ffffff` | `--ion-card-background`, `--ion-item-background` |
-| Escalón (inputs, segmentos, barras) | `#ecf0f2` | fondos secundarios |
-| Texto | `#1f3038` | `--ion-text-color` |
-| Texto secundario | `#5d6b72` | etiquetas, fechas, ayudas (`medium`) |
-| **primary** | `#0d7480` | botón principal, enlaces, foco, progreso |
-| secondary | `#3c4f57` | botones neutros |
-| success | `#1e7a46` | aporte pagado / confirmado |
-| warning | `#9a5b00` | aporte pendiente / por vencer |
-| danger | `#c0362c` | atrasado / error / acciones destructivas |
+| Fondo app | `#ffffff` | `--ion-background-color` |
+| Escalón (inputs inactivos, segmentos, chips) | `#f2f1f9` | fondos secundarios |
+| Tarjeta | `#ffffff` + sombra índigo | `--ion-card-background`, `--ion-item-background` |
+| Bordes / divisores | `#e0e0e0` (fuerte: `#cacaca`) | líneas, bordes de input |
+| Texto | `#343434` | `--ion-text-color` (12.4:1) |
+| Texto secundario | `#6b6b6b` | `medium` (5.3:1). El `#898989` del kit no se usa para texto |
+| **primary** | `#281c9d` | botón principal, encabezados, links, foco |
+| secondary | `#5655b9` | botones secundarios, acentos |
+| tertiary | `#a8a3d7` | decoración, gráficos, fondos suaves (no para texto pequeño) |
+| success | `#0f7a64` | texto/estado "pagado" |
+| warning | `#9a5b00` | texto/estado "pendiente" |
+| danger | `#c8264b` | texto/estado "atrasado", errores |
+| info (custom `--pk-info`) | `#0067c2` | información, enlaces secundarios |
 
-Texto sobre todos los colores anteriores: `#ffffff` (rgb `255,255,255`).
+**Badges de estado (modo claro):** fondo suave + texto oscuro del mismo color:
+pagado `#dcf7f1` / `#0f7a64` · pendiente `#fff0d6` / `#9a5b00` · atrasado `#ffe3e9` / `#c8264b` · info `#e0f0ff` / `#0067c2` · neutro `#f2f1f9` / `#281c9d`.
+Los colores vivos del kit (`#52d5ba`, `#ffaf2a`, `#ff4267`, `#0890fe`, `#fb6b18`) se permiten **solo en íconos grandes, gráficos y cuadros de ícono**, nunca como color de texto sobre blanco.
 
-### Modo oscuro
+### Paleta — modo oscuro (derivada del kit)
 
 | Token | Hex |
 |---|---|
-| Fondo app | `#0b1215` |
-| Tarjeta | `#141d21` |
-| Escalón | `#1d282d` |
-| Texto | `#e8eef0` |
-| Texto secundario | `#93a3a9` |
-| **primary** | `#4fc1cc` |
-| secondary | `#a9bac0` |
-| success | `#4cc38a` |
-| warning | `#f0b45a` |
-| danger | `#f07a70` |
+| Fondo app | `#0f0e1f` |
+| Tarjeta | `#1a1833` |
+| Escalón | `#252244` |
+| Bordes | `#3a3666` |
+| Texto | `#ecebf7` |
+| Texto secundario | `#a3a0c2` |
+| **primary** | `#a8a3d7` (el lavanda del kit) |
+| secondary | `#9b96f0` |
+| tertiary | `#5655b9` |
+| success | `#52d5ba` (color del kit, tal cual) |
+| warning | `#ffaf2a` (color del kit, tal cual) |
+| danger | `#ff6b85` |
+| info | `#4fb0ff` |
 
-Texto sobre los colores en modo oscuro: `#0b1215` (rgb `11,18,21`).
+**Badges (modo oscuro):** color lleno con texto `#0f0e1f`.
+La tarjeta/encabezado índigo del modo claro pasa a `#252244` con borde `#3a3666` en modo oscuro.
 
-### Shade y tint (calculados al estilo de Ionic: shade = 12 % negro, tint = 10 % blanco)
+### Variables completas para Ionic
 
-| Color | Claro: shade / tint | Oscuro: shade / tint |
-|---|---|---|
-| primary | `#0b6671` / `#25828d` | `#46aab4` / `#61c7d1` |
-| secondary | `#35464d` / `#506168` | `#95a4a9` / `#b2c1c6` |
-| success | `#1a6b3e` / `#348758` | `#43ac79` / `#5ec996` |
-| warning | `#885000` / `#a46b1a` | `#d39e4f` / `#f2bc6a` |
-| danger | `#a93027` / `#c64a41` | `#d36b63` / `#f2877e` |
+| Color | Modo | Hex | RGB | Contraste (rgb) | Shade | Tint |
+|---|---|---|---|---|---|---|
+| primary | claro | `#281c9d` | `40,28,157` | `#ffffff` (`255,255,255`) | `#23198a` | `#3e33a7` |
+| secondary | claro | `#5655b9` | `86,85,185` | `#ffffff` | `#4c4ba3` | `#6766c0` |
+| tertiary | claro | `#a8a3d7` | `168,163,215` | `#281c9d` (`40,28,157`) | `#948fbd` | `#b1acdb` |
+| success | claro | `#0f7a64` | `15,122,100` | `#ffffff` | `#0d6b58` | `#278774` |
+| warning | claro | `#9a5b00` | `154,91,0` | `#ffffff` | `#885000` | `#a46b1a` |
+| danger | claro | `#c8264b` | `200,38,75` | `#ffffff` | `#b02142` | `#ce3c5d` |
+| primary | oscuro | `#a8a3d7` | `168,163,215` | `#0f0e1f` (`15,14,31`) | `#948fbd` | `#b1acdb` |
+| secondary | oscuro | `#9b96f0` | `155,150,240` | `#0f0e1f` | `#8884d3` | `#a5a0f2` |
+| tertiary | oscuro | `#5655b9` | `86,85,185` | `#ffffff` | `#4c4ba3` | `#6766c0` |
+| success | oscuro | `#52d5ba` | `82,213,186` | `#0f0e1f` | `#48bba4` | `#63d9c1` |
+| warning | oscuro | `#ffaf2a` | `255,175,42` | `#0f0e1f` | `#e09a25` | `#ffb73f` |
+| danger | oscuro | `#ff6b85` | `255,107,133` | `#0f0e1f` | `#e05e75` | `#ff7a91` |
 
-RGB: primary `13,116,128` / `79,193,204` · secondary `60,79,87` / `169,186,192` · success `30,122,70` / `76,195,138` · warning `154,91,0` / `240,180,90` · danger `192,54,44` / `240,122,112`.
+Todos los pares de texto/fondo de esta sección cumplen WCAG AA (≥ 4.5:1 en texto normal).
 
 ### Reglas de implementación del tema
 - Define cada color con sus 6 variables de Ionic: `--ion-color-X`, `-rgb`, `-contrast`, `-contrast-rgb`, `-shade`, `-tint`.
 - Claro en `:root`; oscuro dentro de `@media (prefers-color-scheme: dark)`.
 - Revisa `node_modules/@ionic/angular/css/palettes/dark.system.css`: allí los fondos oscuros se definen con selectores `:root.ios` / `:root.md`. Las anulaciones de fondo y texto deben tener la misma especificidad y cargarse **después** de ese import en `global.scss`.
-- `theme-color` por esquema en `index.html` (skill **mobile-native**): claro `#f7f9fa`, oscuro `#0b1215`.
+- Tokens propios con prefijo `--pk-` (ej. `--pk-info`, `--pk-step`, `--pk-shadow-card`, `--pk-badge-success-bg`) en `theme/variables.scss`. **Ningún componente usa hex directos.**
+- `theme-color` por esquema en `index.html` (skill **mobile-native**): claro `#281c9d` si la pantalla empieza con encabezado índigo, si no `#ffffff`; oscuro `#0f0e1f`. Ajusta también `@capacitor/status-bar`.
 - **Un solo botón principal (primary) por pantalla.** El resto: `secondary`, `outline` o `clear`.
-- Montos: números tabulares (`font-variant-numeric: tabular-nums`) para que no "bailen".
-- No uses violeta ni lavanda en la interfaz.
 
 ---
 
@@ -367,7 +427,16 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
 - [x] **Paso 5 — Crear grupo y unirse** (formulario con validaciones; unirse por código o desde Públicos).
 - [x] **Paso 6 — Turnos** (modo acuerdo con intercambio propuesto/aceptado/rechazado; modo sorteo con resultado visible).
 - [x] **Paso 7 — Aportes, desembolso e historial** (registrar aporte, estado de la transacción, desembolso simulado y línea de tiempo).
-- [ ] **Paso 8 — Inicio y Perfil** (resumen, próximo aporte, billetera con dirección y saldo de Testnet).
+- [x] **Paso 8 — Inicio y Perfil** (resumen, próximo aporte, billetera con dirección y saldo de Testnet).
+- [ ] **Paso 8.5 — Rediseño visual a partir de Figma (hacer ANTES del paso 9)**
+  Objetivo: que toda la app use el diseño de Figma (sección 6) **sin cambiar la lógica, los stores, los mocks ni las rutas**. Es un cambio de piel, no de funcionamiento.
+  Hazlo en estas sub-etapas. **Al terminar cada una, dame el resumen corto y espera mi OK**:
+  - [ ] **8.5.a — Lectura y plan.** Revisa las capturas de `docs/design-ref/` y esta sección 6 (sin usar el MCP de Figma salvo que te lo autorice). Entrégame un plan breve: qué captura usarás como referencia para cada pantalla nuestra, qué componentes de `shared/ui` cambiarán y qué capturas faltan. No edites código todavía.
+  - [ ] **8.5.b — Tema base.** Reemplaza la paleta turquesa por la de la sección 6 (claro y oscuro), instala y aplica Poppins, define la escala tipográfica, sombras, radios y tokens `--pk-*`. Actualiza `theme-color` y la status bar.
+  - [ ] **8.5.c — Componentes compartidos.** Rediseña `shared/ui` (badges de estado, tarjeta de monto, tarjeta de grupo, línea de turnos, estados vacíos, filas de lista) y el tab bar con pastilla activa. Revísalos con **break-ui**.
+  - [ ] **8.5.d — Pantallas, una por una:** Inicio → Grupos (lista) → Detalle de grupo → Crear grupo → Unirse → Turnos → Registrar aporte → Historial → Perfil. Para cada una, toma la referencia en Figma y adáptala al contenido real de Pasanaku.
+  - [ ] **8.5.e — Revisión final** con `mobile-android-design` (MD3) y `mobile-native`: áreas táctiles de 48 px, botón "atrás", `aria-label`, contraste en **claro y oscuro**, y que no quede ningún resto del kit (nombres, VISA, datos falsos). Verifica `npm run build` y `npm run lint`, y prueba en el celular.
+  - Si en algún momento hay que elegir entre "igual a Figma" y "legible o accesible", gana legible y accesible, y me lo cuentas en el resumen.
 - [ ] **Paso 9 — GraphQL real** (sección 7): Apollo + Codegen, reemplazar mocks por la API cuando el backend esté disponible. *Puede adelantarse si el backend está listo antes.*
 - [ ] **Paso 10 — Autenticación** (login, registro, guards) según lo que defina el backend.
 - [ ] **Paso 11 — Ensayo de la demo** (recorrer el "camino de la demo" de la sección 5 en navegador y en Android; corregir lo que falle).
@@ -406,7 +475,7 @@ Esta skill está escrita para **Android nativo (Kotlin + Jetpack Compose)**. Est
 - **No** uses el *color dinámico* de Material You (colores del fondo de pantalla del usuario): la app mantiene su paleta propia de la sección 6.
 - Si la guía de esta skill choca con `mobile-native` o con la paleta de la sección 6, **mandan las reglas de este archivo**.
 
-No aplican a este proyecto: `animate-expo` (React Native), `write-swift` (Swift), `ask-sonner` (React). `design-taste-frontend` es para sitios web: usa solo sus criterios de color y contraste, no su flujo de landing pages.
+No aplican a este proyecto: `animate-expo` (React Native), `write-swift` (Swift), `ask-sonner` (React). `design-taste-frontend` es para sitios web: usa solo sus criterios de contraste, no su flujo de landing pages ni su regla contra el violeta/lavanda (el diseño de Figma usa índigo y lavanda por decisión del equipo).
 
 ---
 

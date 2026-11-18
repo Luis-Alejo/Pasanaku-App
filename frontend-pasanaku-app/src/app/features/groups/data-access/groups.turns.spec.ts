@@ -1,9 +1,9 @@
+import { MockGroupsApi } from '@core/data/groups.api';
+import { MOCK_GROUPS, MOCK_TURN_SWAPS } from '@core/data/groups.mock';
 import type { Group } from '@core/models/domain.models';
 import { TurnError } from '@core/models/domain.models';
 
 import { describeSwap, incomingProposals, isSwappable, swapCandidates, turnSlots } from './group-view';
-import { MockGroupsApi } from './groups.api';
-import { MOCK_GROUPS, MOCK_TURN_SWAPS } from './groups.mock';
 
 const ANA = 'user-ana';
 const byId = (id: string) => MOCK_GROUPS.find((g) => g.id === id) as Group;

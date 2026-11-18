@@ -1,3 +1,4 @@
+import { isSwappable } from '@core/data/group-rules';
 import type {
   Contribution,
   ContributionStatus,
@@ -168,13 +169,7 @@ export function turnSteps(group: Group, userId: string): TimelineStep[] {
 // Turnos
 // ---------------------------------------------------------------------------
 
-/** Un turno se puede intercambiar si está asignado y su ronda todavía no empezó. */
-export function isSwappable(group: Group, turn: number | null): boolean {
-  if (turn === null) return false;
-  if (group.status === 'ASSIGNING_TURNS') return true;
-  if (group.status !== 'ACTIVE') return false;
-  return group.rounds.find((r) => r.number === turn)?.status === 'UPCOMING';
-}
+export { isSwappable };
 
 export interface TurnSlot {
   turn: number;

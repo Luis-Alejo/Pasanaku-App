@@ -1,9 +1,9 @@
+import { MockGroupsApi } from '@core/data/groups.api';
+import { MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from '@core/data/groups.mock';
 import type { Group } from '@core/models/domain.models';
 import { ContributionError } from '@core/models/domain.models';
 
 import { historyEvents } from './group-view';
-import { MockGroupsApi } from './groups.api';
-import { MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from './groups.mock';
 
 const ANA = 'user-ana';
 

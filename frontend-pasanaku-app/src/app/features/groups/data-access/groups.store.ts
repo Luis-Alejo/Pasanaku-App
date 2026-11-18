@@ -1,5 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
+import { GroupsApi, MockGroupsApi } from '@core/data/groups.api';
 import type {
   Asset,
   ContributeResult,
@@ -11,7 +12,6 @@ import type {
 } from '@core/models/domain.models';
 
 import { sortMyGroups } from './group-view';
-import { GroupsApi, MockGroupsApi } from './groups.api';
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
 

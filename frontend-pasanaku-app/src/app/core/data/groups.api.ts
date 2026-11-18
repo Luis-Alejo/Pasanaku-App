@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { MOCK_ASSETS, MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from '@core/data/groups.mock';
 import type {
   Asset,
   ContributeResult,
@@ -15,8 +16,7 @@ import { environment } from '@env/environment';
 import { addDays, addMonths, todayIso } from '@shared/utils/date';
 import { multiplyAmount } from '@shared/utils/format';
 
-import { isSwappable } from './group-view';
-import { MOCK_ASSETS, MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from './groups.mock';
+import { isSwappable } from './group-rules';
 
 /**
  * De dónde salen los datos de grupos. El store solo conoce esta interfaz:
