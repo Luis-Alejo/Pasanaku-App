@@ -6,21 +6,11 @@ import { explorerAccountUrl } from '@core/stellar/explorer';
 import type { WalletBalance } from '@core/stellar/stellar.service';
 import { StellarService } from '@core/stellar/stellar.service';
 import { environment } from '@env/environment';
-import {
-  IonButton,
-  IonContent,
-  IonHeader,
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
-  IonSpinner,
-  IonTitle,
-  IonToggle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonButton, IonContent, IonIcon, IonSpinner, IonToggle } from '@ionic/angular';
 import { formatMoneyParts } from '@shared/pipes/money.pipe';
+import { AvatarComponent } from '@shared/ui/avatar/avatar.component';
+import { BrandHeaderComponent } from '@shared/ui/brand-header/brand-header.component';
+import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { checkmark, copyOutline, openOutline } from 'ionicons/icons';
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
@@ -31,17 +21,13 @@ type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
   styleUrls: ['./profile.page.scss'],
   imports: [
     IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonNote,
     IonButton,
     IonIcon,
     IonSpinner,
     IonToggle,
+    AvatarComponent,
+    BrandHeaderComponent,
+    InfoRowComponent,
   ],
 })
 export class ProfilePage {
@@ -57,15 +43,6 @@ export class ProfilePage {
   protected readonly isMock = environment.useMocks;
   protected readonly icons = { copy: copyOutline, copied: checkmark, external: openOutline };
 
-  /** Iniciales para el avatar: primera letra del primer y del último nombre. */
-  protected readonly initials = computed(() => {
-    const words = (this.user()?.displayName ?? '').trim().split(/\s+/).filter(Boolean);
-    const letters = [words[0], words.length > 1 ? words[words.length - 1] : undefined]
-      .filter((w): w is string => !!w)
-      .map((w) => Array.from(w)[0]?.toLocaleUpperCase('es'));
-    return letters.join('') || '?';
-  });
-
   /** El código ya va a la izquierda: a la derecha solo el número formateado. */
   protected readonly balanceRows = computed(() =>
     this.balances().map((b) => ({ ...b, number: formatMoneyParts(b.amount, b)?.number ?? '—' })),
@@ -78,8 +55,14 @@ export class ProfilePage {
 
   private copiedTimer: ReturnType<typeof setTimeout> | undefined;
 
+  /** Encabezado índigo: la barra de estado del sistema combina con él. */
   ionViewWillEnter(): void {
+    this.theme.setHeaderTone('brand');
     void this.loadBalances();
+  }
+
+  ionViewWillLeave(): void {
+    this.theme.setHeaderTone('surface');
   }
 
   protected async loadBalances(): Promise<void> {

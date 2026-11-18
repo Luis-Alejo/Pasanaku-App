@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="Grupo" />
+      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="" aria-label="Volver al grupo" />
     </ion-buttons>
     <ion-title>Historial</ion-title>
   </ion-toolbar>
@@ -45,17 +45,18 @@
         <div class="body">
           <div class="row">
             <p class="title">{{ e.title }}</p>
+            <time class="date" [attr.datetime]="e.at">{{ date(e.at) }}</time>
+          </div>
+          @if (e.detail || e.amount) {
+          <div class="row">
+            <p class="meta">{{ e.detail }}</p>
             @if (e.amount) {
             <p class="amount">{{ e.amount | money: g.asset }}</p>
             }
           </div>
-          <p class="meta">
-            @if (e.detail) { {{ e.detail }} · }
-            <time [attr.datetime]="e.at">{{ date(e.at) }}</time>
-          </p>
-          @if (e.txHash) {
+          } @if (e.txHash) {
           <a class="tx-link" [href]="txUrl(e.txHash)" target="_blank" rel="noopener noreferrer">
-            Ver transacción {{ shortHash(e.txHash) }}
+            Ver transacción {{ shortHash(e.txHash, 4) }}
             <ion-icon [icon]="icons.external" aria-hidden="true" />
             <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
           </a>
@@ -66,7 +67,7 @@
     </ol>
     } @else {
     <app-empty-state
-      [icon]="icons.empty"
+      illustration="alcancia"
       [title]="filter() === 'mine' ? 'Todavía no tienes movimientos' : 'Todavía no hay movimientos'"
       message="Los aportes y cobros aparecerán aquí."
     />

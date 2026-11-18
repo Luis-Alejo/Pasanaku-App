@@ -1,34 +1,26 @@
-.page {
-  padding: 0.5rem 0 calc(1.5rem + var(--ion-safe-area-bottom, 0px));
-}
-
-.person {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0 1rem;
-}
-
-.avatar {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 50%;
-  background: rgba(var(--ion-color-primary-rgb), 0.14);
-  color: var(--ion-color-primary);
+.screen-title {
+  margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
 }
 
-.person-text {
-  min-width: 0;
+/* Avatar grande y nombre centrados, montados sobre el borde del encabezado. */
+.person {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: -1.5rem;
+  text-align: center;
+}
+
+.person-avatar {
+  border: 4px solid var(--ion-background-color);
 }
 
 .name {
-  margin: 0;
-  font-size: 1.375rem;
+  margin: 0.75rem 0 0;
+  color: var(--ion-color-primary);
+  font-size: 1.125rem;
   font-weight: 600;
   overflow-wrap: break-word;
 }
@@ -36,27 +28,24 @@
 .email {
   margin: 0.125rem 0 0;
   color: var(--ion-color-medium);
+  font-size: 0.875rem;
   overflow-wrap: anywhere;
+}
+
+.page {
+  padding: 1.25rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
 }
 
 .section {
   margin-top: 1.5rem;
 }
 
-.section-title {
-  margin: 0 1rem 0.5rem;
-  color: var(--ion-color-medium);
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+.section:first-child {
+  margin-top: 0.5rem;
 }
 
 .wallet {
-  margin: 0 1rem;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: var(--ion-card-background);
+  padding: 1rem 1.25rem;
 }
 
 .label {
@@ -98,14 +87,22 @@
 }
 
 .hint {
-  margin: 0.5rem 1rem 0;
+  margin: 0.5rem 0 0;
   color: var(--ion-color-medium);
   font-size: 0.8125rem;
   text-wrap: pretty;
 }
 
 .wallet .hint {
-  margin: 0.75rem 0 0;
+  margin-top: 0.75rem;
+}
+
+/* Fila "Modo oscuro" del kit (Row con interruptor): 48px de alto como mínimo. */
+.theme-toggle {
+  width: 100%;
+  /* Alto fijo: el contenido interno del interruptor se centra en él. */
+  height: 3.5rem;
+  font-weight: 500;
 }
 
 .loading {
@@ -114,20 +111,6 @@
   padding: 1.5rem 0;
 }
 
-.balances-error {
-  margin: 0 1rem;
-}
-
 .balances-error p {
   margin: 0 0 0.5rem;
-}
-
-ion-list ion-note {
-  color: var(--ion-text-color);
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.amount {
-  font-variant-numeric: tabular-nums;
 }

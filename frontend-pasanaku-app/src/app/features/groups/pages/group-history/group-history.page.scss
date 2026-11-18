@@ -1,5 +1,5 @@
 .page {
-  padding: 0.5rem 1rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+  padding: 0.5rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
 }
 
 .loading {
@@ -14,56 +14,72 @@
 
 .name {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  line-height: 1.25;
+  line-height: 1.3;
   text-wrap: balance;
   overflow-wrap: break-word;
 }
 
 .lead {
-  margin: 0.25rem 0 1rem;
+  margin: 0.25rem 0 1.25rem;
   color: var(--ion-color-medium);
   text-wrap: pretty;
 }
 
+/* Payment history del kit: una tarjeta por movimiento. */
 .timeline {
-  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin: 1.25rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .event {
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr);
-  column-gap: 0.75rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--ion-background-color-step-100);
+  grid-template-columns: 2.5rem minmax(0, 1fr);
+  column-gap: 0.875rem;
+  padding: 1rem 1.25rem 0.5rem;
+  border-radius: var(--pk-radius-card);
+  background: var(--ion-card-background);
+  box-shadow: var(--pk-shadow-card);
 }
 
-.event:last-child {
-  border-bottom: none;
+:host-context(.ion-palette-dark) .event {
+  border: 1px solid var(--pk-border);
 }
 
+/* Cuadro de ícono del kit (Row / Transaction), color según el tipo. */
 .icon {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  background: var(--pk-step);
-  color: var(--ion-color-medium);
-  font-size: 1.125rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--pk-badge-neutral-bg);
+  color: var(--pk-badge-neutral-fg);
+  font-size: 1.25rem;
 }
 
 .event--contribution .icon {
-  background: rgba(var(--ion-color-primary-rgb), 0.14);
-  color: var(--ion-color-primary);
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
 }
 
 .event--payout .icon {
-  background: rgba(var(--ion-color-success-rgb), 0.14);
-  color: var(--ion-color-success);
+  background: var(--pk-accent-teal);
+  color: var(--pk-on-accent);
+}
+
+.event--swap .icon {
+  background: var(--pk-accent-pink);
+  color: var(--pk-on-accent);
+}
+
+.body {
+  min-width: 0;
 }
 
 .row {
@@ -75,22 +91,33 @@
 }
 
 .title {
+  min-width: 0;
   margin: 0;
   font-weight: 600;
   overflow-wrap: break-word;
 }
 
-.amount {
-  margin: 0;
+.date {
+  margin-inline-start: auto;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
   font-weight: 600;
-  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .meta {
-  margin: 0.125rem 0 0;
+  min-width: 0;
+  margin: 0.25rem 0 0;
   color: var(--ion-color-medium);
   font-size: 0.875rem;
+}
+
+.amount {
+  margin: 0.25rem 0 0 auto;
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 /* Enlace al explorador: área táctil de 48px. */

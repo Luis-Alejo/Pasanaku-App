@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="Grupo" />
+      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="" aria-label="Volver al grupo" />
     </ion-buttons>
     <ion-title>Registrar aporte</ion-title>
   </ion-toolbar>
@@ -16,8 +16,8 @@
   </div>
   } @else if (phase() === 'done' && result(); as r) {
   <div class="status-panel" role="status">
-    <ion-icon class="status-icon ok" [icon]="icons.ok" aria-hidden="true" />
-    <p class="status-title">Aporte confirmado</p>
+    <img class="art" src="assets/illustrations/billetera.svg" alt="" decoding="async" />
+    <p class="status-title">¡Aporte confirmado!</p>
     <p class="status-text">
       <strong class="amount">{{ r.contribution.amount | money: r.group.asset }}</strong>
       · ronda {{ r.contribution.roundNumber }}
@@ -96,6 +96,7 @@
   </app-empty-state>
   } @else {
   <div class="page">
+    <img class="art art--small" src="assets/illustrations/billetera.svg" alt="" decoding="async" />
     <app-amount-card
       [label]="'Tu aporte de la ronda ' + round()?.number"
       [amount]="g.contributionAmount"
@@ -103,26 +104,18 @@
       [caption]="g.name"
     />
 
-    <ion-list [inset]="true" aria-label="Detalle del aporte">
-      <ion-item>
-        <ion-label>Cobra en esta ronda</ion-label>
-        <ion-note slot="end">{{ recipientIsMe() ? 'Tú' : recipientName() }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Fecha límite</ion-label>
-        <ion-note slot="end" [class.late]="isLate()">
-          {{ formatDate(round()?.dueDate ?? '', true) }}{{ isLate() ? ' · atrasado' : '' }}
-        </ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Red</ion-label>
-        <ion-note slot="end">Stellar Testnet</ion-note>
-      </ion-item>
-      <ion-item lines="none">
-        <ion-label>Desde tu billetera</ion-label>
-        <ion-note slot="end" class="mono">{{ shortHash(me()?.walletAddress ?? '', 4) }}</ion-note>
-      </ion-item>
-    </ion-list>
+    <div class="pk-card detail" role="group" aria-label="Detalle del aporte">
+      <app-info-row label="Cobra en esta ronda" [value]="recipientIsMe() ? 'Tú' : recipientName()" tone="brand" />
+      <app-info-row label="Fecha límite">
+        <span [class.late]="isLate()"
+          >{{ formatDate(round()?.dueDate ?? '', true) }}{{ isLate() ? ' · atrasado' : '' }}</span
+        >
+      </app-info-row>
+      <app-info-row label="Red" value="Stellar Testnet" />
+      <app-info-row label="Desde tu billetera">
+        <span class="mono">{{ shortHash(me()?.walletAddress ?? '', 4) }}</span>
+      </app-info-row>
+    </div>
 
     @if (isLate()) {
     <p class="notice late-notice">

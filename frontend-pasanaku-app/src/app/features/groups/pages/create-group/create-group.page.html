@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/groups" text="Grupos" />
+      <ion-back-button defaultHref="/tabs/groups" text="" aria-label="Volver a Grupos" />
     </ion-buttons>
     <ion-title>Crear grupo</ion-title>
   </ion-toolbar>
@@ -38,6 +38,13 @@
       <span slot="end" class="suffix" aria-hidden="true">{{ asset.code }}</span>
       }
     </ion-input>
+
+    <app-amount-options
+      legend="Montos frecuentes"
+      [options]="quickAmounts"
+      [value]="quickAmount()"
+      (valueChange)="pickAmount($event)"
+    />
 
     <div class="group" role="group" aria-labelledby="asset-label">
       <p id="asset-label" class="group-label">Moneda</p>

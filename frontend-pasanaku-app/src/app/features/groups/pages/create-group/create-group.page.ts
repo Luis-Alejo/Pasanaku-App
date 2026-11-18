@@ -21,6 +21,8 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
+import type { AmountOption } from '@shared/ui/amount-options/amount-options.component';
+import { AmountOptionsComponent } from '@shared/ui/amount-options/amount-options.component';
 import { multiplyAmount, plural } from '@shared/utils/format';
 
 import {
@@ -53,6 +55,7 @@ import { GroupsStore } from '../../data-access/groups.store';
     IonRadio,
     IonButton,
     MoneyPipe,
+    AmountOptionsComponent,
   ],
 })
 export class CreateGroupPage {
@@ -116,6 +119,23 @@ export class CreateGroupPage {
         : plural(members, 'mes', 'meses');
     return { payout: multiplyAmount(amount, members, asset.decimals), asset, members, duration: `${members} ${unit}` };
   });
+
+  /** Montos rápidos del kit (Amount / Default · Active). Tocar uno rellena el campo. */
+  protected readonly quickAmounts: AmountOption[] = ['50', '100', '200', '500'].map((v) => ({ value: v, label: v }));
+
+  /** El monto rápido que coincide con lo escrito (null si la persona escribió otro). */
+  protected readonly quickAmount = computed(() => {
+    const typed = normalizeAmount(this.value().contributionAmount);
+    return this.quickAmounts.find((q) => normalizeAmount(q.value) === typed)?.value ?? null;
+  });
+
+  protected pickAmount(value: string | null): void {
+    if (!value) return;
+    const control = this.form.controls.contributionAmount;
+    control.setValue(value);
+    control.markAsDirty();
+    control.markAsTouched();
+  }
 
   constructor() {
     void this.store.loadAssets();

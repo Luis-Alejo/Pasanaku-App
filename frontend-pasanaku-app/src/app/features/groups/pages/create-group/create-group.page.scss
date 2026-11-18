@@ -1,8 +1,8 @@
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  padding: 1rem 1rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+  gap: 1.5rem;
+  padding: 1rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
 }
 
 .suffix {
@@ -10,10 +10,11 @@
   font-weight: 600;
 }
 
+/* Etiqueta de grupo de opciones (Caption 1 del kit). */
 .group-label {
   margin: 0 0 0.5rem;
-  color: var(--ion-text-color);
-  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -24,6 +25,10 @@
 /* Las opciones con descripción pueden ocupar varias líneas. */
 ion-radio::part(label) {
   white-space: normal;
+}
+
+ion-item {
+  --min-height: 3.5rem;
 }
 
 .option-title {
@@ -38,11 +43,14 @@ ion-radio::part(label) {
   font-size: 0.875rem;
 }
 
+/* Resumen en vivo: contenedor suave de marca (como primaryContainer de MD3). */
 .summary {
   margin: 0;
-  padding: 0.875rem 1rem;
-  border-radius: 0.75rem;
-  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  padding: 1rem 1.25rem;
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-badge-neutral-bg);
+  /* Mismo par que el badge neutro: legible en claro y en oscuro. */
+  color: var(--pk-badge-neutral-fg);
   text-wrap: pretty;
 }
 

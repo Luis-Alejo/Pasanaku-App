@@ -161,6 +161,7 @@ export function turnSteps(group: Group, userId: string): TimelineStep[] {
         subtitle: `Ronda ${round.number} · ${when}`,
         state: round.status === 'PAID_OUT' ? 'done' : round.status === 'OPEN' ? 'current' : 'upcoming',
         highlight: isMe,
+        avatarName: member?.displayName,
       };
     });
 }

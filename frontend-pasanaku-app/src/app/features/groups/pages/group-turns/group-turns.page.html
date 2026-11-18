@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="Grupo" />
+      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="" aria-label="Volver al grupo" />
     </ion-buttons>
     <ion-title>Turnos</ion-title>
   </ion-toolbar>
@@ -43,6 +43,7 @@
     />
     } @case ('ASSIGNING_TURNS') { @if (g.turnMode === 'DRAW') {
     <section class="section draw" aria-labelledby="draw-title">
+      <img class="art" src="assets/illustrations/ahorro-colectivo.svg" alt="" decoding="async" />
       <h2 id="draw-title" class="section-title">Sorteo</h2>
       <p class="text">
         El grupo está completo. El sorteo asigna al azar quién cobra en cada ronda; el resultado queda visible para
@@ -67,7 +68,7 @@
           <ion-label>
             <span class="visually-hidden">Turno {{ slot.turn }}:</span>
             @if (slot.member) { {{ slot.member.displayName }} @if (slot.isMine) {
-            <span class="me">Tú</span>
+            <span class="pk-me">Tú</span>
             } } @else {
             <span class="free">Libre</span>
             }
@@ -95,7 +96,7 @@
       <h2 id="order-title" class="section-title">
         {{ g.turnMode === 'DRAW' ? 'Resultado del sorteo' : 'Orden de cobro' }}
       </h2>
-      <app-turn-timeline [steps]="steps()" label="Orden de cobro" />
+      <div class="pk-card timeline-card"><app-turn-timeline [steps]="steps()" label="Orden de cobro" /></div>
     </section>
     } } @if (g.turnMode === 'AGREEMENT' && me() && (g.status === 'ASSIGNING_TURNS' || g.status === 'ACTIVE')) { @if
     (incoming().length) {

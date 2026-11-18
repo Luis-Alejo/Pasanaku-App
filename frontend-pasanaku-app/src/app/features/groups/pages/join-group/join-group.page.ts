@@ -11,16 +11,13 @@ import {
   IonCheckbox,
   IonContent,
   IonHeader,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
   IonSpinner,
   IonTitle,
   IonToolbar,
 } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
+import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { multiplyAmount } from '@shared/utils/format';
 import { checkmarkCircleOutline, cloudOfflineOutline, lockClosedOutline, searchOutline } from 'ionicons/icons';
 
@@ -51,15 +48,12 @@ const JOIN_ERRORS: Record<JoinGroupErrorCode, string> = {
     IonButtons,
     IonBackButton,
     IonContent,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonNote,
     IonCheckbox,
     IonButton,
     IonSpinner,
     MoneyPipe,
     EmptyStateComponent,
+    InfoRowComponent,
   ],
 })
 export class JoinGroupPage {

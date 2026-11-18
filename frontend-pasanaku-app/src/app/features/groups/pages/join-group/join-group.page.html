@@ -1,7 +1,7 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/groups" text="Grupos" />
+      <ion-back-button defaultHref="/tabs/groups" text="" aria-label="Volver a Grupos" />
     </ion-buttons>
     <ion-title>Unirse al grupo</ion-title>
   </ion-toolbar>
@@ -35,6 +35,7 @@
   </app-empty-state>
   } @else if (group(); as g) {
   <div class="page">
+    <img class="art" src="assets/illustrations/ahorro-colectivo.svg" alt="" decoding="async" />
     <header class="summary">
       <h1 class="name">{{ g.name }}</h1>
       <p class="lead">
@@ -44,28 +45,13 @@
       </p>
     </header>
 
-    <ion-list [inset]="true" aria-label="Reglas del grupo">
-      <ion-item>
-        <ion-label>Aporte</ion-label>
-        <ion-note slot="end" class="amount">{{ g.contributionAmount | money: g.asset }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Periodicidad</ion-label>
-        <ion-note slot="end">{{ labels.periodicity[g.periodicity] }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Orden de cobro</ion-label>
-        <ion-note slot="end">{{ labels.turnMode[g.turnMode] }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Miembros</ion-label>
-        <ion-note slot="end">{{ g.members.length }} de {{ g.memberCount }}</ion-note>
-      </ion-item>
-      <ion-item lines="none">
-        <ion-label>Tipo</ion-label>
-        <ion-note slot="end">{{ labels.visibility[g.visibility] }}</ion-note>
-      </ion-item>
-    </ion-list>
+    <div class="pk-card rules-card" role="group" aria-label="Reglas del grupo">
+      <app-info-row label="Aporte" [value]="g.contributionAmount | money: g.asset" tone="brand" />
+      <app-info-row label="Periodicidad" [value]="labels.periodicity[g.periodicity]" />
+      <app-info-row label="Orden de cobro" [value]="labels.turnMode[g.turnMode]" />
+      <app-info-row label="Miembros" [value]="g.members.length + ' de ' + g.memberCount" />
+      <app-info-row label="Tipo" [value]="labels.visibility[g.visibility]" />
+    </div>
 
     @if (blocked(); as reason) {
     <app-empty-state

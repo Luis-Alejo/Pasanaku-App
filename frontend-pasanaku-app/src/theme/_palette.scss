@@ -22,16 +22,50 @@ $light: (
   brand-surface: #281c9d,
   brand-surface-border: #281c9d,
   on-brand: #ffffff,
-  shadow-card: (0 4px 30px rgba(54, 41, 183, 0.07)),
-  shadow-card-sm: (0 -5px 30px rgba(54, 41, 183, 0.07)),
+  shadow-card: (
+    0 4px 30px rgba(54, 41, 183, 0.07),
+  ),
+  shadow-card-sm: (
+    0 -5px 30px rgba(54, 41, 183, 0.07),
+  ),
   // Color, shade, tint y contraste, tal cual la tabla de CLAUDE.md.
   colors: (
-    primary: (#281c9d, #23198a, #3e33a7, #ffffff),
-    secondary: (#5655b9, #4c4ba3, #6766c0, #ffffff),
-    tertiary: (#a8a3d7, #948fbd, #b1acdb, #281c9d),
-    success: (#0f7a64, #0d6b58, #278774, #ffffff),
-    warning: (#9a5b00, #885000, #a46b1a, #ffffff),
-    danger: (#c8264b, #b02142, #ce3c5d, #ffffff),
+    primary: (
+      #281c9d,
+      #23198a,
+      #3e33a7,
+      #ffffff,
+    ),
+    secondary: (
+      #5655b9,
+      #4c4ba3,
+      #6766c0,
+      #ffffff,
+    ),
+    tertiary: (
+      #a8a3d7,
+      #948fbd,
+      #b1acdb,
+      #281c9d,
+    ),
+    success: (
+      #0f7a64,
+      #0d6b58,
+      #278774,
+      #ffffff,
+    ),
+    warning: (
+      #9a5b00,
+      #885000,
+      #a46b1a,
+      #ffffff,
+    ),
+    danger: (
+      #c8264b,
+      #b02142,
+      #ce3c5d,
+      #ffffff,
+    ),
   ),
   // Colores vivos del kit: SOLO íconos grandes, gráficos y cuadros de ícono,
   // nunca como color de texto (CLAUDE.md, sección 6).
@@ -45,11 +79,26 @@ $light: (
   ),
   // Badges de estado: fondo suave + texto oscuro del mismo color.
   badges: (
-    success: (#dcf7f1, #0f7a64),
-    warning: (#fff0d6, #9a5b00),
-    danger: (#ffe3e9, #c8264b),
-    info: (#e0f0ff, #0067c2),
-    neutral: (#f2f1f9, #281c9d),
+    success: (
+      #dcf7f1,
+      #0f7a64,
+    ),
+    warning: (
+      #fff0d6,
+      #9a5b00,
+    ),
+    danger: (
+      #ffe3e9,
+      #c8264b,
+    ),
+    info: (
+      #e0f0ff,
+      #0067c2,
+    ),
+    neutral: (
+      #f2f1f9,
+      #281c9d,
+    ),
   ),
 );
 
@@ -70,12 +119,42 @@ $dark: (
   shadow-card: none,
   shadow-card-sm: none,
   colors: (
-    primary: (#a8a3d7, #948fbd, #b1acdb, #0f0e1f),
-    secondary: (#9b96f0, #8884d3, #a5a0f2, #0f0e1f),
-    tertiary: (#5655b9, #4c4ba3, #6766c0, #ffffff),
-    success: (#52d5ba, #48bba4, #63d9c1, #0f0e1f),
-    warning: (#ffaf2a, #e09a25, #ffb73f, #0f0e1f),
-    danger: (#ff6b85, #e05e75, #ff7a91, #0f0e1f),
+    primary: (
+      #a8a3d7,
+      #948fbd,
+      #b1acdb,
+      #0f0e1f,
+    ),
+    secondary: (
+      #9b96f0,
+      #8884d3,
+      #a5a0f2,
+      #0f0e1f,
+    ),
+    tertiary: (
+      #5655b9,
+      #4c4ba3,
+      #6766c0,
+      #ffffff,
+    ),
+    success: (
+      #52d5ba,
+      #48bba4,
+      #63d9c1,
+      #0f0e1f,
+    ),
+    warning: (
+      #ffaf2a,
+      #e09a25,
+      #ffb73f,
+      #0f0e1f,
+    ),
+    danger: (
+      #ff6b85,
+      #e05e75,
+      #ff7a91,
+      #0f0e1f,
+    ),
   ),
   accents: (
     'indigo': #a8a3d7,
@@ -87,11 +166,26 @@ $dark: (
   ),
   // Badges (oscuro): color lleno con texto #0f0e1f.
   badges: (
-    success: (#52d5ba, #0f0e1f),
-    warning: (#ffaf2a, #0f0e1f),
-    danger: (#ff6b85, #0f0e1f),
-    info: (#4fb0ff, #0f0e1f),
-    neutral: (#a8a3d7, #0f0e1f),
+    success: (
+      #52d5ba,
+      #0f0e1f,
+    ),
+    warning: (
+      #ffaf2a,
+      #0f0e1f,
+    ),
+    danger: (
+      #ff6b85,
+      #0f0e1f,
+    ),
+    info: (
+      #4fb0ff,
+      #0f0e1f,
+    ),
+    neutral: (
+      #a8a3d7,
+      #0f0e1f,
+    ),
   ),
 );
 
@@ -158,6 +252,8 @@ $dark: (
   --pk-on-brand: #{map.get($p, on-brand)};
   --pk-shadow-card: #{map.get($p, shadow-card)};
   --pk-shadow-card-sm: #{map.get($p, shadow-card-sm)};
+  // Ícono sobre los colores vivos del kit (blanco en ambos modos).
+  --pk-on-accent: #ffffff;
   @each $name, $c in map.get($p, accents) {
     --pk-accent-#{$name}: #{$c};
   }

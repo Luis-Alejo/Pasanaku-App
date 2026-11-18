@@ -10,10 +10,6 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
   IonSpinner,
   IonTitle,
   IonToolbar,
@@ -21,6 +17,7 @@ import {
 import { MoneyPipe } from '@shared/pipes/money.pipe';
 import { AmountCardComponent } from '@shared/ui/amount-card/amount-card.component';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
+import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { todayIso } from '@shared/utils/date';
 import { formatDate } from '@shared/utils/format';
 import {
@@ -57,16 +54,13 @@ const CONTRIBUTION_ERRORS: Record<ContributionErrorCode, string> = {
     IonButtons,
     IonBackButton,
     IonContent,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonNote,
     IonButton,
     IonIcon,
     IonSpinner,
     MoneyPipe,
     AmountCardComponent,
     EmptyStateComponent,
+    InfoRowComponent,
   ],
 })
 export class GroupContributePage {

@@ -58,7 +58,9 @@ ion-content {
   overflow-x: auto;
   border-radius: 999px;
   background: #e4e4e7;
-  font: 13px/1 system-ui, sans-serif;
+  font:
+    13px/1 system-ui,
+    sans-serif;
   transform: translateX(-50%);
 }
 

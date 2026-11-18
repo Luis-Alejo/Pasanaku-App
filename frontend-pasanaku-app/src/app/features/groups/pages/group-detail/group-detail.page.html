@@ -1,13 +1,26 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/groups" text="Grupos" />
-    </ion-buttons>
-    <ion-title>{{ store.group()?.name ?? 'Grupo' }}</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
+  <app-brand-header>
+    <div class="nav">
+      <ion-back-button defaultHref="/tabs/groups" text="" aria-label="Volver a Grupos" />
+      <div class="nav-text">
+        <h1 class="name">{{ store.group()?.name ?? 'Grupo' }}</h1>
+        @if (store.group(); as g) {
+        <p class="status">{{ labels.status[g.status] }} · {{ labels.visibility[g.visibility] }}</p>
+        }
+      </div>
+    </div>
+    @if (hero(); as h) {
+    <app-amount-card
+      pkOverlap
+      [label]="h.label"
+      [amount]="h.amount"
+      [asset]="h.asset"
+      [meta]="h.meta"
+      [caption]="h.caption"
+    />
+    }
+  </app-brand-header>
+
   @if (store.detailLoading() && !store.group()) {
   <div class="loading" role="status">
     <ion-spinner aria-hidden="true" />
@@ -31,106 +44,63 @@
   </app-empty-state>
   } @else if (store.group(); as g) {
   <div class="page">
-    <header class="summary">
-      <h1 class="name">{{ g.name }}</h1>
-      <p class="status">
-        {{ labels.status[g.status] }} @if (g.currentRound) { · Ronda {{ g.currentRound }} de {{ g.rounds.length }} }
-      </p>
-    </header>
-
-    @if (fund(); as f) {
-    <app-amount-card
-      [label]="'Fondo de la ronda ' + f.roundNumber"
-      [amount]="f.collected"
-      [asset]="g.asset"
-      [caption]="fundCaption() + ' · meta ' + (f.target | money: g.asset)"
-    />
-    } @else {
-    <app-amount-card
-      label="Aporte por ronda"
-      [amount]="g.contributionAmount"
-      [asset]="g.asset"
-      [caption]="labels.periodicity[g.periodicity]"
-    />
-    } @if (canJoin()) {
-    <div class="actions">
-      <ion-button expand="block" [routerLink]="['/tabs/groups', g.id, 'join']">Unirme a este grupo</ion-button>
-    </div>
+    <!-- Acción principal según el momento del grupo (una sola por pantalla) -->
+    @if (canJoin()) {
+    <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', g.id, 'join']">
+      Unirme a este grupo
+    </ion-button>
     } @else if (canInvite()) {
-    <div class="actions">
-      <p class="hint">
-        Faltan {{ missingMembers() }} {{ missingMembers() === 1 ? 'miembro' : 'miembros' }} para empezar. Comparte el
-        código <strong class="code">{{ g.inviteCode }}</strong>.
-      </p>
-      <ion-button expand="block" (click)="shareInvite(g)">Compartir invitación</ion-button>
-    </div>
+    <p class="hint">
+      Faltan {{ missingMembers() }} {{ missingMembers() === 1 ? 'miembro' : 'miembros' }} para empezar. Comparte el
+      código <strong class="code">{{ g.inviteCode }}</strong>.
+    </p>
+    <ion-button class="cta" expand="block" (click)="shareInvite(g)">Compartir invitación</ion-button>
     } @else if (isMember() && g.status === 'ASSIGNING_TURNS') {
-    <div class="actions">
-      <p class="hint">
-        ¡El grupo está completo! {{ g.turnMode === 'DRAW' ? 'Falta sortear el orden de cobro.' : 'Cada miembro elige su
-        turno.' }}
-      </p>
-      <ion-button expand="block" [routerLink]="['/tabs/groups', g.id, 'turns']">
-        {{ g.turnMode === 'DRAW' ? 'Ir al sorteo' : 'Elegir mi turno' }}
-      </ion-button>
-    </div>
-    } @else if (myPendingPayment(); as mine) {
-    <div class="actions">
-      @if (mine.status === 'LATE') {
-      <p class="hint late">Tu aporte de la ronda {{ g.currentRound }} está atrasado.</p>
-      }
-      <ion-button expand="block" [routerLink]="['/tabs/groups', g.id, 'contribute']">
-        Aportar {{ g.contributionAmount | money: g.asset }}
-      </ion-button>
-    </div>
+    <p class="hint">
+      ¡El grupo está completo! {{ g.turnMode === 'DRAW' ? 'Falta sortear el orden de cobro.' : 'Cada miembro elige su
+      turno.' }}
+    </p>
+    <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', g.id, 'turns']">
+      {{ g.turnMode === 'DRAW' ? 'Ir al sorteo' : 'Elegir mi turno' }}
+    </ion-button>
+    } @else if (myPendingPayment(); as mine) { @if (mine.status === 'LATE') {
+    <p class="hint late">Tu aporte de la ronda {{ g.currentRound }} está atrasado.</p>
+    }
+    <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', g.id, 'contribute']">
+      Aportar {{ g.contributionAmount | money: g.asset }}
+    </ion-button>
     } @else if (pendingForMe() > 0) {
-    <div class="actions">
-      <p class="hint">
-        Tienes {{ pendingForMe() }} {{ pendingForMe() === 1 ? 'propuesta' : 'propuestas' }} de intercambio de turno
-        esperando tu respuesta.
-      </p>
-      <ion-button expand="block" [routerLink]="['/tabs/groups', g.id, 'turns']">Ver propuestas</ion-button>
-    </div>
+    <p class="hint">
+      Tienes {{ pendingForMe() }} {{ pendingForMe() === 1 ? 'propuesta' : 'propuestas' }} de intercambio de turno
+      esperando tu respuesta.
+    </p>
+    <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', g.id, 'turns']">Ver propuestas</ion-button>
+    } @if (actions().length) {
+    <app-quick-actions class="section" label="Acciones del grupo" [actions]="actions()" (selected)="onAction($event)" />
     }
 
-    <ion-list [inset]="true" class="rules" aria-label="Reglas del grupo">
-      <ion-item>
-        <ion-label>Aporte</ion-label>
-        <ion-note slot="end" class="amount">{{ g.contributionAmount | money: g.asset }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Periodicidad</ion-label>
-        <ion-note slot="end">{{ labels.periodicity[g.periodicity] }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Orden de cobro</ion-label>
-        <ion-note slot="end">{{ labels.turnMode[g.turnMode] }}</ion-note>
-      </ion-item>
-      <ion-item>
-        <ion-label>Miembros</ion-label>
-        <ion-note slot="end">{{ g.members.length }} de {{ g.memberCount }}</ion-note>
-      </ion-item>
-      <ion-item [lines]="g.inviteCode ? undefined : 'none'">
-        <ion-label>Tipo</ion-label>
-        <ion-note slot="end">{{ labels.visibility[g.visibility] }}</ion-note>
-      </ion-item>
-      @if (g.inviteCode) {
-      <ion-item lines="none">
-        <ion-label>Código de invitación</ion-label>
-        <ion-note slot="end" class="code">{{ g.inviteCode }}</ion-note>
-      </ion-item>
-      }
-    </ion-list>
+    <section class="section" aria-labelledby="rules-title">
+      <h2 id="rules-title" class="pk-section-title">Reglas del grupo</h2>
+      <div class="pk-card">
+        <app-info-row label="Aporte" [value]="g.contributionAmount | money: g.asset" tone="brand" />
+        <app-info-row label="Periodicidad" [value]="labels.periodicity[g.periodicity]" />
+        <app-info-row label="Orden de cobro" [value]="labels.turnMode[g.turnMode]" />
+        <app-info-row label="Miembros" [value]="g.members.length + ' de ' + g.memberCount" />
+        @if (g.inviteCode) {
+        <app-info-row label="Código de invitación">
+          <span class="code">{{ g.inviteCode }}</span>
+        </app-info-row>
+        }
+      </div>
+    </section>
 
     <section class="section" aria-labelledby="turns-title">
-      <h2 id="turns-title" class="section-title">Línea de turnos</h2>
+      <h2 id="turns-title" class="pk-section-title">Línea de turnos</h2>
       @if (steps().length) {
-      <app-turn-timeline [steps]="steps()" label="Orden de cobro" />
-      @if (isMember()) {
-      <ion-button class="turns-link" fill="clear" [routerLink]="['/tabs/groups', g.id, 'turns']">
-        {{ g.turnMode === 'AGREEMENT' && g.status === 'ACTIVE' ? 'Intercambiar turnos' : 'Ver turnos' }}
-      </ion-button>
-      } } @else {
+      <div class="pk-card timeline-card">
+        <app-turn-timeline [steps]="steps()" label="Orden de cobro" />
+      </div>
+      } @else {
       <app-empty-state
         [icon]="icons.turns"
         title="Turnos sin asignar"
@@ -145,47 +115,43 @@
 
     <section class="section" aria-labelledby="people-title">
       @if (payments().length) {
-      <h2 id="people-title" class="section-title">Aportes de la ronda {{ g.currentRound }}</h2>
-      <ion-list [inset]="true">
-        @for (p of payments(); track p.member.id; let last = $last) {
-        <ion-item [lines]="last ? 'none' : undefined">
-          <ion-label class="person">
+      <h2 id="people-title" class="pk-section-title">Aportes de la ronda {{ g.currentRound }}</h2>
+      <ul class="pk-card people">
+        @for (p of payments(); track p.member.id) {
+        <li class="person">
+          <app-avatar [name]="p.member.displayName" size="sm" [highlight]="p.isMe" />
+          <span class="person-name">
             {{ p.member.displayName }} @if (p.isMe) {
-            <span class="me">Tú</span>
+            <span class="pk-me">Tú</span>
             }
-          </ion-label>
-          <app-payment-status-badge slot="end" [status]="p.status" />
-        </ion-item>
+          </span>
+          <app-payment-status-badge [status]="p.status" />
+        </li>
         }
-      </ion-list>
+      </ul>
       @if (store.canSimulate) {
-      <ion-button class="turns-link" fill="clear" [disabled]="simulating()" (click)="simulateOthers()">
+      <ion-button class="demo" fill="clear" expand="block" [disabled]="simulating()" (click)="simulateOthers()">
         {{ simulating() ? 'Simulando…' : 'Simular aportes del resto (demo)' }}
       </ion-button>
       } } @else {
-      <h2 id="people-title" class="section-title">Miembros</h2>
-      <ion-list [inset]="true">
-        @for (m of members(); track m.id; let last = $last) {
-        <ion-item [lines]="last ? 'none' : undefined">
-          <ion-label class="person">
+      <h2 id="people-title" class="pk-section-title">Miembros</h2>
+      <ul class="pk-card people">
+        @for (m of members(); track m.id) {
+        <li class="person">
+          <app-avatar [name]="m.displayName" size="sm" [highlight]="m.userId === store.currentUserId()" />
+          <span class="person-name">
             {{ m.displayName }} @if (m.userId === store.currentUserId()) {
-            <span class="me">Tú</span>
+            <span class="pk-me">Tú</span>
             }
-          </ion-label>
+          </span>
           @if (m.turnNumber) {
-          <ion-note slot="end">Turno {{ m.turnNumber }}</ion-note>
+          <span class="turn">Turno {{ m.turnNumber }}</span>
           }
-        </ion-item>
+        </li>
         }
-      </ion-list>
+      </ul>
       }
     </section>
-
-    @if (isMember() && (g.rounds.length || g.turnsAssignedAt)) {
-    <ion-button class="history-link" expand="block" fill="outline" [routerLink]="['/tabs/groups', g.id, 'history']">
-      Ver historial verificable
-    </ion-button>
-    }
 
     <p class="disclaimer">
       Montos en Stellar Testnet con activos de prueba. Las cifras son ilustrativas: no es una oferta financiera.

@@ -1,28 +1,28 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Group } from '@core/models/domain.models';
+import { ThemeService } from '@core/services/theme.service';
 import { ToastService } from '@core/services/toast.service';
-import {
-  IonBackButton,
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonNote,
-  IonSpinner,
-  IonTitle,
-  IonToolbar,
-} from '@ionic/angular';
+import { IonBackButton, IonButton, IonContent, IonSpinner } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
 import { AmountCardComponent } from '@shared/ui/amount-card/amount-card.component';
+import { AvatarComponent } from '@shared/ui/avatar/avatar.component';
+import { BrandHeaderComponent } from '@shared/ui/brand-header/brand-header.component';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
+import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { PaymentStatusBadgeComponent } from '@shared/ui/payment-status-badge/payment-status-badge.component';
+import type { QuickAction } from '@shared/ui/quick-actions/quick-actions.component';
+import { QuickActionsComponent } from '@shared/ui/quick-actions/quick-actions.component';
 import { TurnTimelineComponent } from '@shared/ui/turn-timeline/turn-timeline.component';
 import { formatDate, plural } from '@shared/utils/format';
-import { cloudOfflineOutline, helpCircleOutline, shuffleOutline } from 'ionicons/icons';
+import {
+  cloudOfflineOutline,
+  helpCircleOutline,
+  personAddOutline,
+  receiptOutline,
+  shuffleOutline,
+  walletOutline,
+} from 'ionicons/icons';
 
 import {
   PERIODICITY_LABELS,
@@ -44,28 +44,25 @@ import { GroupsStore } from '../../data-access/groups.store';
   styleUrls: ['./group-detail.page.scss'],
   imports: [
     IonContent,
-    IonHeader,
-    IonTitle,
-    IonToolbar,
-    IonButtons,
     IonBackButton,
     IonButton,
-    IonList,
-    IonItem,
-    IonLabel,
-    IonNote,
     IonSpinner,
     RouterLink,
     MoneyPipe,
     AmountCardComponent,
+    AvatarComponent,
+    BrandHeaderComponent,
     EmptyStateComponent,
+    InfoRowComponent,
     PaymentStatusBadgeComponent,
+    QuickActionsComponent,
     TurnTimelineComponent,
   ],
 })
 export class GroupDetailPage {
   protected readonly store = inject(GroupsStore);
   private readonly toast = inject(ToastService);
+  private readonly theme = inject(ThemeService);
 
   /** Viene de la ruta /tabs/groups/:id (withComponentInputBinding). */
   readonly id = input.required<string>();
@@ -174,6 +171,85 @@ export class GroupDetailPage {
     const g = this.store.group();
     return g ? Math.max(0, g.memberCount - g.members.length) : 0;
   });
+
+  /** Tarjeta del encabezado: fondo de la ronda en curso o, si no hay ronda, el aporte por ronda. */
+  protected readonly hero = computed(() => {
+    const g = this.store.group();
+    if (!g) return null;
+    const f = this.fund();
+    if (f) {
+      return {
+        label: `Fondo de la ronda ${f.roundNumber}`,
+        amount: f.collected,
+        asset: g.asset,
+        meta: `Ronda ${f.roundNumber} de ${g.rounds.length}`,
+        caption: `${this.fundCaption()} · meta ${new MoneyPipe().transform(f.target, g.asset)}`,
+      };
+    }
+    return {
+      label: 'Aporte por ronda',
+      amount: g.contributionAmount,
+      asset: g.asset,
+      meta: STATUS_LABELS[g.status],
+      caption: PERIODICITY_LABELS[g.periodicity],
+    };
+  });
+
+  /** Accesos rápidos del kit: solo para miembros, con avisos según el estado. */
+  protected readonly actions = computed<QuickAction[]>(() => {
+    const g = this.store.group();
+    if (!g || !this.isMember()) return [];
+    const list: QuickAction[] = [];
+    if (g.status === 'ACTIVE') {
+      list.push({
+        id: 'pay',
+        label: 'Aportar',
+        icon: walletOutline,
+        accent: 'indigo',
+        link: ['/tabs/groups', g.id, 'contribute'],
+        badge: this.myPendingPayment() ? 1 : undefined,
+      });
+    }
+    if (g.status !== 'FORMING') {
+      list.push({
+        id: 'turns',
+        label: 'Turnos',
+        icon: shuffleOutline,
+        accent: 'teal',
+        link: ['/tabs/groups', g.id, 'turns'],
+        badge: this.pendingForMe() || undefined,
+      });
+    }
+    if (this.canInvite()) {
+      list.push({ id: 'invite', label: 'Invitar', icon: personAddOutline, accent: 'orange' });
+    }
+    if (g.rounds.length || g.turnsAssignedAt) {
+      list.push({
+        id: 'history',
+        label: 'Historial',
+        icon: receiptOutline,
+        accent: 'blue',
+        link: ['/tabs/groups', g.id, 'history'],
+      });
+    }
+    return list;
+  });
+
+  protected onAction(id: string): void {
+    const g = this.store.group();
+    if (id === 'invite' && g) {
+      void this.shareInvite(g);
+    }
+  }
+
+  /** Encabezado índigo: la barra de estado del sistema combina con él. */
+  ionViewWillEnter(): void {
+    this.theme.setHeaderTone('brand');
+  }
+
+  ionViewWillLeave(): void {
+    this.theme.setHeaderTone('surface');
+  }
 
   constructor() {
     // Solo el id de la ruta dispara la carga: untracked evita que el effect se

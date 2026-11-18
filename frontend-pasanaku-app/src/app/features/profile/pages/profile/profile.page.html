@@ -1,33 +1,23 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Perfil</ion-title>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Perfil</ion-title>
-    </ion-toolbar>
-  </ion-header>
-
   @if (user(); as u) {
-  <div class="page">
-    <header class="person">
-      <span class="avatar" aria-hidden="true">{{ initials() }}</span>
-      <div class="person-text">
-        <h1 class="name">{{ u.displayName }}</h1>
-        <p class="email">{{ u.email }}</p>
-      </div>
-    </header>
+  <!-- Setting del kit: encabezado índigo con avatar grande centrado y nombre en índigo -->
+  <app-brand-header>
+    <h1 class="screen-title">Perfil</h1>
+    <div pkOverlap class="person">
+      <app-avatar class="person-avatar" [name]="u.displayName" size="lg" />
+      <p class="name">{{ u.displayName }}</p>
+      <p class="email">{{ u.email }}</p>
+    </div>
+  </app-brand-header>
 
+  <div class="page">
     <section class="section" aria-labelledby="wallet-title">
-      <h2 id="wallet-title" class="section-title">Billetera Stellar</h2>
-      <div class="wallet">
+      <h2 id="wallet-title" class="pk-section-title">Billetera Stellar</h2>
+      <div class="pk-card wallet">
         <p id="address-label" class="label">Tu dirección (Testnet)</p>
         <p class="address" aria-labelledby="address-label">{{ u.walletAddress }}</p>
         <div class="wallet-actions">
-          <ion-button fill="outline" size="default" (click)="copyAddress()">
+          <ion-button fill="outline" (click)="copyAddress()">
             <ion-icon slot="start" [icon]="copied() ? icons.copied : icons.copy" aria-hidden="true" />
             {{ copied() ? 'Copiada' : 'Copiar dirección' }}
           </ion-button>
@@ -42,18 +32,21 @@
     </section>
 
     <section class="section" aria-labelledby="appearance-title">
-      <h2 id="appearance-title" class="section-title">Apariencia</h2>
-      <ion-list [inset]="true">
-        <ion-item lines="none">
-          <ion-toggle [checked]="theme.isDark()" (ionChange)="theme.setMode($event.detail.checked ? 'dark' : 'light')">
-            Modo oscuro
-          </ion-toggle>
-        </ion-item>
-      </ion-list>
+      <h2 id="appearance-title" class="pk-section-title">Apariencia</h2>
+      <div class="pk-card">
+        <ion-toggle
+          class="theme-toggle"
+          justify="space-between"
+          [checked]="theme.isDark()"
+          (ionChange)="theme.setMode($event.detail.checked ? 'dark' : 'light')"
+        >
+          Modo oscuro
+        </ion-toggle>
+      </div>
     </section>
 
     <section class="section" aria-labelledby="balances-title">
-      <h2 id="balances-title" class="section-title">Saldos en Testnet</h2>
+      <h2 id="balances-title" class="pk-section-title">Saldos en Testnet</h2>
       @if (balancesState() === 'loading') {
       <div class="loading" role="status">
         <ion-spinner aria-hidden="true" />
@@ -65,14 +58,11 @@
         <ion-button fill="outline" (click)="loadBalances()">Reintentar</ion-button>
       </div>
       } @else if (balancesState() === 'loaded') { @if (balances().length) {
-      <ion-list [inset]="true" aria-label="Saldos por moneda">
-        @for (b of balanceRows(); track b.code + (b.issuer ?? ''); let last = $last) {
-        <ion-item [lines]="last ? 'none' : undefined">
-          <ion-label>{{ b.code }}</ion-label>
-          <ion-note slot="end" class="amount">{{ b.number }}</ion-note>
-        </ion-item>
+      <div class="pk-card" role="group" aria-label="Saldos por moneda">
+        @for (b of balanceRows(); track b.code + (b.issuer ?? '')) {
+        <app-info-row [label]="b.code" [value]="b.number" tone="brand" />
         }
-      </ion-list>
+      </div>
       } @else {
       <p class="hint">Tu cuenta todavía no tiene fondos en Testnet.</p>
       }

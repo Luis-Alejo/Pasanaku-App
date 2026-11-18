@@ -1,13 +1,25 @@
 .page {
-  padding: 0.5rem 0 calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+  padding: 0.5rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
 }
 
-ion-list ion-note {
-  color: var(--ion-color-medium);
-  font-size: 1rem;
+/* Ilustración del kit (billetera con monedas). Decorativa. */
+.art {
+  display: block;
+  width: min(100%, 18rem);
+  height: auto;
+  aspect-ratio: 430 / 247;
+  margin: 0 auto 1rem;
 }
 
-ion-note.late {
+.art--small {
+  width: min(100%, 14rem);
+}
+
+.detail {
+  margin-top: 1rem;
+}
+
+.late {
   color: var(--ion-color-danger);
   font-weight: 600;
 }
@@ -17,16 +29,17 @@ ion-note.late {
 }
 
 .amount {
+  color: var(--ion-color-primary);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .send {
-  margin: 1rem 1rem 0;
+  margin: 1.5rem 0 0;
 }
 
 .notice {
-  margin: 0.75rem 1rem 0;
+  margin: 0.75rem 0 0;
   color: var(--ion-color-medium);
   font-size: 0.8125rem;
   text-align: center;
@@ -38,32 +51,26 @@ ion-note.late {
   text-align: start;
 }
 
+/* Confirmación del kit (Transfer – Successfully): ilustración + título índigo. */
 .status-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
-  padding: 2.5rem 1.5rem 1rem;
+  padding: 2rem 1.5rem 1rem;
   text-align: center;
-}
-
-.status-icon {
-  font-size: 3.5rem;
-}
-
-.status-icon.ok {
-  color: var(--ion-color-success);
 }
 
 .status-title {
   margin: 0.25rem 0 0;
+  color: var(--ion-color-primary);
   font-size: 1.25rem;
   font-weight: 600;
 }
 
 .status-text {
   margin: 0;
-  color: var(--ion-color-medium);
+  color: var(--ion-text-color);
 }
 
 /* Enlace al explorador: área táctil de 48px. */
@@ -77,12 +84,19 @@ ion-note.late {
   font-variant-numeric: tabular-nums;
 }
 
+/* Desembolso: contenedor suave de "pagado" (badge de éxito). */
 .payout {
-  margin: 1rem;
-  padding: 1rem;
-  border-radius: 0.75rem;
-  background: rgba(var(--ion-color-success-rgb), 0.12);
+  margin: 1rem 1.5rem;
+  padding: 1rem 1.25rem;
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-badge-success-bg);
+  color: var(--pk-badge-success-fg);
   text-align: center;
+}
+
+.payout .amount,
+.payout .tx-link {
+  color: inherit;
 }
 
 .payout-title {
@@ -97,5 +111,5 @@ ion-note.late {
 }
 
 .actions {
-  padding: 1rem 1rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+  padding: 1rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
 }

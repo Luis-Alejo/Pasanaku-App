@@ -40,15 +40,15 @@
     <app-group-card [group]="group" [userId]="store.currentUserId()" />
     } @empty { @if (segment() === 'mine') {
     <app-empty-state
-      [icon]="icons.mine"
+      illustration="ahorro-colectivo"
       title="Aún no tienes grupos"
       message="Crea un pasanaku o únete con el código que te compartieron."
     >
-      <ion-button routerLink="/tabs/groups/new">Crear grupo</ion-button>
+      <ion-button expand="block" routerLink="/tabs/groups/new">Crear grupo</ion-button>
     </app-empty-state>
     } @else {
     <app-empty-state
-      [icon]="icons.public"
+      illustration="alcancia"
       title="No hay grupos públicos con cupo"
       message="Vuelve más tarde o crea tu propio grupo."
     />

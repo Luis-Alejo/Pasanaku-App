@@ -1,8 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
+import { JoinCodeService } from '@core/services/join-code.service';
 import type { SegmentCustomEvent } from '@ionic/angular';
 import {
-  AlertController,
   IonButton,
   IonButtons,
   IonContent,
@@ -15,7 +15,7 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
-import { add, cloudOfflineOutline, globeOutline, peopleOutline } from 'ionicons/icons';
+import { add, cloudOfflineOutline } from 'ionicons/icons';
 
 import { GroupCardComponent } from '../../components/group-card/group-card.component';
 import { GroupsStore } from '../../data-access/groups.store';
@@ -44,8 +44,7 @@ type Segment = 'mine' | 'public';
 })
 export class GroupListPage {
   protected readonly store = inject(GroupsStore);
-  private readonly alerts = inject(AlertController);
-  private readonly router = inject(Router);
+  private readonly joinCode = inject(JoinCodeService);
 
   protected readonly segment = signal<Segment>('mine');
   protected readonly groups = computed(() =>
@@ -56,7 +55,7 @@ export class GroupListPage {
     () => this.store.listLoading() && this.store.myGroups().length === 0 && this.store.publicGroups().length === 0,
   );
 
-  protected readonly icons = { add, mine: peopleOutline, public: globeOutline, error: cloudOfflineOutline };
+  protected readonly icons = { add, error: cloudOfflineOutline };
 
   /** Ionic: se llama cada vez que la pantalla aparece (también al volver de un detalle). */
   ionViewWillEnter(): void {
@@ -72,33 +71,7 @@ export class GroupListPage {
   }
 
   /** Pide el código de invitación y abre la pantalla para unirse. */
-  protected async askInviteCode(): Promise<void> {
-    const alert = await this.alerts.create({
-      header: 'Unirme con un código',
-      message: 'Escribe el código que te compartieron.',
-      inputs: [
-        {
-          name: 'code',
-          type: 'text',
-          placeholder: 'Ej.: QUISPE26',
-          attributes: { autocapitalize: 'characters', autocomplete: 'off', spellcheck: false, maxlength: 12 },
-        },
-      ],
-      buttons: [
-        { text: 'Cancelar', role: 'cancel' },
-        {
-          text: 'Buscar',
-          handler: (data: { code?: string }) => {
-            const code = (data.code ?? '').trim().toUpperCase();
-            if (!code) {
-              return false; // deja la alerta abierta
-            }
-            void this.router.navigate(['/join', code]);
-            return true;
-          },
-        },
-      ],
-    });
-    await alert.present();
+  protected askInviteCode(): void {
+    void this.joinCode.askAndOpen();
   }
 }
