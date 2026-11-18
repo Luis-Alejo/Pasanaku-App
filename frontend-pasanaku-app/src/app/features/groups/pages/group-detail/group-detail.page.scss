@@ -95,3 +95,12 @@ app-turn-timeline {
 .turns-link {
   margin: 0.25rem 0.5rem 0;
 }
+
+.hint.late {
+  color: var(--ion-color-danger);
+  font-weight: 600;
+}
+
+.history-link {
+  margin: 1.5rem 1rem 0;
+}

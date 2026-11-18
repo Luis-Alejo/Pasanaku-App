@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import type { Member, TurnErrorCode } from '@core/models/domain.models';
 import { TurnError } from '@core/models/domain.models';
 import { ToastService } from '@core/services/toast.service';
@@ -128,8 +128,11 @@ export class GroupTurnsPage {
   });
 
   constructor() {
+    // Solo el id de la ruta dispara la carga: untracked evita que el effect se
+    // suscriba al grupo del store (que loadGroup lee) y se repita al cambiar.
     effect(() => {
-      void this.store.loadGroup(this.id());
+      const id = this.id();
+      untracked(() => void this.store.loadGroup(id));
     });
   }
 

@@ -1,9 +1,17 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
-import type { Asset, Contribution, CreateGroupInput, Group, TurnSwap, User } from '@core/models/domain.models';
+import type {
+  Asset,
+  ContributeResult,
+  Contribution,
+  CreateGroupInput,
+  Group,
+  TurnSwap,
+  User,
+} from '@core/models/domain.models';
 
 import { sortMyGroups } from './group-view';
-import { GroupsApi } from './groups.api';
+import { GroupsApi, MockGroupsApi } from './groups.api';
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -124,6 +132,39 @@ export class GroupsStore {
         this._group.set(group);
       }
     }
+  }
+
+  // --- Aportes
+  /** La simulación de aportes ajenos solo existe con los datos de prueba. */
+  readonly canSimulate = this.api instanceof MockGroupsApi;
+
+  /** Registra el aporte del usuario. Lanza `ContributionError` si no se puede. */
+  async contribute(): Promise<ContributeResult> {
+    const result = await this.api.contribute(this.requireGroupId(), this.requireUser().id);
+    this.applyContribution(result);
+    return result;
+  }
+
+  /** SOLO DEMO: paga los aportes que faltan de los demás miembros. */
+  async simulatePendingContributions(): Promise<ContributeResult | null> {
+    if (!(this.api instanceof MockGroupsApi)) {
+      return null;
+    }
+    const result = await this.api.simulatePendingContributions(this.requireGroupId(), this.requireUser().id);
+    if (result) {
+      this.applyContribution(result);
+    }
+    return result;
+  }
+
+  private applyContribution(result: ContributeResult): void {
+    this._group.set(result.group);
+    // Los aportes de la ronda cambiaron: se vuelven a pedir completos.
+    void this.api.getContributions(result.group.id).then((c) => {
+      if (this._group()?.id === result.group.id) {
+        this._contributions.set(c);
+      }
+    });
   }
 
   private requireGroupId(): string {

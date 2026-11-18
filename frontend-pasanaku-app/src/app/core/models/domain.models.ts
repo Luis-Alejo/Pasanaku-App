@@ -152,6 +152,32 @@ export class TurnError extends Error {
   }
 }
 
+/** Desembolso (cobro) de una ronda al miembro del turno. En el MVP es simulado. */
+export interface Payout {
+  roundNumber: number;
+  recipientMemberId: string;
+  amount: string;
+  txHash: string;
+  paidOutAt: string;
+}
+
+/** Resultado de registrar un aporte. */
+export interface ContributeResult {
+  contribution: Contribution;
+  group: Group;
+  /** Si este aporte completó la ronda, el desembolso que se hizo. */
+  payout?: Payout;
+}
+
+export type ContributionErrorCode = 'NOT_FOUND' | 'NOT_MEMBER' | 'NOT_ACTIVE' | 'ALREADY_PAID';
+
+export class ContributionError extends Error {
+  constructor(readonly code: ContributionErrorCode) {
+    super(code);
+    this.name = 'ContributionError';
+  }
+}
+
 /** Usuario con sesión iniciada. */
 export interface User {
   id: string;

@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import type { Group } from '@core/models/domain.models';
 import { ToastService } from '@core/services/toast.service';
@@ -129,6 +129,41 @@ export class GroupDetailPage {
     return !!g && this.isMember() && g.status === 'FORMING' && !!g.inviteCode;
   });
 
+  /** Mi aporte de la ronda en curso, si todavía no está pagado. */
+  protected readonly myPendingPayment = computed(() => {
+    const mine = this.payments().find((p) => p.isMe);
+    return mine && mine.status !== 'PAID' ? mine : null;
+  });
+
+  protected readonly simulating = signal(false);
+
+  /** SOLO DEMO: los demás miembros pagan, para mostrar el desembolso. */
+  protected async simulateOthers(): Promise<void> {
+    if (this.simulating()) return;
+    this.simulating.set(true);
+    try {
+      const result = await this.store.simulatePendingContributions();
+      const payout = result?.payout;
+      if (payout) {
+        const g = result.group;
+        const who = g.members.find((m) => m.id === payout.recipientMemberId);
+        const amount = new MoneyPipe().transform(payout.amount, g.asset);
+        void this.toast.show(
+          `Ronda ${payout.roundNumber} completa: ${who?.userId === this.userId() ? 'recibiste' : `${who?.displayName} recibió`} ${amount}`,
+          'success',
+        );
+      } else if (result) {
+        void this.toast.show('Aportaron los demás. Falta tu aporte para completar la ronda.', 'medium');
+      } else {
+        void this.toast.show('No había aportes pendientes de los demás.', 'medium');
+      }
+    } catch {
+      void this.toast.show('No se pudo simular. Inténtalo de nuevo.', 'danger');
+    } finally {
+      this.simulating.set(false);
+    }
+  }
+
   /** Propuestas de intercambio que esperan la respuesta del usuario. */
   protected readonly pendingForMe = computed(() => {
     const g = this.store.group();
@@ -141,8 +176,11 @@ export class GroupDetailPage {
   });
 
   constructor() {
+    // Solo el id de la ruta dispara la carga: untracked evita que el effect se
+    // suscriba al grupo del store (que loadGroup lee) y se repita al cambiar.
     effect(() => {
-      void this.store.loadGroup(this.id());
+      const id = this.id();
+      untracked(() => void this.store.loadGroup(id));
     });
   }
 

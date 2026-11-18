@@ -255,3 +255,94 @@ export function incomingProposals(group: Group, swaps: TurnSwap[], userId: strin
   const me = myMember(group, userId);
   return me ? swaps.filter((s) => s.status === 'PROPOSED' && s.toMemberId === me.id) : [];
 }
+
+// ---------------------------------------------------------------------------
+// Historial
+// ---------------------------------------------------------------------------
+
+export type HistoryKind = 'contribution' | 'payout' | 'swap' | 'start' | 'created';
+
+export interface HistoryEvent {
+  id: string;
+  kind: HistoryKind;
+  /** ISO, para ordenar. */
+  at: string;
+  title: string;
+  detail?: string;
+  /** Monto del movimiento (aportes y cobros). */
+  amount?: string;
+  txHash?: string;
+  isMine: boolean;
+}
+
+/**
+ * Línea de tiempo del grupo, del más reciente al más antiguo: aportes, cobros,
+ * intercambios aceptados y cuándo se definió el orden.
+ */
+export function historyEvents(
+  group: Group,
+  contributions: Contribution[],
+  swaps: TurnSwap[],
+  userId: string,
+): HistoryEvent[] {
+  const member = (id: string) => group.members.find((m) => m.id === id);
+  const name = (id: string) => member(id)?.displayName ?? 'Un miembro';
+  const mine = (id: string) => member(id)?.userId === userId;
+  const payout = multiplyAmount(group.contributionAmount, group.memberCount, group.asset.decimals);
+  const events: HistoryEvent[] = [];
+
+  for (const c of contributions) {
+    if (c.groupId === group.id && c.status === 'PAID' && c.paidAt) {
+      events.push({
+        id: `c-${c.id}`,
+        kind: 'contribution',
+        at: c.paidAt,
+        title: mine(c.memberId) ? 'Aportaste' : `${name(c.memberId)} aportó`,
+        detail: `Ronda ${c.roundNumber}`,
+        amount: c.amount,
+        txHash: c.txHash,
+        isMine: mine(c.memberId),
+      });
+    }
+  }
+  for (const r of group.rounds) {
+    if (r.status === 'PAID_OUT') {
+      events.push({
+        id: `p-${r.number}`,
+        kind: 'payout',
+        at: r.paidOutAt ?? `${r.dueDate}T23:59:59Z`,
+        title: mine(r.recipientMemberId) ? 'Cobraste' : `${name(r.recipientMemberId)} cobró`,
+        detail: `Desembolso de la ronda ${r.number}`,
+        amount: payout,
+        txHash: r.payoutTxHash,
+        isMine: mine(r.recipientMemberId),
+      });
+    }
+  }
+  for (const s of swaps) {
+    if (s.groupId === group.id && s.status === 'ACCEPTED') {
+      events.push({
+        id: `s-${s.id}`,
+        kind: 'swap',
+        at: s.respondedAt ?? s.createdAt,
+        title: 'Intercambio de turnos',
+        detail: `${name(s.fromMemberId)} pasó al turno ${s.toTurn} y ${name(s.toMemberId)} al turno ${s.fromTurn}`,
+        isMine: mine(s.fromMemberId) || mine(s.toMemberId),
+      });
+    }
+  }
+  if (group.turnsAssignedAt) {
+    events.push({
+      id: 'start',
+      kind: 'start',
+      at: group.turnsAssignedAt,
+      title: group.turnMode === 'DRAW' ? 'Se sorteó el orden de cobro' : 'Quedó definido el orden de cobro',
+      isMine: false,
+    });
+  }
+  events.push({ id: 'created', kind: 'created', at: group.createdAt, title: 'Se creó el grupo', isMine: false });
+
+  // A igual hora, el desembolso va después del aporte que lo provocó (se muestra primero).
+  const sameTimeOrder: Record<HistoryKind, number> = { payout: 0, contribution: 1, swap: 2, start: 3, created: 4 };
+  return events.sort((a, b) => b.at.localeCompare(a.at) || sameTimeOrder[a.kind] - sameTimeOrder[b.kind]);
+}

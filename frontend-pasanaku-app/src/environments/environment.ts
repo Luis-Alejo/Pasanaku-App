@@ -9,6 +9,11 @@ export const environment = {
    * false: usan la API GraphQL del backend (paso 9).
    */
   useMocks: true,
+  stellar: {
+    network: 'testnet',
+    /** Explorador público de Testnet; se le agrega el hash. POR CONFIRMAR con el equipo. */
+    explorerTxUrl: 'https://stellar.expert/explorer/testnet/tx/',
+  },
 };
 
 /*

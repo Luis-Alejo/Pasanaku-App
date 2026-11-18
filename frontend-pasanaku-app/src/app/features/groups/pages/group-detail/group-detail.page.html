@@ -74,6 +74,15 @@
         {{ g.turnMode === 'DRAW' ? 'Ir al sorteo' : 'Elegir mi turno' }}
       </ion-button>
     </div>
+    } @else if (myPendingPayment(); as mine) {
+    <div class="actions">
+      @if (mine.status === 'LATE') {
+      <p class="hint late">Tu aporte de la ronda {{ g.currentRound }} está atrasado.</p>
+      }
+      <ion-button expand="block" [routerLink]="['/tabs/groups', g.id, 'contribute']">
+        Aportar {{ g.contributionAmount | money: g.asset }}
+      </ion-button>
+    </div>
     } @else if (pendingForMe() > 0) {
     <div class="actions">
       <p class="hint">
@@ -149,7 +158,11 @@
         </ion-item>
         }
       </ion-list>
-      } @else {
+      @if (store.canSimulate) {
+      <ion-button class="turns-link" fill="clear" [disabled]="simulating()" (click)="simulateOthers()">
+        {{ simulating() ? 'Simulando…' : 'Simular aportes del resto (demo)' }}
+      </ion-button>
+      } } @else {
       <h2 id="people-title" class="section-title">Miembros</h2>
       <ion-list [inset]="true">
         @for (m of members(); track m.id; let last = $last) {
@@ -167,6 +180,12 @@
       </ion-list>
       }
     </section>
+
+    @if (isMember() && (g.rounds.length || g.turnsAssignedAt)) {
+    <ion-button class="history-link" expand="block" fill="outline" [routerLink]="['/tabs/groups', g.id, 'history']">
+      Ver historial verificable
+    </ion-button>
+    }
 
     <p class="disclaimer">
       Montos en Stellar Testnet con activos de prueba. Las cifras son ilustrativas: no es una oferta financiera.

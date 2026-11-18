@@ -1,4 +1,4 @@
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import type { JoinGroupErrorCode } from '@core/models/domain.models';
@@ -113,11 +113,13 @@ export class JoinGroupPage {
     effect(() => {
       const code = this.code();
       const id = this.id();
-      if (code) {
-        void this.store.loadJoinTarget({ code });
-      } else if (id) {
-        void this.store.loadJoinTarget({ id });
-      }
+      untracked(() => {
+        if (code) {
+          void this.store.loadJoinTarget({ code });
+        } else if (id) {
+          void this.store.loadJoinTarget({ id });
+        }
+      });
     });
   }
 

@@ -1,8 +1,19 @@
 import { Injectable } from '@angular/core';
-import type { Asset, Contribution, CreateGroupInput, Group, Round, TurnSwap, User } from '@core/models/domain.models';
-import { JoinGroupError, TurnError } from '@core/models/domain.models';
+import type {
+  Asset,
+  ContributeResult,
+  Contribution,
+  CreateGroupInput,
+  Group,
+  Payout,
+  Round,
+  TurnSwap,
+  User,
+} from '@core/models/domain.models';
+import { ContributionError, JoinGroupError, TurnError } from '@core/models/domain.models';
 import { environment } from '@env/environment';
 import { addDays, addMonths, todayIso } from '@shared/utils/date';
+import { multiplyAmount } from '@shared/utils/format';
 
 import { isSwappable } from './group-view';
 import { MOCK_ASSETS, MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from './groups.mock';
@@ -45,6 +56,17 @@ export abstract class GroupsApi {
   abstract proposeSwap(groupId: string, userId: string, toMemberId: string): Promise<TurnSwap>;
   /** El miembro que recibió la propuesta la acepta o la rechaza. */
   abstract respondSwap(swapId: string, userId: string, accept: boolean): Promise<TurnSwap>;
+
+  // --- Aportes (fallan con `ContributionError` si no se puede)
+  /**
+   * Registra el aporte del usuario en la ronda en curso. Si con él aportaron todos,
+   * se hace el desembolso (simulado en el MVP) y se abre la ronda siguiente.
+   * Backend (decidido): mutation `payRound(groupId)`; el backend firma con la clave
+   * custodiada del usuario y paga la comisión (fee bump). Tarda 3–5 s en Stellar.
+   * POR REVISAR en el paso 9: `payArrears(groupId, round, amount)` para deudas de
+   * rondas anteriores (en este mock una ronda no se cierra hasta que paguen todos).
+   */
+  abstract contribute(groupId: string, userId: string): Promise<ContributeResult>;
 }
 
 function createGroupsApi(): GroupsApi {
@@ -58,9 +80,12 @@ function createGroupsApi(): GroupsApi {
 /** Demora simulada para que los estados de carga se vean como con la API real. */
 const MOCK_DELAY_MS = 300;
 
-function delay<T>(value: T): Promise<T> {
+/** Una transacción en Stellar tarda 3–5 s en confirmarse; el mock imita esa espera. */
+const STELLAR_TX_DELAY_MS = 3000;
+
+function delay<T>(value: T, ms = MOCK_DELAY_MS): Promise<T> {
   // structuredClone: las pantallas nunca reciben (ni modifican) los objetos del mock.
-  return new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), MOCK_DELAY_MS));
+  return new Promise((resolve) => setTimeout(() => resolve(structuredClone(value)), ms));
 }
 
 function fail(error: Error): Promise<never> {
@@ -68,6 +93,11 @@ function fail(error: Error): Promise<never> {
 }
 
 const isMember = (group: Group, userId: string) => group.members.some((m) => m.userId === userId);
+
+/** Hash de transacción simulado (64 caracteres hex), como los que devuelve Stellar. */
+function randomTxHash(): string {
+  return Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 /** Con el orden definido, el grupo empieza: se crean las rondas y se abre la primera. */
 function startCycle(group: Group, today = todayIso()): void {
@@ -98,6 +128,97 @@ export class MockGroupsApi extends GroupsApi {
   private readonly assets: Asset[] = Object.values(MOCK_ASSETS);
   private readonly swaps: TurnSwap[] = structuredClone(MOCK_TURN_SWAPS);
   private nextId = 1;
+
+  /** @param txDelayMs espera simulada de una transacción en Stellar (0 en las pruebas). */
+  constructor(private readonly txDelayMs = STELLAR_TX_DELAY_MS) {
+    super();
+  }
+
+  contribute(groupId: string, userId: string): Promise<ContributeResult> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return fail(new ContributionError('NOT_FOUND'));
+    const me = group.members.find((m) => m.userId === userId);
+    if (!me) return fail(new ContributionError('NOT_MEMBER'));
+    const round = group.rounds.find((r) => r.number === group.currentRound);
+    if (group.status !== 'ACTIVE' || !round) return fail(new ContributionError('NOT_ACTIVE'));
+    const contribution = this.pay(group, round, me.id);
+    if (!contribution) return fail(new ContributionError('ALREADY_PAID'));
+    const payout = this.payOutIfComplete(group, round);
+    return delay({ contribution, group, payout }, this.txDelayMs);
+  }
+
+  /**
+   * SOLO DEMO (mock): registra los aportes que faltan en la ronda en curso, como si
+   * los demás miembros hubieran pagado, para poder mostrar el desembolso con un solo usuario.
+   */
+  simulatePendingContributions(groupId: string, userId: string): Promise<ContributeResult | null> {
+    const group = this.groups.find((g) => g.id === groupId);
+    const round = group?.rounds.find((r) => r.number === group.currentRound);
+    if (!group || !round || group.status !== 'ACTIVE') return fail(new ContributionError('NOT_ACTIVE'));
+    let last: Contribution | null = null;
+    for (const m of group.members) {
+      if (m.userId !== userId) {
+        last = this.pay(group, round, m.id) ?? last;
+      }
+    }
+    const payout = this.payOutIfComplete(group, round);
+    return delay(last ? { contribution: last, group, payout } : null);
+  }
+
+  /** Marca pagado el aporte del miembro en la ronda; null si ya estaba pagado. */
+  private pay(group: Group, round: Round, memberId: string): Contribution | null {
+    const id = `${group.id}-r${round.number}-${memberId}`;
+    let contribution = this.contributions.find(
+      (c) => c.groupId === group.id && c.roundNumber === round.number && c.memberId === memberId,
+    );
+    if (contribution?.status === 'PAID') {
+      return null;
+    }
+    if (!contribution) {
+      contribution = {
+        id,
+        groupId: group.id,
+        memberId,
+        roundNumber: round.number,
+        amount: group.contributionAmount,
+        status: 'PENDING',
+      };
+      this.contributions.push(contribution);
+    }
+    contribution.status = 'PAID';
+    contribution.paidAt = new Date().toISOString();
+    contribution.txHash = randomTxHash();
+    return contribution;
+  }
+
+  /** Si todos aportaron en la ronda: desembolso al del turno y abre la siguiente (o cierra el grupo). */
+  private payOutIfComplete(group: Group, round: Round): Payout | undefined {
+    const paid = this.contributions.filter(
+      (c) => c.groupId === group.id && c.roundNumber === round.number && c.status === 'PAID',
+    ).length;
+    if (paid < group.memberCount) {
+      return undefined;
+    }
+    const now = new Date().toISOString();
+    round.status = 'PAID_OUT';
+    round.paidOutAt = now;
+    round.payoutTxHash = randomTxHash();
+    const next = group.rounds.find((r) => r.number === round.number + 1);
+    if (next) {
+      next.status = 'OPEN';
+      group.currentRound = next.number;
+    } else {
+      group.status = 'COMPLETED';
+      group.currentRound = null;
+    }
+    return {
+      roundNumber: round.number,
+      recipientMemberId: round.recipientMemberId,
+      amount: multiplyAmount(group.contributionAmount, group.memberCount, group.asset.decimals),
+      txHash: round.payoutTxHash,
+      paidOutAt: now,
+    };
+  }
 
   getTurnSwaps(groupId: string): Promise<TurnSwap[]> {
     return delay(this.swaps.filter((s) => s.groupId === groupId));
