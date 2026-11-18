@@ -1,4 +1,6 @@
 use super::*;
+
+const TEST_GRACE_SECONDS: u64 = 3 * 24 * 60 * 60;
 use soroban_sdk::{
     contract, contractimpl,
     testutils::{Address as _, Ledger},
@@ -63,6 +65,7 @@ fn setup(participant_count: u32) -> Fixture {
         &100,
         &100,
         &10,
+        &TEST_GRACE_SECONDS,
         &participant_count,
         &false,
     );
@@ -80,7 +83,7 @@ fn setup(participant_count: u32) -> Fixture {
 fn settle_after_grace(f: &Fixture) {
     let client = f.client();
     let config = client.get_config();
-    f.env.ledger().set_timestamp(config.deadline + GRACE_SECONDS + 1);
+    f.env.ledger().set_timestamp(config.deadline + config.grace_seconds + 1);
     let _ = client.settle_round();
 }
 
@@ -105,7 +108,7 @@ fn guarantee_covers_one_missed_round_and_pays_the_turn_holder() {
     let first = f.users.get(0).unwrap();
     client.pay_round(&first);
     let config = client.get_config();
-    f.env.ledger().set_timestamp(config.deadline + GRACE_SECONDS + 1);
+    f.env.ledger().set_timestamp(config.deadline + config.grace_seconds + 1);
     let beneficiary = client.settle_round();
     assert!(beneficiary.is_some());
     assert_eq!(beneficiary.unwrap(), first);
@@ -165,7 +168,7 @@ fn no_eligible_beneficiary_preserves_pool_and_rotates_queue() {
     client.pay_round(&c);
     client.pay_round(&d);
     let before = client.get_config();
-    f.env.ledger().set_timestamp(before.deadline + GRACE_SECONDS + 1);
+    f.env.ledger().set_timestamp(before.deadline + before.grace_seconds + 1);
     let result = client.settle_round();
 
     assert!(result.is_none());
@@ -204,7 +207,7 @@ fn final_liquidation_caps_last_beneficiary_and_distributes_excess_exactly() {
     client.pay_round(&c);
     client.pay_round(&d);
     let config = client.get_config();
-    f.env.ledger().set_timestamp(config.deadline + GRACE_SECONDS + 1);
+    f.env.ledger().set_timestamp(config.deadline + config.grace_seconds + 1);
     let result = client.settle_round();
 
     assert!(result.is_some());
@@ -229,7 +232,7 @@ fn payment_is_allowed_at_grace_end_but_settlement_waits_until_after() {
     let client = f.client();
     let first = f.users.get(0).unwrap();
     let config = client.get_config();
-    let grace_end = config.deadline + GRACE_SECONDS;
+    let grace_end = config.deadline + config.grace_seconds;
 
     f.env.ledger().set_timestamp(grace_end);
     client.pay_round(&first);

@@ -6,7 +6,6 @@ use soroban_sdk::{
 };
 
 const MAX_PARTICIPANTS: u32 = 20;
-const GRACE_SECONDS: u64 = 3 * 24 * 60 * 60;
 const INSTANCE_THRESHOLD: u32 = 100_000;
 const INSTANCE_BUMP: u32 = 200_000;
 const PERSISTENT_THRESHOLD: u32 = 100_000;
@@ -70,6 +69,7 @@ pub struct GroupConfig {
     pub contribution: i128,
     pub guarantee: i128,
     pub round_duration: u64,
+    pub grace_seconds: u64,
     pub max_participants: u32,
     pub is_public: bool,
     pub current_round: u32,
@@ -219,6 +219,7 @@ fn add_debt(env: &Env, debtor: &Address, beneficiary: &Address, round: u32, amou
     let shortfall_key = DataKey::Shortfall(beneficiary.clone());
     env.storage().persistent().set(&shortfall_key, &missing);
     env.storage().persistent().extend_ttl(&shortfall_key, PERSISTENT_THRESHOLD, PERSISTENT_BUMP);
+    env.events().publish((symbol_short!("debt"), debtor.clone(), round), (beneficiary.clone(), amount));
     Ok(())
 }
 
@@ -311,6 +312,7 @@ impl PasanakuContract {
         contribution: i128,
         guarantee: i128,
         round_duration: u64,
+        grace_seconds: u64,
         max_participants: u32,
         is_public: bool,
     ) -> Result<(), Error> {
@@ -322,7 +324,7 @@ impl PasanakuContract {
 
         let config = GroupConfig {
             admin, token: token_address, registry, contribution, guarantee,
-            round_duration, max_participants, is_public,
+            round_duration, grace_seconds, max_participants, is_public,
             current_round: 0, deadline: 0, round_pool: 0, no_beneficiary_rounds: 0, status: GroupStatus::Open,
         };
         env.storage().instance().set(&DataKey::Config, &config);
@@ -428,7 +430,7 @@ impl PasanakuContract {
         if config.status != GroupStatus::Active { return Err(Error::GroupNotActive); }
         user.require_auth();
         if !is_member(&participants(&env), &user) { return Err(Error::NotMember); }
-        let grace_end = config.deadline.checked_add(GRACE_SECONDS).ok_or(Error::Overflow)?;
+        let grace_end = config.deadline.checked_add(config.grace_seconds).ok_or(Error::Overflow)?;
         if env.ledger().timestamp() > grace_end { return Err(Error::GracePeriodOver); }
         if payment(&env, config.current_round, &user).is_some() { return Err(Error::AlreadyPaid); }
 
@@ -439,6 +441,7 @@ impl PasanakuContract {
             let beneficiary = q.get(0).ok_or(Error::EmptyQueue)?;
             if debt_total(&env, &beneficiary) > 0 && (user == beneficiary || shortfall(&env, &user) > 0) {
                 save_payment(&env, config.current_round, &user, PaymentStatus::Exempt);
+                env.events().publish((symbol_short!("exempt"), user, config.current_round), ());
                 return Ok(());
             }
         }
@@ -461,7 +464,7 @@ impl PasanakuContract {
     pub fn settle_round(env: Env) -> Result<Option<Address>, Error> {
         let mut config = load_config(&env)?;
         if config.status != GroupStatus::Active { return Err(Error::GroupNotActive); }
-        let grace_end = config.deadline.checked_add(GRACE_SECONDS).ok_or(Error::Overflow)?;
+        let grace_end = config.deadline.checked_add(config.grace_seconds).ok_or(Error::Overflow)?;
         // Payments are accepted through grace_end inclusive; settlement starts after it.
         if env.ledger().timestamp() <= grace_end { return Err(Error::TooEarly); }
         let settled_key = DataKey::RoundSettled(config.current_round);
@@ -491,6 +494,7 @@ impl PasanakuContract {
                 save_payment(&env, config.current_round, &user, PaymentStatus::Defaulted);
                 defaulted.push_back(user.clone());
                 registry.record_default(&group, &user, &config.current_round);
+                env.events().publish((symbol_short!("defaulted"), user.clone(), config.current_round), ());
             }
         }
 
@@ -634,6 +638,14 @@ impl PasanakuContract {
     pub fn get_participants(env: Env) -> Result<Vec<Address>, Error> { load_config(&env)?; Ok(participants(&env)) }
     pub fn get_turn_queue(env: Env) -> Result<Vec<Address>, Error> { load_config(&env)?; Ok(queue(&env)) }
     pub fn get_member(env: Env, user: Address) -> Result<MemberState, Error> { load_member(&env, &user) }
+    pub fn get_debt_record(env: Env, round: u32, debtor: Address) -> Option<DebtRecord> {
+        let key = DataKey::Debt(round, debtor);
+        let record = env.storage().persistent().get(&key);
+        if record.is_some() {
+            env.storage().persistent().extend_ttl(&key, PERSISTENT_THRESHOLD, PERSISTENT_BUMP);
+        }
+        record
+    }
     pub fn get_debt(env: Env, user: Address) -> i128 { debt_total(&env, &user) }
     pub fn get_shortfall(env: Env, beneficiary: Address) -> i128 { shortfall(&env, &beneficiary) }
 }
