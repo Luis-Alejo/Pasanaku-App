@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
-import type { Asset, Contribution, CreateGroupInput, Group, User } from '@core/models/domain.models';
+import type { Asset, Contribution, CreateGroupInput, Group, TurnSwap, User } from '@core/models/domain.models';
 
 import { sortMyGroups } from './group-view';
 import { GroupsApi } from './groups.api';
@@ -89,6 +89,51 @@ export class GroupsStore {
     return group;
   }
 
+  // --- Turnos
+  private readonly _swaps = signal<TurnSwap[]>([]);
+  /** Propuestas de intercambio del grupo cargado (llegan junto con el grupo en loadGroup). */
+  readonly swaps = this._swaps.asReadonly();
+
+  /** Lanza `TurnError` si no se puede. */
+  async chooseTurn(turnNumber: number): Promise<Group> {
+    const group = await this.api.chooseTurn(this.requireGroupId(), this.requireUser().id, turnNumber);
+    this._group.set(group);
+    return group;
+  }
+
+  /** Lanza `TurnError` si no se puede. */
+  async runDraw(): Promise<Group> {
+    const group = await this.api.runDraw(this.requireGroupId(), this.requireUser().id);
+    this._group.set(group);
+    return group;
+  }
+
+  /** Lanza `TurnError` si no se puede. */
+  async proposeSwap(toMemberId: string): Promise<void> {
+    const swap = await this.api.proposeSwap(this.requireGroupId(), this.requireUser().id, toMemberId);
+    this._swaps.update((swaps) => [...swaps, swap]);
+  }
+
+  /** Acepta o rechaza; si acepta, recarga el grupo (cambian turnos y rondas). Lanza `TurnError`. */
+  async respondSwap(swapId: string, accept: boolean): Promise<void> {
+    const swap = await this.api.respondSwap(swapId, this.requireUser().id, accept);
+    this._swaps.update((swaps) => swaps.map((s) => (s.id === swap.id ? swap : s)));
+    if (accept) {
+      const group = await this.api.getGroup(swap.groupId);
+      if (group) {
+        this._group.set(group);
+      }
+    }
+  }
+
+  private requireGroupId(): string {
+    const id = this._group()?.id;
+    if (!id) {
+      throw new Error('No hay un grupo cargado');
+    }
+    return id;
+  }
+
   private requireUser(): User {
     const user = this.auth.currentUser();
     if (!user) {
@@ -115,15 +160,21 @@ export class GroupsStore {
     if (this._group()?.id !== id) {
       this._group.set(null);
       this._contributions.set([]);
+      this._swaps.set([]);
     }
     this._detailState.set('loading');
     try {
-      const [group, contributions] = await Promise.all([this.api.getGroup(id), this.api.getContributions(id)]);
+      const [group, contributions, swaps] = await Promise.all([
+        this.api.getGroup(id),
+        this.api.getContributions(id),
+        this.api.getTurnSwaps(id),
+      ]);
       if (this.requestedId !== id) {
         return;
       }
       this._group.set(group);
       this._contributions.set(contributions);
+      this._swaps.set(swaps);
       this._detailState.set('loaded');
     } catch {
       if (this.requestedId === id) {

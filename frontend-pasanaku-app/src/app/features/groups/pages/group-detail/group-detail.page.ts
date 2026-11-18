@@ -30,6 +30,7 @@ import {
   TURN_MODE_LABELS,
   VISIBILITY_LABELS,
   currentRoundFund,
+  incomingProposals,
   myMember,
   roundPayments,
   sortByTurn,
@@ -126,6 +127,12 @@ export class GroupDetailPage {
   protected readonly canInvite = computed(() => {
     const g = this.store.group();
     return !!g && this.isMember() && g.status === 'FORMING' && !!g.inviteCode;
+  });
+
+  /** Propuestas de intercambio que esperan la respuesta del usuario. */
+  protected readonly pendingForMe = computed(() => {
+    const g = this.store.group();
+    return g ? incomingProposals(g, this.store.swaps(), this.userId()).length : 0;
   });
 
   protected readonly missingMembers = computed(() => {

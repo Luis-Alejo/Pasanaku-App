@@ -1,0 +1,150 @@
+.page {
+  padding: 0.5rem 0 calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 3rem 0;
+}
+
+.summary {
+  padding: 0.5rem 1rem 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.mode {
+  margin: 0.25rem 0 0;
+  color: var(--ion-color-medium);
+}
+
+.section {
+  margin-top: 1.5rem;
+}
+
+.section-title {
+  margin: 0 1rem 0.5rem;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.text {
+  margin: 0 1rem 0.75rem;
+  text-wrap: pretty;
+}
+
+.muted,
+.hint {
+  color: var(--ion-color-medium);
+}
+
+.hint {
+  margin: 0.5rem 1rem 0;
+  font-size: 0.875rem;
+}
+
+.draw ion-button {
+  margin: 0 1rem;
+}
+
+/* Número de turno: círculo neutro, mismo lenguaje que la línea de turnos. */
+.turn-number {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--app-step-background);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+ion-label {
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.free {
+  color: var(--ion-color-medium);
+  font-style: italic;
+}
+
+.me {
+  display: inline-block;
+  margin-inline-start: 0.375rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  background: var(--app-step-background);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Botones de fila: área táctil de 48px. */
+ion-item ion-button {
+  min-height: 48px;
+}
+
+.proposal {
+  margin: 0 1rem 0.75rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+}
+
+.proposal .text {
+  margin: 0 0 0.75rem;
+}
+
+.proposal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.proposal-actions ion-button {
+  min-height: 48px;
+  margin: 0;
+}
+
+.history-text {
+  font-size: 0.9375rem;
+}
+
+.history-date {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+}
+
+.status {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status--accepted {
+  color: var(--ion-color-success);
+}
+
+.status--rejected {
+  color: var(--ion-color-danger);
+}
+
+.status--proposed {
+  color: var(--ion-color-warning);
+}

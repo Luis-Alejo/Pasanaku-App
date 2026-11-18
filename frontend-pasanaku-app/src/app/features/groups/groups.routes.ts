@@ -21,6 +21,10 @@ export const groupsRoutes: Routes = [
         loadComponent: () => import('./pages/group-detail/group-detail.page').then((m) => m.GroupDetailPage),
       },
       {
+        path: ':id/turns',
+        loadComponent: () => import('./pages/group-turns/group-turns.page').then((m) => m.GroupTurnsPage),
+      },
+      {
         path: ':id/join',
         loadComponent: () => import('./pages/join-group/join-group.page').then((m) => m.JoinGroupPage),
       },

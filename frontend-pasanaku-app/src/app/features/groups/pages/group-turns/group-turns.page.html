@@ -1,0 +1,170 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="Grupo" />
+    </ion-buttons>
+    <ion-title>Turnos</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (store.detailLoading() && !group()) {
+  <div class="loading" role="status">
+    <ion-spinner aria-hidden="true" />
+    <span class="visually-hidden">Cargando turnos</span>
+  </div>
+  } @else if (store.detailError()) {
+  <app-empty-state
+    [icon]="icons.error"
+    title="No pudimos cargar los turnos"
+    message="Revisa tu conexión e inténtalo de nuevo."
+  >
+    <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
+  </app-empty-state>
+  } @else if (store.notFound()) {
+  <app-empty-state [icon]="icons.notFound" title="Este grupo no existe" />
+  } @else if (group(); as g) {
+  <div class="page">
+    <header class="summary">
+      <h1 class="name">{{ g.name }}</h1>
+      <p class="mode">
+        {{ g.turnMode === 'DRAW' ? 'Orden por sorteo' : 'Orden por acuerdo' }} @if (g.turnsAssignedAt) { · definido el
+        {{ formatDate(g.turnsAssignedAt) }} }
+      </p>
+    </header>
+
+    @switch (g.status) { @case ('FORMING') {
+    <app-empty-state
+      [icon]="icons.waiting"
+      title="Todavía faltan miembros"
+      [message]="
+              'Los turnos se definen cuando el grupo esté completo (' + g.members.length + ' de ' + g.memberCount + ').'
+            "
+    />
+    } @case ('ASSIGNING_TURNS') { @if (g.turnMode === 'DRAW') {
+    <section class="section draw" aria-labelledby="draw-title">
+      <h2 id="draw-title" class="section-title">Sorteo</h2>
+      <p class="text">
+        El grupo está completo. El sorteo asigna al azar quién cobra en cada ronda; el resultado queda visible para
+        todos y el grupo empieza.
+      </p>
+      @if (me()) {
+      <ion-button expand="block" [disabled]="busy() !== null" (click)="draw()">
+        {{ busy() === 'draw' ? 'Sorteando…' : 'Realizar sorteo' }}
+      </ion-button>
+      }
+    </section>
+    } @else {
+    <section class="section" aria-labelledby="choose-title">
+      <h2 id="choose-title" class="section-title">Elige tu turno</h2>
+      <p class="text">
+        {{ chosenCount() }} de {{ g.memberCount }} eligieron. Cuando todos tengan turno, el grupo empieza.
+      </p>
+      <ion-list [inset]="true" class="slots">
+        @for (slot of slots(); track slot.turn; let last = $last) {
+        <ion-item [lines]="last ? 'none' : undefined">
+          <span slot="start" class="turn-number" aria-hidden="true">{{ slot.turn }}</span>
+          <ion-label>
+            <span class="visually-hidden">Turno {{ slot.turn }}:</span>
+            @if (slot.member) { {{ slot.member.displayName }} @if (slot.isMine) {
+            <span class="me">Tú</span>
+            } } @else {
+            <span class="free">Libre</span>
+            }
+          </ion-label>
+          @if (!slot.member && me()) {
+          <ion-button
+            slot="end"
+            fill="outline"
+            [disabled]="busy() !== null"
+            [attr.aria-label]="'Elegir el turno ' + slot.turn"
+            (click)="choose(slot.turn)"
+          >
+            {{ busy() === 'turn-' + slot.turn ? '…' : 'Elegir' }}
+          </ion-button>
+          }
+        </ion-item>
+        }
+      </ion-list>
+      @if (me()?.turnNumber) {
+      <p class="hint">Puedes cambiar a otro turno libre mientras el grupo no empiece.</p>
+      }
+    </section>
+    } } @default {
+    <section class="section" aria-labelledby="order-title">
+      <h2 id="order-title" class="section-title">
+        {{ g.turnMode === 'DRAW' ? 'Resultado del sorteo' : 'Orden de cobro' }}
+      </h2>
+      <app-turn-timeline [steps]="steps()" label="Orden de cobro" />
+    </section>
+    } } @if (g.turnMode === 'AGREEMENT' && me() && (g.status === 'ASSIGNING_TURNS' || g.status === 'ACTIVE')) { @if
+    (incoming().length) {
+    <section class="section" aria-labelledby="incoming-title">
+      <h2 id="incoming-title" class="section-title">Propuestas para ti</h2>
+      @for (item of incoming(); track item.swap.id) {
+      <div class="proposal">
+        <p class="text">{{ item.view.text }}</p>
+        <div class="proposal-actions">
+          <ion-button fill="outline" [disabled]="busy() !== null" (click)="respond(item.swap.id, false)">
+            {{ busy() === 'reject-' + item.swap.id ? 'Rechazando…' : 'Rechazar' }}
+          </ion-button>
+          <ion-button [disabled]="busy() !== null" (click)="respond(item.swap.id, true)">
+            {{ busy() === 'accept-' + item.swap.id ? 'Aceptando…' : 'Aceptar' }}
+          </ion-button>
+        </div>
+      </div>
+      }
+    </section>
+    } @if (me()?.turnNumber) {
+    <section class="section" aria-labelledby="propose-title">
+      <h2 id="propose-title" class="section-title">Proponer un intercambio</h2>
+      @if (candidates().length) {
+      <p class="text">Tu turno es el {{ me()?.turnNumber }}. Elige con quién quieres cambiarlo.</p>
+      <ion-list [inset]="true">
+        @for (m of candidates(); track m.id; let last = $last) {
+        <ion-item [lines]="last ? 'none' : undefined">
+          <span slot="start" class="turn-number" aria-hidden="true">{{ m.turnNumber }}</span>
+          <ion-label>
+            <span class="visually-hidden">Turno {{ m.turnNumber }}:</span>
+            {{ m.displayName }}
+          </ion-label>
+          <ion-button
+            slot="end"
+            fill="clear"
+            [disabled]="busy() !== null"
+            [attr.aria-label]="'Proponer intercambio a ' + m.displayName"
+            (click)="propose(m)"
+          >
+            Proponer
+          </ion-button>
+        </ion-item>
+        }
+      </ion-list>
+      } @else {
+      <p class="text muted">
+        No hay intercambios posibles ahora: solo se cambian turnos que todavía no empezaron y sin otra propuesta
+        pendiente con esa persona.
+      </p>
+      }
+    </section>
+    } @if (history().length) {
+    <section class="section" aria-labelledby="history-title">
+      <h2 id="history-title" class="section-title">Intercambios</h2>
+      <ion-list [inset]="true">
+        @for (h of history(); track h.id; let last = $last) {
+        <ion-item [lines]="last ? 'none' : undefined">
+          <ion-label class="history-text">
+            {{ h.text }}
+            <span class="history-date">{{ h.date }}</span>
+          </ion-label>
+          <ion-note slot="end" [class]="'status status--' + h.status.toLowerCase()">
+            {{ swapStatusLabel(h.status) }}
+          </ion-note>
+        </ion-item>
+        }
+      </ion-list>
+    </section>
+    } }
+  </div>
+  }
+</ion-content>

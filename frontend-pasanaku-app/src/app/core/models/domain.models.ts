@@ -107,6 +107,8 @@ export interface Group {
   rounds: Round[];
   /** Número de la ronda en curso; `null` si el ciclo no empezó o ya cerró. */
   currentRound: number | null;
+  /** Cuándo quedó definido el orden de cobro (elección completa o sorteo). */
+  turnsAssignedAt?: string;
   createdAt: string;
 }
 
@@ -130,6 +132,23 @@ export class JoinGroupError extends Error {
   constructor(readonly code: JoinGroupErrorCode) {
     super(code);
     this.name = 'JoinGroupError';
+  }
+}
+
+/** Por qué no se pudo hacer una acción de turnos. */
+export type TurnErrorCode =
+  | 'NOT_FOUND'
+  | 'NOT_MEMBER'
+  /** El grupo no está en la etapa o el modo que permite la acción. */
+  | 'NOT_ALLOWED'
+  | 'TURN_TAKEN'
+  /** Uno de los turnos ya pasó o ya está en curso, o ya hay una propuesta pendiente. */
+  | 'SWAP_NOT_ALLOWED';
+
+export class TurnError extends Error {
+  constructor(readonly code: TurnErrorCode) {
+    super(code);
+    this.name = 'TurnError';
   }
 }
 

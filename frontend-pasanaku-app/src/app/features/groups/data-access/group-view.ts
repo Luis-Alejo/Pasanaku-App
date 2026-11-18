@@ -7,6 +7,8 @@ import type {
   Member,
   Periodicity,
   TurnMode,
+  TurnSwap,
+  TurnSwapStatus,
 } from '@core/models/domain.models';
 import type { TimelineStep } from '@shared/ui/turn-timeline/turn-timeline.component';
 import { formatDate, multiplyAmount, plural, sumAmounts } from '@shared/utils/format';
@@ -160,4 +162,96 @@ export function turnSteps(group: Group, userId: string): TimelineStep[] {
         highlight: isMe,
       };
     });
+}
+
+// ---------------------------------------------------------------------------
+// Turnos
+// ---------------------------------------------------------------------------
+
+/** Un turno se puede intercambiar si está asignado y su ronda todavía no empezó. */
+export function isSwappable(group: Group, turn: number | null): boolean {
+  if (turn === null) return false;
+  if (group.status === 'ASSIGNING_TURNS') return true;
+  if (group.status !== 'ACTIVE') return false;
+  return group.rounds.find((r) => r.number === turn)?.status === 'UPCOMING';
+}
+
+export interface TurnSlot {
+  turn: number;
+  /** Quién eligió este turno (null si está libre). */
+  member: Member | null;
+  isMine: boolean;
+}
+
+/** Los turnos 1..n del grupo y quién tiene cada uno (modo acuerdo, mientras se eligen). */
+export function turnSlots(group: Group, userId: string): TurnSlot[] {
+  return Array.from({ length: group.memberCount }, (_, i) => {
+    const turn = i + 1;
+    const member = group.members.find((m) => m.turnNumber === turn) ?? null;
+    return { turn, member, isMine: member?.userId === userId };
+  });
+}
+
+/** Miembros con los que el usuario puede proponer un intercambio ahora. */
+export function swapCandidates(group: Group, swaps: TurnSwap[], userId: string): Member[] {
+  const me = myMember(group, userId);
+  if (!me || group.turnMode !== 'AGREEMENT' || !isSwappable(group, me.turnNumber)) {
+    return [];
+  }
+  const pendingWith = new Set(
+    swaps
+      .filter((s) => s.status === 'PROPOSED' && (s.fromMemberId === me.id || s.toMemberId === me.id))
+      .map((s) => (s.fromMemberId === me.id ? s.toMemberId : s.fromMemberId)),
+  );
+  return sortByTurn(group.members).filter(
+    (m) => m.id !== me.id && isSwappable(group, m.turnNumber) && !pendingWith.has(m.id),
+  );
+}
+
+export interface SwapView {
+  id: string;
+  /** Para el usuario: le llegó, la mandó, o es entre otros miembros. */
+  direction: 'incoming' | 'outgoing' | 'other';
+  status: TurnSwapStatus;
+  text: string;
+  date: string;
+}
+
+const SWAP_STATUS_TEXT: Record<TurnSwapStatus, string> = {
+  PROPOSED: 'Pendiente',
+  ACCEPTED: 'Aceptado',
+  REJECTED: 'Rechazado',
+};
+
+export function swapStatusLabel(status: TurnSwapStatus): string {
+  return SWAP_STATUS_TEXT[status];
+}
+
+/** Texto de una propuesta de intercambio, contado desde el punto de vista del usuario. */
+export function describeSwap(swap: TurnSwap, group: Group, userId: string): SwapView {
+  const name = (id: string) => group.members.find((m) => m.id === id)?.displayName ?? 'Un miembro';
+  const me = myMember(group, userId);
+  const direction = swap.toMemberId === me?.id ? 'incoming' : swap.fromMemberId === me?.id ? 'outgoing' : 'other';
+  let text: string;
+  if (direction === 'incoming') {
+    const verb = swap.status === 'PROPOSED' ? 'te propone' : 'te propuso';
+    text = `${name(swap.fromMemberId)} ${verb} su turno ${swap.fromTurn} a cambio de tu turno ${swap.toTurn}.`;
+  } else if (direction === 'outgoing') {
+    text = `Propusiste a ${name(swap.toMemberId)} cambiar tu turno ${swap.fromTurn} por su turno ${swap.toTurn}.`;
+  } else {
+    text = `${name(swap.fromMemberId)} (turno ${swap.fromTurn}) y ${name(swap.toMemberId)} (turno ${swap.toTurn}).`;
+  }
+  return {
+    id: swap.id,
+    direction,
+    status: swap.status,
+    text,
+    date: formatDate(swap.respondedAt ?? swap.createdAt),
+  };
+}
+
+/** Propuestas que esperan la respuesta del usuario. */
+export function incomingProposals(group: Group, swaps: TurnSwap[], userId: string): TurnSwap[] {
+  const me = myMember(group, userId);
+  return me ? swaps.filter((s) => s.status === 'PROPOSED' && s.toMemberId === me.id) : [];
 }

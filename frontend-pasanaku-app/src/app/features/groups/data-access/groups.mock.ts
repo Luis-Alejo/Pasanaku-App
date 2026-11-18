@@ -312,7 +312,124 @@ const schoolMembers: Member[] = [
   ),
 ];
 
+// ---------------------------------------------------------------------------
+// Asignando turnos: completos, todavía sin orden de cobro
+// ---------------------------------------------------------------------------
+const FOOTBALL_ID = 'group-equipo-futbol';
+// Por acuerdo: 3 de 5 ya eligieron turno; Ana todavía no.
+const footballMembers: Member[] = [
+  member(
+    'm-fut-1',
+    'user-marco',
+    'Marco Antonio Vargas',
+    'GBWI6R2326HWSVGOBLUMNCI6UIQYVNDZMVZ6ELVOOJMIX4JULOTVPWCV',
+    1,
+    '2026-11-08T20:00:00Z',
+  ),
+  member(
+    'm-fut-2',
+    'user-ana',
+    'Ana Quispe Mamani',
+    'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
+    null,
+    '2026-11-08T20:10:00Z',
+  ),
+  member(
+    'm-fut-3',
+    'user-diego',
+    'Diego Rojas',
+    'GVTHMBAWJWGJWRC6TZRFOMKABTLVFLH7V6SBFCJNRAMLBMQRJC2TJ2VH',
+    4,
+    '2026-11-09T09:00:00Z',
+  ),
+  member(
+    'm-fut-4',
+    'user-hugo',
+    'Hugo Cuéllar',
+    'GSFC66HUF5W3D6CJ43HT5EGUKTFBMEQFIT4IQMV2TNRHVSEU3RLJGSJC',
+    null,
+    '2026-11-10T18:40:00Z',
+  ),
+  member(
+    'm-fut-5',
+    'user-luis',
+    'Luis Fernando Choque',
+    'G5B4MCMH3ARBKHD7QW2EHRZZHGPYDRNRTJSJAQ5RC2DO2RAZ3ZTIA5P4',
+    2,
+    '2026-11-12T21:15:00Z',
+  ),
+];
+
+const NEIGHBORS_ID = 'group-vecinos-edificio';
+// Por sorteo: completo, esperando el sorteo.
+const neighborMembers: Member[] = [
+  member(
+    'm-vec-1',
+    'user-patricia',
+    'Patricia Rocha',
+    'G4X7YXM3HP327AKNBTVU7L7TPOZLOMJAM6HNYK7Y4GWXGW7C5Z7LLP4R',
+    null,
+    '2026-11-02T10:00:00Z',
+  ),
+  member(
+    'm-vec-2',
+    'user-ana',
+    'Ana Quispe Mamani',
+    'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
+    null,
+    '2026-11-02T11:30:00Z',
+  ),
+  member(
+    'm-vec-3',
+    'user-wilson',
+    'Wilson Calle',
+    'GHO6PLC4P7LJWT5FWCQCKHQQGGOKF7M7GYYCZEUX46BMD44SK77DYOHL',
+    null,
+    '2026-11-03T08:20:00Z',
+  ),
+  member(
+    'm-vec-4',
+    'user-veronica',
+    'Verónica Limachi',
+    'GM3OVX72Z5F7CYDNFAJ24QCYWNEZ2OFQWIGMDL7TJPYJA5DP7PT4EEKL',
+    null,
+    '2026-11-06T17:00:00Z',
+  ),
+];
+
 export const MOCK_GROUPS: Group[] = [
+  {
+    id: FOOTBALL_ID,
+    name: 'Ahorro del equipo de fútbol',
+    contributionAmount: '100.0000000',
+    asset: MOCK_ASSETS.BOB,
+    periodicity: 'MONTHLY',
+    memberCount: 5,
+    visibility: 'PRIVATE',
+    turnMode: 'AGREEMENT',
+    status: 'ASSIGNING_TURNS',
+    inviteCode: 'FUTBOL9',
+    members: footballMembers,
+    currentRound: null,
+    createdAt: '2026-11-08T20:00:00Z',
+    rounds: [],
+  },
+  {
+    id: NEIGHBORS_ID,
+    name: 'Pasanaku vecinos del edificio',
+    contributionAmount: '20.0000000',
+    asset: MOCK_ASSETS.USDC,
+    periodicity: 'BIWEEKLY',
+    memberCount: 4,
+    visibility: 'PRIVATE',
+    turnMode: 'DRAW',
+    status: 'ASSIGNING_TURNS',
+    inviteCode: 'VECINO4',
+    members: neighborMembers,
+    currentRound: null,
+    createdAt: '2026-11-02T10:00:00Z',
+    rounds: [],
+  },
   {
     id: FAMILY_ID,
     name: 'Pasanaku familia Quispe',
@@ -327,6 +444,7 @@ export const MOCK_GROUPS: Group[] = [
     members: familyMembers,
     currentRound: 3,
     createdAt: '2026-08-20T14:00:00Z',
+    turnsAssignedAt: '2026-08-25T19:30:00Z',
     rounds: [
       paidOutRound(FAMILY_ID, 1, '2026-09-15', 'm-fam-1'),
       paidOutRound(FAMILY_ID, 2, '2026-10-15', 'm-fam-2'),
@@ -350,6 +468,7 @@ export const MOCK_GROUPS: Group[] = [
     members: officeMembers,
     currentRound: 1,
     createdAt: '2026-11-01T13:00:00Z',
+    turnsAssignedAt: '2026-11-04T12:00:00Z',
     rounds: [
       { number: 1, dueDate: '2026-11-30', recipientMemberId: 'm-ofi-1', status: 'OPEN' },
       { number: 2, dueDate: '2026-12-14', recipientMemberId: 'm-ofi-2', status: 'UPCOMING' },
@@ -402,6 +521,7 @@ export const MOCK_GROUPS: Group[] = [
     members: promoMembers,
     currentRound: null,
     createdAt: '2026-02-10T16:00:00Z',
+    turnsAssignedAt: '2026-02-15T12:00:00Z',
     rounds: [
       paidOutRound(PROMO_ID, 1, '2026-03-10', 'm-pro-1'),
       paidOutRound(PROMO_ID, 2, '2026-04-10', 'm-pro-2'),

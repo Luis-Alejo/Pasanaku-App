@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
-import type { Asset, Contribution, CreateGroupInput, Group, User } from '@core/models/domain.models';
-import { JoinGroupError } from '@core/models/domain.models';
+import type { Asset, Contribution, CreateGroupInput, Group, Round, TurnSwap, User } from '@core/models/domain.models';
+import { JoinGroupError, TurnError } from '@core/models/domain.models';
 import { environment } from '@env/environment';
+import { addDays, addMonths, todayIso } from '@shared/utils/date';
 
-import { MOCK_ASSETS, MOCK_CONTRIBUTIONS, MOCK_GROUPS } from './groups.mock';
+import { isSwappable } from './group-view';
+import { MOCK_ASSETS, MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from './groups.mock';
 
 /**
  * De dónde salen los datos de grupos. El store solo conoce esta interfaz:
@@ -28,6 +30,21 @@ export abstract class GroupsApi {
   abstract createGroup(input: CreateGroupInput, user: User): Promise<Group>;
   /** Une al usuario al grupo. Falla con `JoinGroupError` si no se puede. */
   abstract joinGroup(groupId: string, user: User): Promise<Group>;
+
+  // --- Turnos (fallan con `TurnError` si no se puede)
+  /** Propuestas de intercambio de turno del grupo. */
+  abstract getTurnSwaps(groupId: string): Promise<TurnSwap[]>;
+  /** Modo acuerdo: el usuario elige (o cambia) su turno. Si ya eligieron todos, el grupo empieza. */
+  abstract chooseTurn(groupId: string, userId: string, turnNumber: number): Promise<Group>;
+  /**
+   * Modo sorteo: asigna el orden al azar y el grupo empieza.
+   * POR CONFIRMAR con el contrato: quién puede disparar el sorteo.
+   */
+  abstract runDraw(groupId: string, userId: string): Promise<Group>;
+  /** Modo acuerdo: el usuario propone a otro miembro cambiar sus turnos. */
+  abstract proposeSwap(groupId: string, userId: string, toMemberId: string): Promise<TurnSwap>;
+  /** El miembro que recibió la propuesta la acepta o la rechaza. */
+  abstract respondSwap(swapId: string, userId: string, accept: boolean): Promise<TurnSwap>;
 }
 
 function createGroupsApi(): GroupsApi {
@@ -52,6 +69,22 @@ function fail(error: Error): Promise<never> {
 
 const isMember = (group: Group, userId: string) => group.members.some((m) => m.userId === userId);
 
+/** Con el orden definido, el grupo empieza: se crean las rondas y se abre la primera. */
+function startCycle(group: Group, today = todayIso()): void {
+  const next = (n: number) => (group.periodicity === 'BIWEEKLY' ? addDays(today, 14 * n) : addMonths(today, n));
+  group.rounds = [...group.members]
+    .sort((a, b) => (a.turnNumber ?? 0) - (b.turnNumber ?? 0))
+    .map((m, i): Round => ({
+      number: i + 1,
+      dueDate: next(i + 1),
+      recipientMemberId: m.id,
+      status: i === 0 ? 'OPEN' : 'UPCOMING',
+    }));
+  group.status = 'ACTIVE';
+  group.currentRound = 1;
+  group.turnsAssignedAt = new Date().toISOString();
+}
+
 /** Sin 0/O ni 1/I/L, para que el código se pueda dictar sin confusiones. */
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -63,7 +96,110 @@ export class MockGroupsApi extends GroupsApi {
   private readonly groups: Group[] = structuredClone(MOCK_GROUPS);
   private readonly contributions: Contribution[] = structuredClone(MOCK_CONTRIBUTIONS);
   private readonly assets: Asset[] = Object.values(MOCK_ASSETS);
+  private readonly swaps: TurnSwap[] = structuredClone(MOCK_TURN_SWAPS);
   private nextId = 1;
+
+  getTurnSwaps(groupId: string): Promise<TurnSwap[]> {
+    return delay(this.swaps.filter((s) => s.groupId === groupId));
+  }
+
+  chooseTurn(groupId: string, userId: string, turnNumber: number): Promise<Group> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return fail(new TurnError('NOT_FOUND'));
+    const me = group.members.find((m) => m.userId === userId);
+    if (!me) return fail(new TurnError('NOT_MEMBER'));
+    if (group.turnMode !== 'AGREEMENT' || group.status !== 'ASSIGNING_TURNS') return fail(new TurnError('NOT_ALLOWED'));
+    if (!Number.isInteger(turnNumber) || turnNumber < 1 || turnNumber > group.memberCount) {
+      return fail(new TurnError('NOT_ALLOWED'));
+    }
+    if (group.members.some((m) => m.id !== me.id && m.turnNumber === turnNumber)) {
+      return fail(new TurnError('TURN_TAKEN'));
+    }
+    me.turnNumber = turnNumber;
+    if (group.members.every((m) => m.turnNumber !== null)) {
+      startCycle(group);
+    }
+    return delay(group);
+  }
+
+  runDraw(groupId: string, userId: string): Promise<Group> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return fail(new TurnError('NOT_FOUND'));
+    if (!isMember(group, userId)) return fail(new TurnError('NOT_MEMBER'));
+    if (group.turnMode !== 'DRAW' || group.status !== 'ASSIGNING_TURNS') return fail(new TurnError('NOT_ALLOWED'));
+    // Fisher–Yates con números aleatorios criptográficos.
+    const order = group.members.map((_, i) => i + 1);
+    const random = crypto.getRandomValues(new Uint32Array(order.length));
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = random[i] % (i + 1);
+      [order[i], order[j]] = [order[j], order[i]];
+    }
+    group.members.forEach((m, i) => (m.turnNumber = order[i]));
+    startCycle(group);
+    return delay(group);
+  }
+
+  proposeSwap(groupId: string, userId: string, toMemberId: string): Promise<TurnSwap> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return fail(new TurnError('NOT_FOUND'));
+    const me = group.members.find((m) => m.userId === userId);
+    const other = group.members.find((m) => m.id === toMemberId);
+    if (!me || !other) return fail(new TurnError('NOT_MEMBER'));
+    if (group.turnMode !== 'AGREEMENT') return fail(new TurnError('NOT_ALLOWED'));
+    const pending = this.swaps.some(
+      (s) =>
+        s.groupId === groupId &&
+        s.status === 'PROPOSED' &&
+        [s.fromMemberId, s.toMemberId].includes(me.id) &&
+        [s.fromMemberId, s.toMemberId].includes(other.id),
+    );
+    if (me.id === other.id || pending || !isSwappable(group, me.turnNumber) || !isSwappable(group, other.turnNumber)) {
+      return fail(new TurnError('SWAP_NOT_ALLOWED'));
+    }
+    const swap: TurnSwap = {
+      id: `swap-new-${this.nextId++}`,
+      groupId,
+      fromMemberId: me.id,
+      toMemberId: other.id,
+      fromTurn: me.turnNumber as number,
+      toTurn: other.turnNumber as number,
+      status: 'PROPOSED',
+      createdAt: new Date().toISOString(),
+    };
+    this.swaps.push(swap);
+    return delay(swap);
+  }
+
+  respondSwap(swapId: string, userId: string, accept: boolean): Promise<TurnSwap> {
+    const swap = this.swaps.find((s) => s.id === swapId);
+    const group = swap && this.groups.find((g) => g.id === swap.groupId);
+    if (!swap || !group) return fail(new TurnError('NOT_FOUND'));
+    const me = group.members.find((m) => m.userId === userId);
+    if (!me || me.id !== swap.toMemberId) return fail(new TurnError('NOT_MEMBER'));
+    if (swap.status !== 'PROPOSED') return fail(new TurnError('NOT_ALLOWED'));
+    const from = group.members.find((m) => m.id === swap.fromMemberId);
+    if (accept) {
+      // Los turnos tienen que seguir siendo los de la propuesta y no haber empezado.
+      if (
+        !from ||
+        from.turnNumber !== swap.fromTurn ||
+        me.turnNumber !== swap.toTurn ||
+        !isSwappable(group, swap.fromTurn) ||
+        !isSwappable(group, swap.toTurn)
+      ) {
+        return fail(new TurnError('SWAP_NOT_ALLOWED'));
+      }
+      from.turnNumber = swap.toTurn;
+      me.turnNumber = swap.fromTurn;
+      for (const round of group.rounds) {
+        if (round.number === swap.fromTurn) round.recipientMemberId = me.id;
+        else if (round.number === swap.toTurn) round.recipientMemberId = from.id;
+      }
+    }
+    swap.status = accept ? 'ACCEPTED' : 'REJECTED';
+    swap.respondedAt = new Date().toISOString();
+    return delay(swap);
+  }
 
   getMyGroups(userId: string): Promise<Group[]> {
     return delay(this.groups.filter((g) => isMember(g, userId)));
