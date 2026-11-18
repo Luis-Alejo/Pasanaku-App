@@ -42,13 +42,10 @@
   grid-template-columns: 2.5rem minmax(0, 1fr);
   column-gap: 0.875rem;
   padding: 1rem 1.25rem 0.5rem;
+  border: 1px solid var(--pk-card-border);
   border-radius: var(--pk-radius-card);
   background: var(--ion-card-background);
   box-shadow: var(--pk-shadow-card);
-}
-
-:host-context(.ion-palette-dark) .event {
-  border: 1px solid var(--pk-border);
 }
 
 /* Cuadro de ícono del kit (Row / Transaction), color según el tipo. */

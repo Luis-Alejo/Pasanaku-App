@@ -18,7 +18,7 @@
   gap: 0.5rem;
   min-height: 6.25rem;
   padding: 0.75rem 0.5rem;
-  border: 0;
+  border: 1px solid var(--pk-card-border);
   border-radius: var(--pk-radius-card);
   background: var(--ion-card-background);
   box-shadow: var(--pk-shadow-card);
@@ -31,11 +31,6 @@
   touch-action: manipulation;
   user-select: none;
   transition: transform 120ms ease-out;
-}
-
-/* En oscuro no hay sombra: la tarjeta se separa con un borde suave. */
-:host-context(.ion-palette-dark) .action {
-  border: 1px solid var(--pk-border);
 }
 
 .action:active {

@@ -146,6 +146,11 @@ ion-toolbar {
   --border-width: 0;
 }
 
+/* Botones de la barra superior: área táctil de 48px (Ionic los deja en 32px). */
+ion-toolbar ion-buttons ion-button {
+  height: 48px;
+}
+
 ion-title {
   font-size: 1.125rem;
   font-weight: 600;
@@ -208,12 +213,9 @@ ion-textarea[fill='outline'] {
 
 /* Listas "inset" como tarjetas del kit. */
 ion-list.list-inset {
+  border: 1px solid var(--pk-card-border);
   border-radius: var(--pk-radius-card);
   box-shadow: var(--pk-shadow-card);
-}
-
-.ion-palette-dark ion-list.list-inset {
-  border: 1px solid var(--pk-border);
 }
 
 /* Las ilustraciones del kit tienen un "piso" gris claro: en oscuro, algo atenuadas. */
@@ -246,13 +248,10 @@ ion-list.list-inset {
 /* Tarjeta simple del kit (blanca, radio 15, sombra índigo; borde en oscuro). */
 .pk-card {
   padding: 0.5rem 1.25rem;
+  border: 1px solid var(--pk-card-border);
   border-radius: var(--pk-radius-card);
   background: var(--ion-card-background);
   box-shadow: var(--pk-shadow-card);
-}
-
-.ion-palette-dark .pk-card {
-  border: 1px solid var(--pk-border);
 }
 
 /**

@@ -3,11 +3,8 @@ ion-tab-bar {
   --background: var(--ion-tab-bar-background);
   --border: 0;
   height: calc(4.5rem + var(--ion-safe-area-bottom, 0px));
+  border-top: 1px solid var(--pk-card-border);
   box-shadow: var(--pk-shadow-card-sm);
-}
-
-:host-context(.ion-palette-dark) ion-tab-bar {
-  border-top: 1px solid var(--pk-border);
 }
 
 ion-tab-button {
@@ -62,8 +59,11 @@ ion-tab-button.tab-selected ion-label {
   font-weight: 600;
 }
 
+/* Solo la pestaña que se activa hace el fundido. La que se desactiva cambia al
+   instante: si se desvaneciera, su fondo índigo se vería un momento como un
+   cuadrado, porque pierde la forma de pastilla antes que el color. */
 @media (prefers-reduced-motion: no-preference) {
-  ion-tab-button::part(native) {
+  ion-tab-button.tab-selected::part(native) {
     transition: background-color 160ms ease-out;
   }
 }

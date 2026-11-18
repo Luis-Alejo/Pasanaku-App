@@ -5,10 +5,7 @@
 /* Tarjeta del kit (Account and card): blanca, radio 15px, sombra índigo. */
 ion-card {
   margin: 0 0 1rem;
-}
-
-:host-context(.ion-palette-dark) ion-card {
-  border: 1px solid var(--pk-border);
+  border: 1px solid var(--pk-card-border);
 }
 
 .card {
