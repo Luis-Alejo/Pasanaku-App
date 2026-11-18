@@ -1,0 +1,71 @@
+:host {
+  display: block;
+}
+
+/* Tarjeta del kit (Account and card): blanca, radio 15px, sombra índigo. */
+ion-card {
+  margin: 0 0 1rem;
+  border: 1px solid var(--pk-card-border);
+}
+
+.card {
+  padding: 1rem 1.25rem;
+}
+
+/* Si el nombre no tiene lugar al lado del estado, el estado baja a otra línea. */
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.375rem 0.75rem;
+  margin-bottom: 0.375rem;
+}
+
+.name {
+  flex: 1 1 11rem;
+  min-width: 0;
+  margin: 0;
+  color: var(--ion-text-color);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.35;
+  /* Parte una palabra solo si no entra entera en ninguna línea. */
+  overflow-wrap: break-word;
+}
+
+.status {
+  flex-shrink: 0;
+  padding: 0.25rem 0.625rem;
+  border-radius: var(--pk-radius-pill);
+  background: var(--pk-step);
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status--active {
+  background: var(--pk-badge-neutral-bg);
+  color: var(--pk-badge-neutral-fg);
+}
+
+.status--forming,
+.status--assigning_turns {
+  background: var(--pk-badge-info-bg);
+  color: var(--pk-badge-info-fg);
+}
+
+app-info-row {
+  padding: 0.25rem 0;
+}
+
+.progress {
+  margin: 0.5rem 0 0;
+  padding-top: 0.625rem;
+  border-top: 1px solid var(--pk-border);
+  color: var(--ion-text-color);
+  font-size: 0.875rem;
+  font-weight: 500;
+  overflow-wrap: break-word;
+}

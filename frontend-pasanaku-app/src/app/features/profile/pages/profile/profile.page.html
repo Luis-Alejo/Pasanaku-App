@@ -1,0 +1,76 @@
+<ion-content [fullscreen]="true">
+  @if (user(); as u) {
+  <!-- Setting del kit: encabezado índigo con avatar grande centrado y nombre en índigo -->
+  <app-brand-header>
+    <h1 class="screen-title">Perfil</h1>
+    <div pkOverlap class="person">
+      <app-avatar class="person-avatar" [name]="u.displayName" size="lg" />
+      <p class="name">{{ u.displayName }}</p>
+      <p class="email">{{ u.email }}</p>
+    </div>
+  </app-brand-header>
+
+  <div class="page">
+    <section class="section" aria-labelledby="wallet-title">
+      <h2 id="wallet-title" class="pk-section-title">Billetera Stellar</h2>
+      <div class="pk-card wallet">
+        <p id="address-label" class="label">Tu dirección (Testnet)</p>
+        <p class="address" aria-labelledby="address-label">{{ u.walletAddress }}</p>
+        <div class="wallet-actions">
+          <ion-button fill="outline" (click)="copyAddress()">
+            <ion-icon slot="start" [icon]="copied() ? icons.copied : icons.copy" aria-hidden="true" />
+            {{ copied() ? 'Copiada' : 'Copiar dirección' }}
+          </ion-button>
+          <a class="explorer" [href]="accountUrl()" target="_blank" rel="noopener noreferrer">
+            Ver en el explorador
+            <ion-icon [icon]="icons.external" aria-hidden="true" />
+            <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
+          </a>
+        </div>
+        <p class="hint">Tu cuenta la administra Pasanaku de forma segura: no necesitas guardar claves.</p>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="appearance-title">
+      <h2 id="appearance-title" class="pk-section-title">Apariencia</h2>
+      <div class="pk-card">
+        <ion-toggle
+          class="theme-toggle"
+          justify="space-between"
+          [checked]="theme.isDark()"
+          (ionChange)="theme.setMode($event.detail.checked ? 'dark' : 'light')"
+        >
+          Modo oscuro
+        </ion-toggle>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="balances-title">
+      <h2 id="balances-title" class="pk-section-title">Saldos en Testnet</h2>
+      @if (balancesState() === 'loading') {
+      <div class="loading" role="status">
+        <ion-spinner aria-hidden="true" />
+        <span class="visually-hidden">Consultando saldos</span>
+      </div>
+      } @else if (balancesState() === 'error') {
+      <div class="balances-error">
+        <p>No pudimos consultar tus saldos en Stellar.</p>
+        <ion-button fill="outline" (click)="loadBalances()">Reintentar</ion-button>
+      </div>
+      } @else if (balancesState() === 'loaded') { @if (balances().length) {
+      <div class="pk-card" role="group" aria-label="Saldos por moneda">
+        @for (b of balanceRows(); track b.code + (b.issuer ?? '')) {
+        <app-info-row [label]="b.code" [value]="b.number" tone="brand" />
+        }
+      </div>
+      } @else {
+      <p class="hint">Tu cuenta todavía no tiene fondos en Testnet.</p>
+      }
+      <p class="hint">
+        Activos de prueba, sin valor real. @if (isMock) { Con datos de prueba, estos saldos son de ejemplo. }
+      </p>
+      }
+    </section>
+  </div>
+  }
+</ion-content>

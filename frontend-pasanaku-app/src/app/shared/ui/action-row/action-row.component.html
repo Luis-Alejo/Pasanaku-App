@@ -1,0 +1,25 @@
+@if (link()) {
+  <a class="row" [routerLink]="link()">
+    <ng-container [ngTemplateOutlet]="body" />
+    <ion-icon class="chevron" [icon]="chevron" aria-hidden="true" />
+  </a>
+} @else {
+  <div class="row">
+    <ng-container [ngTemplateOutlet]="body" />
+  </div>
+}
+
+<ng-template #body>
+  <span class="icon" [class]="'icon icon--' + accent()" aria-hidden="true">
+    <ion-icon [icon]="icon()" />
+  </span>
+  <span class="text">
+    <span class="title">{{ title() }}</span>
+    @if (subtitle()) {
+      <span class="subtitle">{{ subtitle() }}</span>
+    }
+  </span>
+  @if (value()) {
+    <span class="value">{{ value() }}</span>
+  }
+</ng-template>

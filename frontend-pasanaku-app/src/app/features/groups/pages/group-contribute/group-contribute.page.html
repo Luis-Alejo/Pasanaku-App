@@ -1,0 +1,135 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="" aria-label="Volver al grupo" />
+    </ion-buttons>
+    <ion-title>Registrar aporte</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (phase() === 'sending') {
+  <div class="status-panel" role="status">
+    <ion-spinner aria-hidden="true" />
+    <p class="status-title">Procesando en Stellar Testnet…</p>
+    <p class="status-text">Suele tardar unos segundos. No cierres la app hasta que se confirme.</p>
+  </div>
+  } @else if (phase() === 'done' && result(); as r) {
+  <div class="status-panel" role="status">
+    <img class="art" src="assets/illustrations/billetera.svg" alt="" decoding="async" />
+    <p class="status-title">¡Aporte confirmado!</p>
+    <p class="status-text">
+      <strong class="amount">{{ r.contribution.amount | money: r.group.asset }}</strong>
+      · ronda {{ r.contribution.roundNumber }}
+    </p>
+    @if (r.contribution.txHash) {
+    <a class="tx-link" [href]="txUrl(r.contribution.txHash)" target="_blank" rel="noopener noreferrer">
+      Ver transacción {{ shortHash(r.contribution.txHash) }}
+      <ion-icon [icon]="icons.external" aria-hidden="true" />
+      <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
+    </a>
+    }
+  </div>
+
+  @if (r.payout; as payout) {
+  <section class="payout" aria-labelledby="payout-title">
+    <h2 id="payout-title" class="payout-title">¡Ronda {{ payout.roundNumber }} completa!</h2>
+    <p class="payout-text">
+      Aportaron todos. {{ payoutRecipient() }}
+      <strong class="amount">{{ payout.amount | money: r.group.asset }}</strong>
+      (desembolso simulado).
+    </p>
+    <a class="tx-link" [href]="txUrl(payout.txHash)" target="_blank" rel="noopener noreferrer">
+      Ver desembolso {{ shortHash(payout.txHash) }}
+      <ion-icon [icon]="icons.external" aria-hidden="true" />
+      <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
+    </a>
+  </section>
+  }
+
+  <div class="actions">
+    <ion-button expand="block" [routerLink]="['/tabs/groups', r.group.id]" routerDirection="back">
+      Volver al grupo
+    </ion-button>
+    <ion-button expand="block" fill="clear" [routerLink]="['/tabs/groups', r.group.id, 'history']">
+      Ver historial
+    </ion-button>
+  </div>
+  } @else if (phase() === 'failed') {
+  <app-empty-state [icon]="icons.failed" title="No se registró tu aporte" [message]="errorMessage()">
+    <ion-button fill="outline" (click)="backToReview()">Volver a intentar</ion-button>
+  </app-empty-state>
+  } @else if (store.detailLoading() && !group()) {
+  <div class="status-panel" role="status">
+    <ion-spinner aria-hidden="true" />
+    <span class="visually-hidden">Cargando</span>
+  </div>
+  } @else if (store.detailError()) {
+  <app-empty-state
+    [icon]="icons.error"
+    title="No pudimos cargar el grupo"
+    message="Revisa tu conexión e inténtalo de nuevo."
+  >
+    <ion-button fill="outline" (click)="retryLoad()">Reintentar</ion-button>
+  </app-empty-state>
+  } @else if (store.notFound()) {
+  <app-empty-state [icon]="icons.notFound" title="Este grupo no existe" />
+  } @else if (group(); as g) { @if (!me()) {
+  <app-empty-state [icon]="icons.notFound" title="No eres parte de este grupo" />
+  } @else if (!round()) {
+  <app-empty-state
+    [icon]="icons.closed"
+    [title]="g.status === 'COMPLETED' ? 'El ciclo ya terminó' : 'Todavía no hay una ronda abierta'"
+    [message]="
+          g.status === 'COMPLETED'
+            ? 'Todos los miembros recibieron su cobro.'
+            : 'Los aportes empiezan cuando el orden de cobro esté definido.'
+        "
+  />
+  } @else if (myContribution()?.status === 'PAID') {
+  <app-empty-state
+    [icon]="icons.ok"
+    [title]="'Ya aportaste en la ronda ' + round()?.number"
+    message="Cuando aporten todos, el fondo se entrega a quien tiene el turno."
+  >
+    <ion-button [routerLink]="['/tabs/groups', g.id]" routerDirection="back">Volver al grupo</ion-button>
+  </app-empty-state>
+  } @else {
+  <div class="page">
+    <img class="art art--small" src="assets/illustrations/billetera.svg" alt="" decoding="async" />
+    <app-amount-card
+      [label]="'Tu aporte de la ronda ' + round()?.number"
+      [amount]="g.contributionAmount"
+      [asset]="g.asset"
+      [caption]="g.name"
+    />
+
+    <div class="pk-card detail" role="group" aria-label="Detalle del aporte">
+      <app-info-row label="Cobra en esta ronda" [value]="recipientIsMe() ? 'Tú' : recipientName()" tone="brand" />
+      <app-info-row label="Fecha límite">
+        <span [class.late]="isLate()"
+          >{{ formatDate(round()?.dueDate ?? '', true) }}{{ isLate() ? ' · atrasado' : '' }}</span
+        >
+      </app-info-row>
+      <app-info-row label="Red" value="Stellar Testnet" />
+      <app-info-row label="Desde tu billetera">
+        <span class="mono">{{ shortHash(me()?.walletAddress ?? '', 4) }}</span>
+      </app-info-row>
+    </div>
+
+    @if (isLate()) {
+    <p class="notice late-notice">
+      La fecha límite ya pasó. Puedes aportar igual; el grupo verá que fue un aporte atrasado.
+    </p>
+    }
+
+    <ion-button expand="block" class="send" (click)="send()">
+      Aportar {{ g.contributionAmount | money: g.asset }}
+    </ion-button>
+    <p class="notice">
+      Se registra en Stellar Testnet con activos de prueba. No se mueve dinero real. @if (store.canSimulate) { Con datos
+      de prueba, las transacciones no existen en la red. }
+    </p>
+  </div>
+  } }
+</ion-content>

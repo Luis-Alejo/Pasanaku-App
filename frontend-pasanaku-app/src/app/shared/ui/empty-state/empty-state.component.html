@@ -1,0 +1,16 @@
+<section class="empty-state">
+  @if (illustration(); as name) {
+    <img class="illustration" [src]="'assets/illustrations/' + name + '.svg'" alt="" loading="lazy" decoding="async" />
+  } @else if (icon()) {
+    <span class="icon-box" aria-hidden="true">
+      <ion-icon [icon]="icon()" />
+    </span>
+  }
+  <h2 class="title">{{ title() }}</h2>
+  @if (message()) {
+    <p class="message">{{ message() }}</p>
+  }
+  <div class="action">
+    <ng-content />
+  </div>
+</section>

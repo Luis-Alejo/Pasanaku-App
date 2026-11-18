@@ -1,0 +1,122 @@
+import type { Contribution, ContributionStatus, Group, Round, TurnSwap } from '@core/models/domain.models';
+import { multiplyAmount } from '@shared/utils/format';
+
+/**
+ * Resumen de Inicio: funciones puras sobre los grupos del usuario.
+ * (Inicio solo lee; las acciones viven en la feature de grupos.)
+ */
+
+export interface PendingPayment {
+  group: Group;
+  round: Round;
+  status: Exclude<ContributionStatus, 'PAID'>;
+}
+
+export interface UpcomingPayout {
+  group: Group;
+  round: Round;
+  /** Lo que recibe: aporte × miembros. */
+  amount: string;
+  /** Cobra en la ronda que está en curso. */
+  isCurrent: boolean;
+}
+
+export type TodoKind = 'swap' | 'choose-turn' | 'draw';
+
+export interface Todo {
+  kind: TodoKind;
+  group: Group;
+  text: string;
+  /** Ruta a la pantalla donde se resuelve. */
+  link: string[];
+}
+
+const memberOf = (group: Group, userId: string) => group.members.find((m) => m.userId === userId);
+
+/** Aportes que el usuario debe en las rondas en curso: atrasados primero, luego por fecha. */
+export function pendingPayments(
+  groups: Group[],
+  contributionsByGroup: Record<string, Contribution[]>,
+  userId: string,
+  today: string,
+): PendingPayment[] {
+  const result: PendingPayment[] = [];
+  for (const group of groups) {
+    const me = memberOf(group, userId);
+    const round = group.rounds.find((r) => r.number === group.currentRound);
+    if (!me || group.status !== 'ACTIVE' || !round) continue;
+    const mine = (contributionsByGroup[group.id] ?? []).find(
+      (c) => c.roundNumber === round.number && c.memberId === me.id,
+    );
+    if (mine?.status === 'PAID') continue;
+    const late = mine?.status === 'LATE' || round.dueDate < today;
+    result.push({ group, round, status: late ? 'LATE' : 'PENDING' });
+  }
+  return result.sort(
+    (a, b) =>
+      Number(b.status === 'LATE') - Number(a.status === 'LATE') || a.round.dueDate.localeCompare(b.round.dueDate),
+  );
+}
+
+/** El próximo cobro del usuario (el más cercano entre sus grupos en curso). */
+export function nextPayout(groups: Group[], userId: string): UpcomingPayout | null {
+  const candidates: UpcomingPayout[] = [];
+  for (const group of groups) {
+    const me = memberOf(group, userId);
+    if (!me || group.status !== 'ACTIVE') continue;
+    const round = group.rounds.find((r) => r.recipientMemberId === me.id && r.status !== 'PAID_OUT');
+    if (round) {
+      candidates.push({
+        group,
+        round,
+        amount: multiplyAmount(group.contributionAmount, group.memberCount, group.asset.decimals),
+        isCurrent: round.status === 'OPEN',
+      });
+    }
+  }
+  return candidates.sort((a, b) => a.round.dueDate.localeCompare(b.round.dueDate))[0] ?? null;
+}
+
+/** Lo que espera una acción del usuario: propuestas de intercambio, elegir turno o sortear. */
+export function todos(groups: Group[], swapsByGroup: Record<string, TurnSwap[]>, userId: string): Todo[] {
+  const list: Todo[] = [];
+  for (const group of groups) {
+    const me = memberOf(group, userId);
+    if (!me) continue;
+    const incoming = (swapsByGroup[group.id] ?? []).filter((s) => s.status === 'PROPOSED' && s.toMemberId === me.id);
+    if (incoming.length) {
+      list.push({
+        kind: 'swap',
+        group,
+        text:
+          incoming.length === 1
+            ? 'Tienes una propuesta de intercambio de turno'
+            : `Tienes ${incoming.length} propuestas de intercambio de turno`,
+        link: ['/tabs/groups', group.id, 'turns'],
+      });
+    }
+    if (group.status === 'ASSIGNING_TURNS') {
+      if (group.turnMode === 'DRAW') {
+        list.push({
+          kind: 'draw',
+          group,
+          text: 'Falta sortear el orden de cobro',
+          link: ['/tabs/groups', group.id, 'turns'],
+        });
+      } else if (me.turnNumber === null) {
+        list.push({ kind: 'choose-turn', group, text: 'Elige tu turno', link: ['/tabs/groups', group.id, 'turns'] });
+      }
+    }
+  }
+  return list;
+}
+
+/** Grupos en curso, ordenados por nombre. */
+export function activeGroups(groups: Group[]): Group[] {
+  return groups.filter((g) => g.status === 'ACTIVE').sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Primer nombre para el saludo ("Ana Quispe Mamani" → "Ana"). */
+export function firstName(displayName: string): string {
+  return displayName.trim().split(/\s+/)[0] ?? '';
+}

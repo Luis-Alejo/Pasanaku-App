@@ -1,0 +1,81 @@
+:host {
+  display: block;
+}
+
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.legend {
+  margin-bottom: 0.5rem;
+  padding: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.options {
+  display: grid;
+  /* 4 montos entran en una fila en un teléfono de 360px o más. */
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.option {
+  display: block;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Amount / Default del kit: tarjeta blanca, texto gris. */
+.chip {
+  display: grid;
+  place-items: center;
+  min-height: 3.75rem;
+  padding: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--pk-radius-card);
+  background: var(--ion-card-background);
+  box-shadow: var(--pk-shadow-card);
+  color: var(--ion-color-medium);
+  font-size: 1rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  /* Salta primero en los espacios; solo parte una palabra si no entra entera. */
+  overflow-wrap: break-word;
+  min-width: 0;
+  user-select: none;
+  transition:
+    background-color 120ms ease-out,
+    color 120ms ease-out;
+}
+
+:host-context(.ion-palette-dark) .chip {
+  border-color: var(--pk-border);
+}
+
+/* Amount / Active: índigo lleno. */
+input:checked + .chip {
+  border-color: var(--ion-color-primary);
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+}
+
+input:focus-visible + .chip {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+}
+
+.option:active .chip {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip {
+    transition: none;
+  }
+}

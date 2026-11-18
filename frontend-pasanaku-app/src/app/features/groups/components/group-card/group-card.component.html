@@ -1,0 +1,15 @@
+<ion-card button [routerLink]="['/tabs/groups', group().id]">
+  <div class="card">
+    <div class="top">
+      <h2 class="name">{{ group().name }}</h2>
+      <span class="status" [class]="'status status--' + group().status.toLowerCase()">{{ statusLabel() }}</span>
+    </div>
+    <app-info-row
+      label="Aporte"
+      [value]="(group().contributionAmount | money: group().asset) + ' · ' + periodicityLabel()"
+      tone="brand"
+    />
+    <app-info-row label="Miembros" [value]="membersLabel() + ' · ' + visibilityLabel()" />
+    <p class="progress">{{ progressLabel() }}</p>
+  </div>
+</ion-card>

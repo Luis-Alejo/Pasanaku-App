@@ -1,0 +1,134 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/groups" text="" aria-label="Volver a Grupos" />
+    </ion-buttons>
+    <ion-title>Crear grupo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <ion-input
+      formControlName="name"
+      label="Nombre del grupo"
+      labelPlacement="stacked"
+      fill="outline"
+      autocapitalize="sentences"
+      enterkeyhint="next"
+      [maxlength]="limits.nameMax"
+      [counter]="true"
+      helperText="Por ejemplo: Pasanaku familia Quispe"
+      [errorText]="errorFor('name')"
+    />
+
+    <ion-input
+      class="amount-input"
+      formControlName="contributionAmount"
+      label="Aporte por ronda"
+      labelPlacement="stacked"
+      fill="outline"
+      inputmode="decimal"
+      enterkeyhint="next"
+      autocomplete="off"
+      helperText="Lo que pone cada miembro en cada ronda. Ej.: 500 o 37,50"
+      [errorText]="errorFor('contributionAmount')"
+    >
+      @if (selectedAsset(); as asset) {
+      <span slot="end" class="suffix" aria-hidden="true">{{ asset.code }}</span>
+      }
+    </ion-input>
+
+    <app-amount-options
+      legend="Montos frecuentes"
+      [options]="quickAmounts"
+      [value]="quickAmount()"
+      (valueChange)="pickAmount($event)"
+    />
+
+    <div class="group" role="group" aria-labelledby="asset-label">
+      <p id="asset-label" class="group-label">Moneda</p>
+      <ion-segment formControlName="assetCode" aria-labelledby="asset-label">
+        @for (asset of store.assets(); track asset.code) {
+        <ion-segment-button [value]="asset.code">{{ asset.code }}</ion-segment-button>
+        }
+      </ion-segment>
+    </div>
+
+    <div class="group" role="group" aria-labelledby="period-label">
+      <p id="period-label" class="group-label">Periodicidad</p>
+      <ion-segment formControlName="periodicity" aria-labelledby="period-label">
+        <ion-segment-button value="BIWEEKLY">Quincenal</ion-segment-button>
+        <ion-segment-button value="MONTHLY">Mensual</ion-segment-button>
+      </ion-segment>
+    </div>
+
+    <ion-input
+      formControlName="memberCount"
+      label="Número de miembros"
+      labelPlacement="stacked"
+      fill="outline"
+      inputmode="numeric"
+      enterkeyhint="done"
+      autocomplete="off"
+      [helperText]="'Entre ' + limits.membersMin + ' y ' + limits.membersMax + '. También es el número de rondas.'"
+      [errorText]="errorFor('memberCount')"
+    />
+
+    <div class="group">
+      <p id="visibility-label" class="group-label">Tipo de grupo</p>
+      <ion-list [inset]="true" class="options">
+        <ion-radio-group formControlName="visibility" aria-labelledby="visibility-label">
+          <ion-item>
+            <ion-radio value="PRIVATE" justify="start" labelPlacement="end">
+              <span class="option-title">Privado</span>
+              <span class="option-help">Solo entra quien tenga el código de invitación.</span>
+            </ion-radio>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-radio value="PUBLIC" justify="start" labelPlacement="end">
+              <span class="option-title">Público</span>
+              <span class="option-help">Cualquiera puede unirse mientras haya cupos.</span>
+            </ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-list>
+    </div>
+
+    <div class="group">
+      <p id="turns-label" class="group-label">Orden de cobro</p>
+      <ion-list [inset]="true" class="options">
+        <ion-radio-group formControlName="turnMode" aria-labelledby="turns-label">
+          <ion-item>
+            <ion-radio value="AGREEMENT" justify="start" labelPlacement="end">
+              <span class="option-title">Por acuerdo</span>
+              <span class="option-help">Cada miembro elige su turno y puede proponer intercambios.</span>
+            </ion-radio>
+          </ion-item>
+          <ion-item lines="none">
+            <ion-radio value="DRAW" justify="start" labelPlacement="end">
+              <span class="option-title">Por sorteo</span>
+              <span class="option-help">El orden se sortea cuando el grupo se completa.</span>
+            </ion-radio>
+          </ion-item>
+        </ion-radio-group>
+      </ion-list>
+    </div>
+
+    @if (summary(); as s) {
+    <p class="summary">
+      Cada ronda se juntan
+      <strong class="amount">{{ s.payout | money: s.asset }}</strong>
+      y los cobra un miembro. El ciclo dura {{ s.members }} rondas ({{ s.duration }}).
+    </p>
+    }
+
+    <ion-button type="submit" expand="block" class="submit" [disabled]="submitting()">
+      {{ submitting() ? 'Creando…' : 'Crear grupo' }}
+    </ion-button>
+
+    <p class="disclaimer">
+      Funciona en Stellar Testnet con activos de prueba. Las cifras son ilustrativas: no es una oferta financiera.
+    </p>
+  </form>
+</ion-content>

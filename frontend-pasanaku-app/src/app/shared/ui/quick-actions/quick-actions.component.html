@@ -1,0 +1,26 @@
+<nav class="grid" [attr.aria-label]="label()">
+  @for (a of actions(); track a.id) {
+    @if (a.link) {
+      <a class="action" [routerLink]="a.link" [class]="'action action--' + a.accent">
+        <ng-container *ngTemplateOutlet="content; context: { $implicit: a }" />
+      </a>
+    } @else {
+      <button type="button" class="action" [class]="'action action--' + a.accent" (click)="selected.emit(a.id)">
+        <ng-container *ngTemplateOutlet="content; context: { $implicit: a }" />
+      </button>
+    }
+  }
+</nav>
+
+<ng-template #content let-a>
+  <span class="icon" aria-hidden="true">
+    <ion-icon [icon]="a.icon" />
+    @if (a.badge) {
+      <span class="badge">{{ a.badge > 9 ? '9+' : a.badge }}</span>
+    }
+  </span>
+  <span class="label">{{ a.label }}</span>
+  @if (a.badge) {
+    <span class="visually-hidden">({{ a.badge }} {{ a.badge === 1 ? 'pendiente' : 'pendientes' }})</span>
+  }
+</ng-template>

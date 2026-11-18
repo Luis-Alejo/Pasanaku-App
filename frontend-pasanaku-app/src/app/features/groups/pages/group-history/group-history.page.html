@@ -1,0 +1,79 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button [defaultHref]="'/tabs/groups/' + id()" text="" aria-label="Volver al grupo" />
+    </ion-buttons>
+    <ion-title>Historial</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (store.detailLoading() && !store.group()) {
+  <div class="loading" role="status">
+    <ion-spinner aria-hidden="true" />
+    <span class="visually-hidden">Cargando historial</span>
+  </div>
+  } @else if (store.detailError()) {
+  <app-empty-state
+    [icon]="icons.error"
+    title="No pudimos cargar el historial"
+    message="Revisa tu conexión e inténtalo de nuevo."
+  >
+    <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
+  </app-empty-state>
+  } @else if (store.notFound()) {
+  <app-empty-state [icon]="icons.notFound" title="Este grupo no existe" />
+  } @else if (store.group(); as g) {
+  <div class="page">
+    <header class="summary">
+      <h1 class="name">{{ g.name }}</h1>
+      <p class="lead">Cada aporte y cobro queda registrado en Stellar Testnet y se puede verificar.</p>
+    </header>
+
+    <ion-segment [value]="filter()" (ionChange)="onFilterChange($event)" aria-label="Qué movimientos ver">
+      <ion-segment-button value="all">Todo</ion-segment-button>
+      <ion-segment-button value="mine">Solo míos</ion-segment-button>
+    </ion-segment>
+
+    @if (events().length) {
+    <ol class="timeline" aria-label="Movimientos del grupo, del más reciente al más antiguo">
+      @for (e of events(); track e.id) {
+      <li class="event" [class]="'event event--' + e.kind">
+        <span class="icon" aria-hidden="true">
+          <ion-icon [icon]="kindIcons[e.kind]" />
+        </span>
+        <div class="body">
+          <div class="row">
+            <p class="title">{{ e.title }}</p>
+            <time class="date" [attr.datetime]="e.at">{{ date(e.at) }}</time>
+          </div>
+          @if (e.detail || e.amount) {
+          <div class="row">
+            <p class="meta">{{ e.detail }}</p>
+            @if (e.amount) {
+            <p class="amount">{{ e.amount | money: g.asset }}</p>
+            }
+          </div>
+          } @if (e.txHash) {
+          <a class="tx-link" [href]="txUrl(e.txHash)" target="_blank" rel="noopener noreferrer">
+            Ver transacción {{ shortHash(e.txHash, 4) }}
+            <ion-icon [icon]="icons.external" aria-hidden="true" />
+            <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
+          </a>
+          }
+        </div>
+      </li>
+      }
+    </ol>
+    } @else {
+    <app-empty-state
+      illustration="alcancia"
+      [title]="filter() === 'mine' ? 'Todavía no tienes movimientos' : 'Todavía no hay movimientos'"
+      message="Los aportes y cobros aparecerán aquí."
+    />
+    } @if (store.canSimulate) {
+    <p class="notice">Con datos de prueba, las transacciones no existen en la red.</p>
+    }
+  </div>
+  }
+</ion-content>

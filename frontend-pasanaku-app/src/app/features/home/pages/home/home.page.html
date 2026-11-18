@@ -1,0 +1,124 @@
+<ion-content [fullscreen]="true">
+  <app-brand-header>
+    <div class="hello">
+      <app-avatar [name]="userName()" size="md" />
+      <h1 class="greeting">Hola, {{ store.greetingName() }}</h1>
+      <button
+        type="button"
+        class="theme-toggle"
+        [attr.aria-label]="theme.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'"
+        [attr.aria-pressed]="theme.isDark()"
+        (click)="theme.toggle()"
+      >
+        <ion-icon [icon]="theme.isDark() ? icons.sun : icons.moon" aria-hidden="true" />
+      </button>
+    </div>
+
+    @if (hero(); as h) {
+    <app-amount-card
+      pkOverlap
+      [label]="h.label"
+      [amount]="h.amount"
+      [asset]="h.asset"
+      [meta]="h.meta"
+      [caption]="h.caption"
+    />
+    }
+  </app-brand-header>
+
+  <div class="page">
+    @if (store.loading()) {
+    <div class="loading" role="status">
+      <ion-spinner aria-hidden="true" />
+      <span class="visually-hidden">Cargando tu resumen</span>
+    </div>
+    } @else if (store.error()) {
+    <app-empty-state
+      [icon]="icons.error"
+      title="No pudimos cargar tu resumen"
+      message="Revisa tu conexión e inténtalo de nuevo."
+    >
+      <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
+    </app-empty-state>
+    } @else if (store.loaded()) { @if (!store.hasGroups()) {
+    <app-empty-state
+      illustration="ahorro-colectivo"
+      title="Todavía no participas en ningún pasanaku"
+      message="Crea un grupo con tu familia o amigos, o únete con un código de invitación."
+    >
+      <ion-button expand="block" routerLink="/tabs/groups/new">Crear grupo</ion-button>
+      <ion-button expand="block" fill="clear" (click)="onAction('join')">Unirme con código</ion-button>
+    </app-empty-state>
+    } @else { @if (store.pending()[0]; as next) { @if (next.status === 'LATE') {
+    <p class="late" role="note">Tu aporte está atrasado.</p>
+    }
+    <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', next.group.id, 'contribute']">
+      Aportar {{ next.group.contributionAmount | money: next.group.asset }}
+    </ion-button>
+    @if (store.pending().length > 1) {
+    <p class="more">
+      Y {{ store.pending().length - 1 }} {{ store.pending().length - 1 === 1 ? 'aporte pendiente más' : 'aportes
+      pendientes más' }} en otros grupos.
+    </p>
+    } } @else {
+    <p class="ok">
+      <ion-icon [icon]="icons.ok" aria-hidden="true" />
+      Estás al día con tus aportes.
+    </p>
+    }
+
+    <app-quick-actions class="section" label="Accesos rápidos" [actions]="actions()" (selected)="onAction($event)" />
+
+    <!-- Si arriba se muestra el aporte, el cobro va como fila -->
+    @if (store.pending().length && store.payout(); as p) {
+    <section class="section" aria-labelledby="payout-title">
+      <h2 id="payout-title" class="pk-section-title">Tu próximo cobro</h2>
+      <div class="pk-card">
+        <app-action-row
+          [icon]="icons.payout"
+          accent="teal"
+          [title]="p.group.name"
+          [subtitle]="
+                  p.isCurrent ? '¡Cobras en esta ronda!' : 'Ronda ' + p.round.number + ' · ' + formatDate(p.round.dueDate, true)
+                "
+          [value]="p.amount | money: p.group.asset"
+          [link]="['/tabs/groups', p.group.id]"
+        />
+      </div>
+    </section>
+    } @if (store.todos().length) {
+    <section class="section" aria-labelledby="todo-title">
+      <h2 id="todo-title" class="pk-section-title">Te están esperando</h2>
+      <div class="pk-card">
+        @for (t of store.todos(); track t.kind + t.group.id) {
+        <app-action-row
+          [icon]="todoIcons[t.kind]"
+          [accent]="t.kind === 'swap' ? 'pink' : 'yellow'"
+          [title]="t.text"
+          [subtitle]="t.group.name"
+          [link]="t.link"
+        />
+        }
+      </div>
+    </section>
+    } @if (store.active().length) {
+    <section class="section" aria-labelledby="groups-title">
+      <h2 id="groups-title" class="pk-section-title">Tus grupos en curso</h2>
+      <div class="pk-card">
+        @for (g of store.active(); track g.id) {
+        <app-action-row
+          [icon]="icons.group"
+          [title]="g.name"
+          [subtitle]="'Ronda ' + g.currentRound + ' de ' + g.rounds.length"
+          [value]="g.contributionAmount | money: g.asset"
+          [link]="['/tabs/groups', g.id]"
+        />
+        }
+      </div>
+    </section>
+    } }
+
+    <p class="disclaimer">Montos en Stellar Testnet con activos de prueba. Las cifras son ilustrativas.</p>
+    }
+  </div>
+</ion-content>

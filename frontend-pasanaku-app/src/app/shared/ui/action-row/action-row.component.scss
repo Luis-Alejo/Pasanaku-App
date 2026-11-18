@@ -1,0 +1,104 @@
+:host {
+  display: block;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 3.5rem;
+  padding: 0.625rem 0;
+  color: var(--ion-text-color);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+a.row:active {
+  opacity: 0.7;
+}
+
+a.row:focus-visible {
+  outline: 2px solid var(--ion-color-primary);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Cuadro de ícono del kit: color lleno con ícono blanco. */
+.icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--ion-color-primary);
+  color: var(--ion-color-primary-contrast);
+  font-size: 1.25rem;
+}
+
+.icon--indigo {
+  background: var(--pk-accent-indigo);
+}
+
+.icon--teal {
+  background: var(--pk-accent-teal);
+}
+
+.icon--yellow {
+  background: var(--pk-accent-yellow);
+}
+
+.icon--pink {
+  background: var(--pk-accent-pink);
+}
+
+.icon--blue {
+  background: var(--pk-accent-blue);
+}
+
+.icon--orange {
+  background: var(--pk-accent-orange);
+}
+
+/* Con los colores vivos el ícono blanco se ve igual en claro y oscuro. */
+.icon:not(.icon--brand) {
+  color: var(--pk-on-accent);
+}
+
+.text {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  overflow-wrap: break-word;
+}
+
+.subtitle {
+  margin-top: 0.125rem;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  overflow-wrap: break-word;
+}
+
+.value {
+  flex-shrink: 0;
+  max-width: 45%;
+  color: var(--ion-color-primary);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: end;
+  overflow-wrap: break-word;
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--ion-color-medium);
+  font-size: 1.125rem;
+}

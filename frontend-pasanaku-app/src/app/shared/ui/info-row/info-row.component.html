@@ -1,0 +1,8 @@
+<span class="label">{{ label() }}</span>
+<span class="value" [class.value--brand]="tone() === 'brand'">
+  @if (value()) {
+    {{ value() }}
+  } @else {
+    <ng-content />
+  }
+</span>

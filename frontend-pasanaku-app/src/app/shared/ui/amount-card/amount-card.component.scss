@@ -1,0 +1,109 @@
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+/*
+ * Tarjeta del kit: degradado índigo → secundario con dos círculos decorativos.
+ * En oscuro: superficie elevada con borde (sección 6), sin degradado.
+ */
+.card {
+  position: relative;
+  overflow: hidden;
+  min-height: 9.5rem;
+  padding: 1.5rem;
+  border: 1px solid var(--pk-brand-surface-border);
+  border-radius: var(--pk-radius-card);
+  background: linear-gradient(
+    120deg,
+    var(--ion-color-primary) 0%,
+    var(--ion-color-primary) 52%,
+    var(--ion-color-secondary) 100%
+  );
+  box-shadow: var(--pk-shadow-card);
+  color: var(--pk-on-brand);
+  isolation: isolate;
+}
+
+/* Círculos decorativos del kit, translúcidos para no afectar el contraste del texto. */
+.card::before,
+.card::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.card::before {
+  top: -35%;
+  right: -18%;
+  width: 70%;
+  aspect-ratio: 1;
+}
+
+.card::after {
+  top: -10%;
+  right: -10%;
+  width: 34%;
+  aspect-ratio: 1;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:host-context(.ion-palette-dark) .card {
+  background: var(--pk-brand-surface);
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+}
+
+.label,
+.meta,
+.caption {
+  margin: 0;
+  overflow-wrap: break-word;
+}
+
+.label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.meta {
+  margin-inline-start: auto;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.amount {
+  margin: 0.75rem 0 0;
+  /* Se achica en tarjetas angostas, pero nunca baja de 1.25rem (respeta el zoom). */
+  font-size: clamp(1.25rem, 10cqi, 2rem);
+  font-weight: 600;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Los dígitos no tienen dónde partirse: el número solo salta en los <wbr>
+   (después de cada punto de miles) y en el espacio antes del código. */
+
+/* El código (hasta 12 caracteres en Stellar) no se corta salvo que no quepa. */
+.amount-code {
+  font-size: 0.6em;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+.caption {
+  margin-top: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  opacity: 0.92;
+}

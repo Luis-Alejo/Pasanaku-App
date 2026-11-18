@@ -1,0 +1,121 @@
+/* Encabezado: botón atrás + nombre del grupo sobre la franja índigo. */
+.nav {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-inline-start: -0.75rem;
+}
+
+ion-back-button {
+  --color: currentColor;
+  --icon-font-size: 1.5rem;
+  flex-shrink: 0;
+  min-width: 48px;
+  min-height: 48px;
+}
+
+.nav-text {
+  min-width: 0;
+  padding-top: 0.5rem;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.status {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  opacity: 0.9;
+}
+
+.page {
+  padding: 1.25rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 3rem 0;
+}
+
+.cta {
+  margin: 0;
+}
+
+.hint {
+  margin: 0 0 0.75rem;
+  text-wrap: pretty;
+}
+
+.hint.late {
+  color: var(--ion-color-danger);
+  font-weight: 600;
+}
+
+.section {
+  display: block;
+  margin-top: 1.5rem;
+}
+
+.code {
+  color: var(--ion-color-primary);
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  user-select: all;
+}
+
+.timeline-card {
+  padding: 1rem 1.25rem;
+}
+
+/* Filas de personas (Row / User del kit): avatar, nombre y estado. */
+.people {
+  margin: 0;
+  list-style: none;
+}
+
+.person {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 3.5rem;
+  padding: 0.5rem 0;
+}
+
+.person + .person {
+  border-top: 1px solid var(--pk-border);
+}
+
+.person-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  overflow-wrap: break-word;
+}
+
+.turn {
+  flex-shrink: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.demo {
+  margin-top: 0.5rem;
+}
+
+.disclaimer {
+  margin: 1.5rem 0 0;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  text-align: center;
+  text-wrap: pretty;
+}

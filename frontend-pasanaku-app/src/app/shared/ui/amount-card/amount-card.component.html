@@ -1,0 +1,23 @@
+<section class="card" [attr.aria-label]="label()">
+  <div class="top">
+    <p class="label">{{ label() }}</p>
+    @if (meta()) {
+      <p class="meta">{{ meta() }}</p>
+    }
+  </div>
+  <p class="amount">
+    @if (parts(); as p) {
+      <!-- Sin espacios dentro: cualquier salto de línea aquí se vería como un espacio entre dígitos. -->
+      <!-- prettier-ignore -->
+      <span class="amount-number">@for (group of p.groups; track $index) {{{ group }}<wbr />}</span>
+      <!-- Espacio explícito: Angular borra el que queda entre etiquetas. Es el punto de salto. -->
+      {{ ' ' }}<span class="amount-code">{{ p.code }}</span>
+    } @else {
+      <span aria-hidden="true">—</span>
+      <span class="visually-hidden">Monto no disponible</span>
+    }
+  </p>
+  @if (caption()) {
+    <p class="caption">{{ caption() }}</p>
+  }
+</section>

@@ -1,0 +1,149 @@
+.page {
+  padding: 0.5rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 3rem 0;
+}
+
+.summary {
+  padding-top: 0.5rem;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: break-word;
+}
+
+.mode {
+  margin: 0.25rem 0 0;
+  color: var(--ion-color-medium);
+}
+
+.section {
+  margin-top: 1.5rem;
+}
+
+.section-title {
+  margin: 0 0 0.75rem;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.text {
+  margin: 0 0 0.75rem;
+  text-wrap: pretty;
+}
+
+.muted,
+.hint {
+  color: var(--ion-color-medium);
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+}
+
+/* Ilustración del kit en el sorteo (decorativa). */
+.art {
+  display: block;
+  width: min(100%, 16rem);
+  height: auto;
+  aspect-ratio: 327 / 226;
+  margin: 0 auto 1rem;
+}
+
+.timeline-card {
+  padding: 1rem 1.25rem;
+}
+
+ion-list.list-inset {
+  margin-inline: 0;
+}
+
+/* Número de turno: círculo neutro, mismo lenguaje que la línea de turnos. */
+.turn-number {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--pk-badge-neutral-bg);
+  color: var(--pk-badge-neutral-fg);
+  font-size: 0.875rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+ion-label {
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.free {
+  color: var(--ion-color-medium);
+  font-style: italic;
+}
+
+/* Botones de fila: área táctil de 48px. */
+ion-item ion-button {
+  min-height: 48px;
+}
+
+.proposal {
+  margin: 0 0 0.75rem;
+  padding: 1rem;
+  border-left: 4px solid var(--ion-color-primary);
+  border-radius: var(--pk-radius-card);
+  background: var(--ion-card-background);
+  box-shadow: var(--pk-shadow-card);
+}
+
+.proposal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.proposal-actions ion-button {
+  min-height: 48px;
+  margin: 0;
+}
+
+.history-text {
+  font-size: 0.9375rem;
+}
+
+.history-date {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+}
+
+.status {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.status--accepted {
+  color: var(--ion-color-success);
+}
+
+.status--rejected {
+  color: var(--ion-color-danger);
+}
+
+.status--proposed {
+  color: var(--ion-color-warning);
+}
