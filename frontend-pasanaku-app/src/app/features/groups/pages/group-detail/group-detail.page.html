@@ -1,0 +1,142 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/groups" text="Grupos" />
+    </ion-buttons>
+    <ion-title>{{ store.group()?.name ?? 'Grupo' }}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (store.detailLoading() && !store.group()) {
+  <div class="loading" role="status">
+    <ion-spinner aria-hidden="true" />
+    <span class="visually-hidden">Cargando grupo</span>
+  </div>
+  } @else if (store.detailError()) {
+  <app-empty-state
+    [icon]="icons.error"
+    title="No pudimos cargar el grupo"
+    message="Revisa tu conexión e inténtalo de nuevo."
+  >
+    <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
+  </app-empty-state>
+  } @else if (store.notFound()) {
+  <app-empty-state
+    [icon]="icons.notFound"
+    title="Este grupo no existe"
+    message="Puede que el enlace esté mal o que el grupo se haya eliminado."
+  >
+    <ion-button fill="outline" routerLink="/tabs/groups">Ver mis grupos</ion-button>
+  </app-empty-state>
+  } @else if (store.group(); as g) {
+  <div class="page">
+    <header class="summary">
+      <h1 class="name">{{ g.name }}</h1>
+      <p class="status">
+        {{ labels.status[g.status] }} @if (g.currentRound) { · Ronda {{ g.currentRound }} de {{ g.rounds.length }} }
+      </p>
+    </header>
+
+    @if (fund(); as f) {
+    <app-amount-card
+      [label]="'Fondo de la ronda ' + f.roundNumber"
+      [amount]="f.collected"
+      [asset]="g.asset"
+      [caption]="fundCaption() + ' · meta ' + (f.target | money: g.asset)"
+    />
+    } @else {
+    <app-amount-card
+      label="Aporte por ronda"
+      [amount]="g.contributionAmount"
+      [asset]="g.asset"
+      [caption]="labels.periodicity[g.periodicity]"
+    />
+    }
+
+    <ion-list [inset]="true" class="rules" aria-label="Reglas del grupo">
+      <ion-item>
+        <ion-label>Aporte</ion-label>
+        <ion-note slot="end" class="amount">{{ g.contributionAmount | money: g.asset }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Periodicidad</ion-label>
+        <ion-note slot="end">{{ labels.periodicity[g.periodicity] }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Orden de cobro</ion-label>
+        <ion-note slot="end">{{ labels.turnMode[g.turnMode] }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Miembros</ion-label>
+        <ion-note slot="end">{{ g.members.length }} de {{ g.memberCount }}</ion-note>
+      </ion-item>
+      <ion-item [lines]="g.inviteCode ? undefined : 'none'">
+        <ion-label>Tipo</ion-label>
+        <ion-note slot="end">{{ labels.visibility[g.visibility] }}</ion-note>
+      </ion-item>
+      @if (g.inviteCode) {
+      <ion-item lines="none">
+        <ion-label>Código de invitación</ion-label>
+        <ion-note slot="end" class="code">{{ g.inviteCode }}</ion-note>
+      </ion-item>
+      }
+    </ion-list>
+
+    <section class="section" aria-labelledby="turns-title">
+      <h2 id="turns-title" class="section-title">Línea de turnos</h2>
+      @if (steps().length) {
+      <app-turn-timeline [steps]="steps()" label="Orden de cobro" />
+      } @else {
+      <app-empty-state
+        [icon]="icons.turns"
+        title="Turnos sin asignar"
+        [message]="
+              g.turnMode === 'DRAW'
+                ? 'El orden se sortea cuando el grupo esté completo.'
+                : 'Los miembros eligen sus turnos cuando el grupo esté completo.'
+            "
+      />
+      }
+    </section>
+
+    <section class="section" aria-labelledby="people-title">
+      @if (payments().length) {
+      <h2 id="people-title" class="section-title">Aportes de la ronda {{ g.currentRound }}</h2>
+      <ion-list [inset]="true">
+        @for (p of payments(); track p.member.id; let last = $last) {
+        <ion-item [lines]="last ? 'none' : undefined">
+          <ion-label class="person">
+            {{ p.member.displayName }} @if (p.isMe) {
+            <span class="me">Tú</span>
+            }
+          </ion-label>
+          <app-payment-status-badge slot="end" [status]="p.status" />
+        </ion-item>
+        }
+      </ion-list>
+      } @else {
+      <h2 id="people-title" class="section-title">Miembros</h2>
+      <ion-list [inset]="true">
+        @for (m of members(); track m.id; let last = $last) {
+        <ion-item [lines]="last ? 'none' : undefined">
+          <ion-label class="person">
+            {{ m.displayName }} @if (m.userId === store.currentUserId()) {
+            <span class="me">Tú</span>
+            }
+          </ion-label>
+          @if (m.turnNumber) {
+          <ion-note slot="end">Turno {{ m.turnNumber }}</ion-note>
+          }
+        </ion-item>
+        }
+      </ion-list>
+      }
+    </section>
+
+    <p class="disclaimer">
+      Montos en Stellar Testnet con activos de prueba. Las cifras son ilustrativas: no es una oferta financiera.
+    </p>
+  </div>
+  }
+</ion-content>

@@ -1,0 +1,84 @@
+.page {
+  padding: 0.5rem 0 calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 3rem 0;
+}
+
+.summary {
+  padding: 0.5rem 1rem 0;
+}
+
+.name {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.25;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.status {
+  margin: 0.25rem 0 0;
+  color: var(--ion-color-medium);
+}
+
+/* Valores de las listas a tamaño de lectura (ion-note por defecto es muy chico). */
+ion-list ion-note {
+  color: var(--ion-color-medium);
+  font-size: 1rem;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+}
+
+.code {
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  letter-spacing: 0.05em;
+  user-select: all;
+}
+
+.section {
+  margin-top: 1.5rem;
+}
+
+.section-title {
+  margin: 0 1rem 0.5rem;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+app-turn-timeline {
+  margin: 0 1rem;
+}
+
+.person {
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+.me {
+  display: inline-block;
+  margin-inline-start: 0.375rem;
+  padding: 0.0625rem 0.5rem;
+  border-radius: 999px;
+  background: var(--app-step-background);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.disclaimer {
+  margin: 1.5rem 1rem 0;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  text-align: center;
+  text-wrap: pretty;
+}

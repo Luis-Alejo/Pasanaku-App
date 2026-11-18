@@ -1,0 +1,14 @@
+<ion-card button [routerLink]="['/tabs/groups', group().id]">
+  <div class="card">
+    <div class="top">
+      <h2 class="name">{{ group().name }}</h2>
+      <span class="status" [class]="'status status--' + group().status.toLowerCase()">{{ statusLabel() }}</span>
+    </div>
+    <p class="amount">
+      <span class="value">{{ group().contributionAmount | money: group().asset }}</span>
+      <span class="per">· {{ periodicityLabel() }}</span>
+    </p>
+    <p class="meta">{{ membersLabel() }} · {{ visibilityLabel() }}</p>
+    <p class="progress">{{ progressLabel() }}</p>
+  </div>
+</ion-card>

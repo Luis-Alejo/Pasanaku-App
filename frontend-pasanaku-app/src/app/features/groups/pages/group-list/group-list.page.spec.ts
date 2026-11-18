@@ -1,19 +1,15 @@
-import type { ComponentFixture } from '@angular/core/testing';
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+
+import { GroupsStore } from '../../data-access/groups.store';
 
 import { GroupListPage } from './group-list.page';
 
 describe('GroupListPage', () => {
-  let component: GroupListPage;
-  let fixture: ComponentFixture<GroupListPage>;
-
-  beforeEach(() => {
-    fixture = TestBed.createComponent(GroupListPage);
-    component = fixture.componentInstance;
-    fixture.detectChanges();
-  });
-
   it('should create', () => {
-    expect(component).toBeTruthy();
+    TestBed.configureTestingModule({ providers: [provideRouter([]), GroupsStore] });
+    const fixture = TestBed.createComponent(GroupListPage);
+    fixture.detectChanges();
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });

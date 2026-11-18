@@ -363,7 +363,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
   - Mocks con datos realistas y el flag `useMocks`.
   - `shared/ui`: badge de estado de aporte, tarjeta de monto, estado vacío, línea de turnos; pipe de montos que respete la moneda (USDC/BOB) y sus decimales.
   - Probar los componentes con datos extremos (skill **break-ui**).
-- [ ] **Paso 4 — Grupos: lista y detalle** (segmento Mis grupos/Públicos, detalle con estado, fondo, línea de turnos y aportes).
+- [x] **Paso 4 — Grupos: lista y detalle** (segmento Mis grupos/Públicos, detalle con estado, fondo, línea de turnos y aportes).
 - [ ] **Paso 5 — Crear grupo y unirse** (formulario con validaciones; unirse por código o desde Públicos).
 - [ ] **Paso 6 — Turnos** (modo acuerdo con intercambio propuesto/aceptado/rechazado; modo sorteo con resultado visible).
 - [ ] **Paso 7 — Aportes, desembolso e historial** (registrar aporte, estado de la transacción, desembolso simulado y línea de tiempo).
@@ -390,6 +390,21 @@ Están en `.claude/skills/`. Úsalas cuando apliquen:
 | `break-ui` | Probar componentes con datos extremos (nombres largos, montos enormes, listas vacías). |
 | `find-animation-opportunities`, `improve-animations`, `review-animations`, `remove-animations` | Auditoría de movimiento, solo si sobra tiempo. |
 | `prototype` | Cuando quiera comparar varias versiones de una pantalla. |
+| `mobile-android-design` | Al diseñar pantallas y navegación pensando en Android (ver nota abajo). |
+
+### Nota sobre `mobile-android-design`
+Esta skill está escrita para **Android nativo (Kotlin + Jetpack Compose)**. Este proyecto es **Ionic + Angular**, así que:
+- **NO** escribas código Kotlin/Compose ni modifiques la carpeta `android/` por esta skill.
+- **SÍ** aplica sus **criterios de Material Design 3**, traducidos a Ionic (que en Android usa el modo `md`, basado en Material Design):
+  - **Áreas táctiles de mínimo 48×48 px** en botones, íconos y elementos de lista.
+  - **Roles de color:** las superficies de "contenedor" usan versiones suaves del color (como `primaryContainer` en M3) y el texto secundario usa `medium`. Siempre con los tokens de la sección 6, nunca con colores nuevos.
+  - **Escala tipográfica consistente** (títulos, cuerpo, etiquetas) definida una sola vez en `global.scss`.
+  - **Navegación:** barra inferior (tabs) con **badges** para avisos (ej. aporte pendiente o intercambio de turno recibido).
+  - **Botón "atrás" de Android:** debe comportarse de forma predecible (cerrar modales/sheets primero, luego volver de pantalla y, en la raíz de las tabs, salir de la app). Usa el manejo de Ionic/`@capacitor/app` para esto.
+  - **Deep links:** encaja con la ruta `/join/:code` para invitar a grupos privados (si sobra tiempo, configurar el enlace en Android).
+  - **Accesibilidad:** etiquetas (`aria-label`) en todos los botones de solo ícono.
+- **No** uses el *color dinámico* de Material You (colores del fondo de pantalla del usuario): la app mantiene su paleta propia de la sección 6.
+- Si la guía de esta skill choca con `mobile-native` o con la paleta de la sección 6, **mandan las reglas de este archivo**.
 
 No aplican a este proyecto: `animate-expo` (React Native), `write-swift` (Swift), `ask-sonner` (React). `design-taste-frontend` es para sitios web: usa solo sus criterios de color y contraste, no su flujo de landing pages.
 
