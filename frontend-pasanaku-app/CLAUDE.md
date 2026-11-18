@@ -428,7 +428,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
 - [x] **Paso 6 — Turnos** (modo acuerdo con intercambio propuesto/aceptado/rechazado; modo sorteo con resultado visible).
 - [x] **Paso 7 — Aportes, desembolso e historial** (registrar aporte, estado de la transacción, desembolso simulado y línea de tiempo).
 - [x] **Paso 8 — Inicio y Perfil** (resumen, próximo aporte, billetera con dirección y saldo de Testnet).
-- [ ] **Paso 8.5 — Rediseño visual a partir de Figma (hacer ANTES del paso 9)**
+- [x] **Paso 8.5 — Rediseño visual a partir de Figma (hacer ANTES del paso 9)**
   Objetivo: que toda la app use el diseño de Figma (sección 6) **sin cambiar la lógica, los stores, los mocks ni las rutas**. Es un cambio de piel, no de funcionamiento.
   Hazlo en estas sub-etapas. **Al terminar cada una, dame el resumen corto y espera mi OK**:
   - [x] **8.5.a — Lectura y plan.** Revisa en el MCP de Figma (con moderación, sección 6) los marcos necesarios y esta sección 6. Entrégame un plan breve: qué marco de Figma usarás como referencia para cada pantalla nuestra, qué componentes de `shared/ui` cambiarán y qué referencias faltan. No edites código todavía.
@@ -436,7 +436,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
     - **Extra:** botón para cambiar entre modo claro y oscuro dentro de la app, que **no dependa del tema del dispositivo**. La elección se guarda y se respeta al volver a abrir la app.
   - [x] **8.5.c — Componentes compartidos.** Rediseña `shared/ui` (badges de estado, tarjeta de monto, tarjeta de grupo, línea de turnos, estados vacíos, filas de lista) y el tab bar con pastilla activa. Revísalos con **break-ui**.
   - [x] **8.5.d — Pantallas, una por una:** Inicio → Grupos (lista) → Detalle de grupo → Crear grupo → Unirse → Turnos → Registrar aporte → Historial → Perfil. Para cada una, toma la referencia en Figma y adáptala al contenido real de Pasanaku.
-  - [ ] **8.5.e — Revisión final** con `mobile-android-design` (MD3) y `mobile-native`: áreas táctiles de 48 px, botón "atrás", `aria-label`, contraste en **claro y oscuro**, y que no quede ningún resto del kit (nombres, VISA, datos falsos). Verifica `npm run build` y `npm run lint`, y prueba en el celular.
+  - [x] **8.5.e — Revisión final** con `mobile-android-design` (MD3) y `mobile-native`: áreas táctiles de 48 px, botón "atrás", `aria-label`, contraste en **claro y oscuro**, y que no quede ningún resto del kit (nombres, VISA, datos falsos). Verifica `npm run build` y `npm run lint`, y prueba en el celular.
   - Si en algún momento hay que elegir entre "igual a Figma" y "legible o accesible", gana legible y accesible, y me lo cuentas en el resumen.
 - [ ] **Paso 9 — GraphQL real** (sección 7): Apollo + Codegen, reemplazar mocks por la API cuando el backend esté disponible. *Puede adelantarse si el backend está listo antes.*
 - [ ] **Paso 10 — Autenticación** (login, registro, guards) según lo que defina el backend.
