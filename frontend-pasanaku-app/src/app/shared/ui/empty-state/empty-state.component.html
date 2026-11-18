@@ -1,0 +1,12 @@
+<section class="empty-state">
+  @if (icon()) {
+    <ion-icon class="icon" [icon]="icon()" aria-hidden="true"></ion-icon>
+  }
+  <h2 class="title">{{ title() }}</h2>
+  @if (message()) {
+    <p class="message">{{ message() }}</p>
+  }
+  <div class="action">
+    <ng-content />
+  </div>
+</section>

@@ -1,0 +1,20 @@
+<ion-card>
+  <ion-card-header>
+    <ion-card-subtitle>{{ label() }}</ion-card-subtitle>
+    <ion-card-title class="amount">
+      @if (parts(); as p) {
+        <!-- Sin espacios dentro: cualquier salto de línea aquí se vería como un espacio entre dígitos. -->
+        <!-- prettier-ignore -->
+        <span class="amount-number">@for (group of p.groups; track $index) {{{ group }}<wbr />}</span>
+        <!-- Espacio explícito: Angular borra el que queda entre etiquetas. Es el punto de salto. -->
+        {{ ' ' }}<span class="amount-code">{{ p.code }}</span>
+      } @else {
+        <span aria-hidden="true">—</span>
+        <span class="visually-hidden">Monto no disponible</span>
+      }
+    </ion-card-title>
+  </ion-card-header>
+  @if (caption()) {
+    <ion-card-content>{{ caption() }}</ion-card-content>
+  }
+</ion-card>

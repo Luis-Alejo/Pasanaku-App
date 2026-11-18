@@ -1,0 +1,9 @@
+:host {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+ion-badge {
+  font-weight: 600;
+  user-select: none;
+}

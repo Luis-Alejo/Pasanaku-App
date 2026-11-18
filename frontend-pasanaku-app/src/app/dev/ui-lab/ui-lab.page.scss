@@ -1,0 +1,56 @@
+/* Estilos del laboratorio (no del diseño bajo prueba): neutros a propósito. */
+ion-content {
+  --padding-bottom: 6rem;
+}
+
+.lab-heading {
+  margin: 1.5rem 0 0.75rem;
+  color: var(--ion-color-medium);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lab-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.lab-none {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+}
+
+.lab-toggle {
+  position: fixed;
+  left: 50%;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  z-index: 10;
+  display: flex;
+  gap: 2px;
+  max-width: calc(100vw - 1rem);
+  padding: 3px;
+  overflow-x: auto;
+  border-radius: 999px;
+  background: #e4e4e7;
+  font: 13px/1 system-ui, sans-serif;
+  transform: translateX(-50%);
+}
+
+.lab-toggle a {
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  color: #3f3f46;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.lab-toggle a.active {
+  background: #ffffff;
+  color: #18181b;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);
+}

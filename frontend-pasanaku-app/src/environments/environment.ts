@@ -4,6 +4,11 @@
 
 export const environment = {
   production: false,
+  /**
+   * true: los stores leen los datos de prueba (`features/*\/data-access/*.mock.ts`).
+   * false: usan la API GraphQL del backend (paso 9).
+   */
+  useMocks: true,
 };
 
 /*

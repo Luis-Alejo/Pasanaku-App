@@ -1,0 +1,30 @@
+:host {
+  display: block;
+  container-type: inline-size;
+}
+
+ion-card-subtitle {
+  color: var(--ion-color-medium);
+  text-transform: none;
+  letter-spacing: normal;
+  overflow-wrap: anywhere;
+}
+
+.amount {
+  /* Se achica en tarjetas angostas, pero nunca baja de 1.125rem (respeta el zoom). */
+  font-size: clamp(1.125rem, 9cqi, 1.75rem);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Los dígitos no tienen dónde partirse: el número solo salta en los <wbr>
+   (después de cada punto de miles) y en el espacio antes del código. */
+
+/* El código (hasta 12 caracteres en Stellar) no se corta salvo que no quepa. */
+.amount-code {
+  overflow-wrap: anywhere;
+}
+
+ion-card-content {
+  color: var(--ion-color-medium);
+  overflow-wrap: anywhere;
+}

@@ -1,0 +1,35 @@
+<ol class="timeline" [attr.aria-label]="label()">
+  @for (step of steps(); track step.id; let i = $index) {
+    <li
+      class="step"
+      [class.step--done]="step.state === 'done'"
+      [class.step--current]="step.state === 'current'"
+      [class.step--highlight]="step.highlight"
+      [attr.aria-current]="step.state === 'current' ? 'step' : null"
+    >
+      <span class="marker" aria-hidden="true">
+        @if (step.state === 'done') {
+          <ion-icon [icon]="checkIcon"></ion-icon>
+        } @else {
+          {{ i + 1 }}
+        }
+      </span>
+      <div class="body">
+        <p class="title">
+          {{ step.title }}
+          @if (step.highlight) {
+            <span class="tag">{{ highlightLabel() }}</span>
+          }
+        </p>
+        @if (step.subtitle) {
+          <p class="subtitle">{{ step.subtitle }}</p>
+        }
+        @if (step.state === 'current') {
+          <p class="state">{{ stateLabels.current }}</p>
+        } @else {
+          <span class="visually-hidden">{{ stateLabels[step.state] }}</span>
+        }
+      </div>
+    </li>
+  }
+</ol>

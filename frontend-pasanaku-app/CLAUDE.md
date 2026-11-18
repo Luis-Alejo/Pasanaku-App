@@ -358,7 +358,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
 - [x] **Paso 2 — Tema y ajustes móviles**
   - Paleta claro/oscuro de la sección 6 en `theme/variables.scss` y anulaciones en `global.scss`.
   - `theme-color` por esquema y los arreglos imprescindibles de la skill **mobile-native** (tap highlight, safe areas, zoom de inputs).
-- [ ] **Paso 3 — Modelos, mocks y componentes base**
+- [x] **Paso 3 — Modelos, mocks y componentes base**
   - Tipos provisionales del dominio (grupo, miembro, turno, aporte, intercambio), reemplazables luego por los de `graphql/generated.ts`.
   - Mocks con datos realistas y el flag `useMocks`.
   - `shared/ui`: badge de estado de aporte, tarjeta de monto, estado vacío, línea de turnos; pipe de montos que respete la moneda (USDC/BOB) y sus decimales.

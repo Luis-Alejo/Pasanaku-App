@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Laboratorio UI</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2 class="lab-heading">Badge de estado de aporte</h2>
+  <div class="lab-row">
+    @for (status of fixture().statuses; track $index) {
+    <app-payment-status-badge [status]="status" />
+    } @empty {
+    <p class="lab-none">(sin badges)</p>
+    }
+  </div>
+
+  <h2 class="lab-heading">Tarjeta de monto</h2>
+  @for (card of fixture().amountCards; track $index) {
+  <app-amount-card [label]="card.label" [amount]="card.amount" [asset]="card.asset" [caption]="card.caption" />
+  } @empty {
+  <p class="lab-none">(sin tarjetas)</p>
+  }
+
+  <h2 class="lab-heading">Estado vacío</h2>
+  @for (state of fixture().emptyStates; track $index) {
+  <app-empty-state [icon]="state.withIcon ? icon : undefined" [title]="state.title" [message]="state.message">
+    @if (state.actionLabel) {
+    <ion-button>{{ state.actionLabel }}</ion-button>
+    }
+  </app-empty-state>
+  } @empty {
+  <p class="lab-none">(sin estados vacíos)</p>
+  }
+
+  <h2 class="lab-heading">Línea de turnos</h2>
+  <app-turn-timeline [steps]="fixture().steps" label="Orden de cobro" />
+
+  <nav class="lab-toggle" aria-label="Conjunto de datos">
+    @for (d of datasets; track d.id) {
+    <a
+      [routerLink]="[]"
+      [queryParams]="{ data: d.id }"
+      [class.active]="active() === d.id"
+      [attr.aria-current]="active() === d.id ? 'page' : null"
+      >{{ d.label }}</a
+    >
+    }
+  </nav>
+</ion-content>
