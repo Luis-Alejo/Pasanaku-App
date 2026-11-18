@@ -52,6 +52,18 @@
       [asset]="g.asset"
       [caption]="labels.periodicity[g.periodicity]"
     />
+    } @if (canJoin()) {
+    <div class="actions">
+      <ion-button expand="block" [routerLink]="['/tabs/groups', g.id, 'join']">Unirme a este grupo</ion-button>
+    </div>
+    } @else if (canInvite()) {
+    <div class="actions">
+      <p class="hint">
+        Faltan {{ missingMembers() }} {{ missingMembers() === 1 ? 'miembro' : 'miembros' }} para empezar. Comparte el
+        código <strong class="code">{{ g.inviteCode }}</strong>.
+      </p>
+      <ion-button expand="block" (click)="shareInvite(g)">Compartir invitación</ion-button>
+    </div>
     }
 
     <ion-list [inset]="true" class="rules" aria-label="Reglas del grupo">

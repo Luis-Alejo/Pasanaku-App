@@ -364,7 +364,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
   - `shared/ui`: badge de estado de aporte, tarjeta de monto, estado vacío, línea de turnos; pipe de montos que respete la moneda (USDC/BOB) y sus decimales.
   - Probar los componentes con datos extremos (skill **break-ui**).
 - [x] **Paso 4 — Grupos: lista y detalle** (segmento Mis grupos/Públicos, detalle con estado, fondo, línea de turnos y aportes).
-- [ ] **Paso 5 — Crear grupo y unirse** (formulario con validaciones; unirse por código o desde Públicos).
+- [x] **Paso 5 — Crear grupo y unirse** (formulario con validaciones; unirse por código o desde Públicos).
 - [ ] **Paso 6 — Turnos** (modo acuerdo con intercambio propuesto/aceptado/rechazado; modo sorteo con resultado visible).
 - [ ] **Paso 7 — Aportes, desembolso e historial** (registrar aporte, estado de la transacción, desembolso simulado y línea de tiempo).
 - [ ] **Paso 8 — Inicio y Perfil** (resumen, próximo aporte, billetera con dirección y saldo de Testnet).

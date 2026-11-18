@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { AuthService } from '@core/auth/auth.service';
-import type { Contribution, Group } from '@core/models/domain.models';
+import type { Asset, Contribution, CreateGroupInput, Group, User } from '@core/models/domain.models';
 
 import { sortMyGroups } from './group-view';
 import { GroupsApi } from './groups.api';
@@ -40,6 +40,62 @@ export class GroupsStore {
   readonly notFound = computed(() => this._detailState() === 'loaded' && this._group() === null);
 
   readonly currentUserId = computed(() => this.auth.currentUser()?.id ?? '');
+
+  // --- Monedas (para el formulario de crear)
+  private readonly _assets = signal<Asset[]>([]);
+  readonly assets = this._assets.asReadonly();
+
+  // --- Unirse: el grupo que la persona está viendo para unirse
+  private readonly _joinTarget = signal<Group | null>(null);
+  private readonly _joinState = signal<LoadState>('idle');
+  readonly joinTarget = this._joinTarget.asReadonly();
+  readonly joinLoading = computed(() => this._joinState() === 'loading');
+  readonly joinError = computed(() => this._joinState() === 'error');
+  readonly joinNotFound = computed(() => this._joinState() === 'loaded' && this._joinTarget() === null);
+
+  async loadAssets(): Promise<void> {
+    if (this._assets().length === 0) {
+      this._assets.set(await this.api.getAssets());
+    }
+  }
+
+  /** Crea el grupo y lo devuelve (la pantalla navega a su detalle). */
+  async createGroup(input: CreateGroupInput): Promise<Group> {
+    const user = this.requireUser();
+    const group = await this.api.createGroup(input, user);
+    this._myGroups.update((groups) => [group, ...groups]);
+    return group;
+  }
+
+  /** Carga el grupo al que se quiere unir, por código de invitación o por id. */
+  async loadJoinTarget(by: { code: string } | { id: string }): Promise<void> {
+    this._joinTarget.set(null);
+    this._joinState.set('loading');
+    try {
+      const group = 'code' in by ? await this.api.getGroupByCode(by.code) : await this.api.getGroup(by.id);
+      this._joinTarget.set(group);
+      this._joinState.set('loaded');
+    } catch {
+      this._joinState.set('error');
+    }
+  }
+
+  /** Une al usuario al grupo. Lanza `JoinGroupError` si no se puede. */
+  async joinGroup(groupId: string): Promise<Group> {
+    const group = await this.api.joinGroup(groupId, this.requireUser());
+    this._joinTarget.set(group);
+    this._myGroups.update((groups) => [group, ...groups.filter((g) => g.id !== group.id)]);
+    this._publicGroups.update((groups) => groups.filter((g) => g.id !== group.id));
+    return group;
+  }
+
+  private requireUser(): User {
+    const user = this.auth.currentUser();
+    if (!user) {
+      throw new Error('No hay sesión iniciada');
+    }
+    return user;
+  }
 
   async loadLists(): Promise<void> {
     const userId = this.currentUserId();

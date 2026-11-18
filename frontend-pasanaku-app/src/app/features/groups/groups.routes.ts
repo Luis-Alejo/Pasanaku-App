@@ -12,8 +12,17 @@ export const groupsRoutes: Routes = [
         loadComponent: () => import('./pages/group-list/group-list.page').then((m) => m.GroupListPage),
       },
       {
+        // Antes de ':id' para que "new" no se tome como un id.
+        path: 'new',
+        loadComponent: () => import('./pages/create-group/create-group.page').then((m) => m.CreateGroupPage),
+      },
+      {
         path: ':id',
         loadComponent: () => import('./pages/group-detail/group-detail.page').then((m) => m.GroupDetailPage),
+      },
+      {
+        path: ':id/join',
+        loadComponent: () => import('./pages/join-group/join-group.page').then((m) => m.JoinGroupPage),
       },
     ],
   },

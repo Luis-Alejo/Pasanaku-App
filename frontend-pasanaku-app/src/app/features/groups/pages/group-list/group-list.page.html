@@ -1,6 +1,12 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
     <ion-title>Grupos</ion-title>
+    <ion-buttons slot="end">
+      <ion-button routerLink="/tabs/groups/new">
+        <ion-icon slot="start" [icon]="icons.add" aria-hidden="true" />
+        Crear
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -36,14 +42,20 @@
     <app-empty-state
       [icon]="icons.mine"
       title="Aún no tienes grupos"
-      message="Cuando te unas a un pasanaku o crees uno, aparecerá aquí."
-    />
+      message="Crea un pasanaku o únete con el código que te compartieron."
+    >
+      <ion-button routerLink="/tabs/groups/new">Crear grupo</ion-button>
+    </app-empty-state>
     } @else {
     <app-empty-state
       [icon]="icons.public"
       title="No hay grupos públicos con cupo"
       message="Vuelve más tarde o crea tu propio grupo."
     />
-    } } }
+    } } @if (segment() === 'mine') {
+    <ion-button class="join-code" fill="clear" expand="block" (click)="askInviteCode()">
+      ¿Tienes un código? Unirme con código
+    </ion-button>
+    } }
   </div>
 </ion-content>

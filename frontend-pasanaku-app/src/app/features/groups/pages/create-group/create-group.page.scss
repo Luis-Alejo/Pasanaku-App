@@ -1,0 +1,64 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem 1rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.suffix {
+  color: var(--ion-color-medium);
+  font-weight: 600;
+}
+
+.group-label {
+  margin: 0 0 0.5rem;
+  color: var(--ion-text-color);
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.options {
+  margin: 0;
+}
+
+/* Las opciones con descripción pueden ocupar varias líneas. */
+ion-radio::part(label) {
+  white-space: normal;
+}
+
+.option-title {
+  display: block;
+  font-weight: 600;
+}
+
+.option-help {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+}
+
+.summary {
+  margin: 0;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  background: rgba(var(--ion-color-primary-rgb), 0.1);
+  text-wrap: pretty;
+}
+
+.amount {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.submit {
+  margin: 0;
+}
+
+.disclaimer {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  text-align: center;
+  text-wrap: pretty;
+}

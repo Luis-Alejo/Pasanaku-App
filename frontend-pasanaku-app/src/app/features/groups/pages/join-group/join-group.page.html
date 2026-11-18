@@ -1,0 +1,112 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/groups" text="Grupos" />
+    </ion-buttons>
+    <ion-title>Unirse al grupo</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  @if (store.joinLoading()) {
+  <div class="loading" role="status">
+    <ion-spinner aria-hidden="true" />
+    <span class="visually-hidden">Buscando el grupo</span>
+  </div>
+  } @else if (store.joinError()) {
+  <app-empty-state
+    [icon]="icons.error"
+    title="No pudimos buscar el grupo"
+    message="Revisa tu conexión e inténtalo de nuevo."
+  >
+    <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
+  </app-empty-state>
+  } @else if (store.joinNotFound()) {
+  <app-empty-state
+    [icon]="icons.notFound"
+    title="No encontramos ese grupo"
+    [message]="
+        code()
+          ? 'Revisa el código de invitación (' + code() + ') o pídele uno nuevo a quien te invitó.'
+          : 'Puede que el grupo se haya eliminado.'
+      "
+  >
+    <ion-button fill="outline" routerLink="/tabs/groups">Ver grupos</ion-button>
+  </app-empty-state>
+  } @else if (group(); as g) {
+  <div class="page">
+    <header class="summary">
+      <h1 class="name">{{ g.name }}</h1>
+      <p class="lead">
+        Aportas <strong class="amount">{{ g.contributionAmount | money: g.asset }}</strong>
+        {{ g.periodicity === 'BIWEEKLY' ? 'cada quincena' : 'cada mes' }}. Cuando te toque, recibes
+        <strong class="amount">{{ payout() | money: g.asset }}</strong>.
+      </p>
+    </header>
+
+    <ion-list [inset]="true" aria-label="Reglas del grupo">
+      <ion-item>
+        <ion-label>Aporte</ion-label>
+        <ion-note slot="end" class="amount">{{ g.contributionAmount | money: g.asset }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Periodicidad</ion-label>
+        <ion-note slot="end">{{ labels.periodicity[g.periodicity] }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Orden de cobro</ion-label>
+        <ion-note slot="end">{{ labels.turnMode[g.turnMode] }}</ion-note>
+      </ion-item>
+      <ion-item>
+        <ion-label>Miembros</ion-label>
+        <ion-note slot="end">{{ g.members.length }} de {{ g.memberCount }}</ion-note>
+      </ion-item>
+      <ion-item lines="none">
+        <ion-label>Tipo</ion-label>
+        <ion-note slot="end">{{ labels.visibility[g.visibility] }}</ion-note>
+      </ion-item>
+    </ion-list>
+
+    @if (blocked(); as reason) {
+    <app-empty-state
+      [icon]="reason === 'ALREADY_MEMBER' ? icons.member : icons.closed"
+      [title]="blockedMessage(reason)"
+      [message]="reason === 'ALREADY_MEMBER' ? 'Puedes ver el estado del grupo y tus turnos.' : ''"
+    >
+      @if (reason === 'ALREADY_MEMBER') {
+      <ion-button [routerLink]="['/tabs/groups', g.id]">Ver el grupo</ion-button>
+      } @else {
+      <ion-button fill="outline" routerLink="/tabs/groups">Ver otros grupos</ion-button>
+      }
+    </app-empty-state>
+    } @else {
+    <section class="conditions" aria-labelledby="conditions-title">
+      <h2 id="conditions-title" class="section-title">Antes de unirte</h2>
+      <ul class="rules">
+        <li>Aportas el mismo monto en cada ronda hasta que todos hayan cobrado.</li>
+        <li>
+          @if (g.turnMode === 'DRAW') { Tu turno de cobro se sortea cuando el grupo se completa. } @else { Eliges tu
+          turno con el grupo y puedes proponer intercambios. }
+        </li>
+        <li>Los aportes y cobros quedan registrados en Stellar Testnet con activos de prueba.</li>
+      </ul>
+
+      <ion-checkbox
+        [formControl]="accept"
+        labelPlacement="end"
+        justify="start"
+        errorText="Para unirte, acepta las condiciones."
+      >
+        Acepto las condiciones del grupo
+      </ion-checkbox>
+    </section>
+
+    <ion-button expand="block" class="join" [disabled]="joining()" (click)="join()">
+      {{ joining() ? 'Uniéndote…' : 'Unirme al grupo' }}
+    </ion-button>
+    }
+
+    <p class="disclaimer">Las cifras son ilustrativas: no es una oferta financiera.</p>
+  </div>
+  }
+</ion-content>

@@ -110,6 +110,29 @@ export interface Group {
   createdAt: string;
 }
 
+/** Datos para crear un grupo (formulario "Crear grupo"). */
+export interface CreateGroupInput {
+  name: string;
+  /** Monto decimal con punto, ej. "500.00". */
+  contributionAmount: string;
+  /** Código de la moneda elegida, de las que devuelve la API. */
+  assetCode: string;
+  periodicity: Periodicity;
+  memberCount: number;
+  visibility: GroupVisibility;
+  turnMode: TurnMode;
+}
+
+/** Por qué no se pudo unir alguien a un grupo. */
+export type JoinGroupErrorCode = 'NOT_FOUND' | 'ALREADY_MEMBER' | 'FULL' | 'CLOSED';
+
+export class JoinGroupError extends Error {
+  constructor(readonly code: JoinGroupErrorCode) {
+    super(code);
+    this.name = 'JoinGroupError';
+  }
+}
+
 /** Usuario con sesión iniciada. */
 export interface User {
   id: string;
