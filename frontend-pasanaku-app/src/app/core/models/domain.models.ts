@@ -26,7 +26,7 @@ export type GroupVisibility = 'PUBLIC' | 'PRIVATE';
 export type TurnMode = 'AGREEMENT' | 'DRAW';
 
 /** POR CONFIRMAR con backend: opciones exactas de periodicidad. */
-export type Periodicity = 'BIWEEKLY' | 'MONTHLY';
+export type Periodicity = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY';
 
 /**
  * Ciclo de vida: Creación → Incorporación de miembros → Asignación de turnos
@@ -110,6 +110,12 @@ export interface Group {
   /** Cuándo quedó definido el orden de cobro (elección completa o sorteo). */
   turnsAssignedAt?: string;
   createdAt: string;
+  /** Usuario que organiza el grupo (solo con la API real). */
+  organizerUserId?: string;
+  /** El orden de cobro lo define el organizador, no cada miembro. */
+  turnsByOrganizer?: boolean;
+  /** Quien no es miembro solo ve un resumen (o nada, si es privado). */
+  detailsHidden?: boolean;
 }
 
 /** Datos para crear un grupo (formulario "Crear grupo"). */
@@ -129,7 +135,11 @@ export interface CreateGroupInput {
 export type JoinGroupErrorCode = 'NOT_FOUND' | 'ALREADY_MEMBER' | 'FULL' | 'CLOSED';
 
 export class JoinGroupError extends Error {
-  constructor(readonly code: JoinGroupErrorCode) {
+  constructor(
+    readonly code: JoinGroupErrorCode,
+    /** Mensaje del backend, si lo hay. */
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'JoinGroupError';
   }
@@ -146,7 +156,11 @@ export type TurnErrorCode =
   | 'SWAP_NOT_ALLOWED';
 
 export class TurnError extends Error {
-  constructor(readonly code: TurnErrorCode) {
+  constructor(
+    readonly code: TurnErrorCode,
+    /** Mensaje del backend, si lo hay. */
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'TurnError';
   }
@@ -172,7 +186,11 @@ export interface ContributeResult {
 export type ContributionErrorCode = 'NOT_FOUND' | 'NOT_MEMBER' | 'NOT_ACTIVE' | 'ALREADY_PAID';
 
 export class ContributionError extends Error {
-  constructor(readonly code: ContributionErrorCode) {
+  constructor(
+    readonly code: ContributionErrorCode,
+    /** Mensaje del backend, si lo hay. */
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'ContributionError';
   }

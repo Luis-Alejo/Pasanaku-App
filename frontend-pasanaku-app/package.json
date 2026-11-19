@@ -17,7 +17,8 @@
     "test:unit": "ng test --no-watch",
     "test:unit:watch": "ng test --watch",
     "test:e2e": "playwright test",
-    "codegen": "graphql-codegen"
+    "codegen": "graphql-codegen",
+    "start:real": "ng serve --configuration real"
   },
   "private": true,
   "dependencies": {

@@ -2,6 +2,7 @@ import { Component, ElementRef, computed, effect, inject, signal } from '@angula
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { toApiError } from '@core/graphql/api-error';
 import type { CreateGroupInput, GroupVisibility, Periodicity, TurnMode } from '@core/models/domain.models';
 import { ToastService } from '@core/services/toast.service';
 import {
@@ -198,8 +199,12 @@ export class CreateGroupPage {
       const group = await this.store.createGroup(input);
       void this.toast.show('Grupo creado', 'success');
       await this.router.navigate(['/tabs/groups', group.id], { replaceUrl: true });
-    } catch {
-      void this.toast.show('No pudimos crear el grupo. Inténtalo de nuevo.', 'danger');
+    } catch (error) {
+      const { kind, message } = toApiError(error);
+      void this.toast.show(
+        kind === 'forbidden' || kind === 'invalid' ? message : 'No pudimos crear el grupo. Inténtalo de nuevo.',
+        'danger',
+      );
     } finally {
       this.submitting.set(false);
     }

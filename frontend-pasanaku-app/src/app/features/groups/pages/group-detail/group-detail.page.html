@@ -51,17 +51,19 @@
     </ion-button>
     } @else if (canInvite()) {
     <p class="hint">
-      Faltan {{ missingMembers() }} {{ missingMembers() === 1 ? 'miembro' : 'miembros' }} para empezar. Comparte el
-      código <strong class="code">{{ g.inviteCode }}</strong>.
+      Faltan {{ missingMembers() }} {{ missingMembers() === 1 ? 'miembro' : 'miembros' }} para empezar. @if
+      (!g.organizerUserId) { Comparte el código <strong class="code">{{ g.inviteCode }}</strong>. }
     </p>
-    <ion-button class="cta" expand="block" (click)="shareInvite(g)">Compartir invitación</ion-button>
-    } @else if (isMember() && g.status === 'ASSIGNING_TURNS') {
+    <ion-button class="cta" expand="block" (click)="shareInvite(g)">
+      {{ g.organizerUserId ? 'Invitar por celular' : 'Compartir invitación' }}
+    </ion-button>
+    } @else if (canSetTurns()) {
     <p class="hint">
-      ¡El grupo está completo! {{ g.turnMode === 'DRAW' ? 'Falta sortear el orden de cobro.' : 'Cada miembro elige su
-      turno.' }}
+      ¡El grupo está completo! {{ g.turnsByOrganizer ? 'Define el orden de cobro para empezar.' : g.turnMode === 'DRAW'
+      ? 'Falta sortear el orden de cobro.' : 'Cada miembro elige su turno.' }}
     </p>
     <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', g.id, 'turns']">
-      {{ g.turnMode === 'DRAW' ? 'Ir al sorteo' : 'Elegir mi turno' }}
+      {{ g.turnsByOrganizer ? 'Definir turnos' : g.turnMode === 'DRAW' ? 'Ir al sorteo' : 'Elegir mi turno' }}
     </ion-button>
     } @else if (myPendingPayment(); as mine) { @if (mine.status === 'LATE') {
     <p class="hint late">Tu aporte de la ronda {{ g.currentRound }} está atrasado.</p>
@@ -84,9 +86,9 @@
       <div class="pk-card">
         <app-info-row label="Aporte" [value]="g.contributionAmount | money: g.asset" tone="brand" />
         <app-info-row label="Periodicidad" [value]="labels.periodicity[g.periodicity]" />
-        <app-info-row label="Orden de cobro" [value]="labels.turnMode[g.turnMode]" />
+        <app-info-row label="Orden de cobro" [value]="turnModeLabel(g)" />
         <app-info-row label="Miembros" [value]="g.members.length + ' de ' + g.memberCount" />
-        @if (g.inviteCode) {
+        @if (g.inviteCode && !g.organizerUserId) {
         <app-info-row label="Código de invitación">
           <span class="code">{{ g.inviteCode }}</span>
         </app-info-row>
@@ -105,7 +107,9 @@
         [icon]="icons.turns"
         title="Turnos sin asignar"
         [message]="
-              g.turnMode === 'DRAW'
+              g.turnsByOrganizer
+                ? 'Quien organiza el grupo define el orden cuando esté completo.'
+                : g.turnMode === 'DRAW'
                 ? 'El orden se sortea cuando el grupo esté completo.'
                 : 'Los miembros eligen sus turnos cuando el grupo esté completo.'
             "

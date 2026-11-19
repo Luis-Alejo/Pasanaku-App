@@ -97,7 +97,22 @@ export class GroupsStore {
     return group;
   }
 
+  /** Invita por celular al grupo cargado. */
+  inviteByPhone(phone: string): Promise<void> {
+    return this.api.inviteByPhone(this.requireGroupId(), phone);
+  }
+
   // --- Turnos
+  readonly organizerControlsTurns = this.api.organizerControlsTurns;
+
+  /** El organizador fija el orden y el grupo empieza. Lanza `TurnError`. */
+  async startWithOrder(userIds: string[]): Promise<Group> {
+    const group = await this.api.startWithOrder(this.requireGroupId(), userIds);
+    this._group.set(group);
+    void this.loadGroup(group.id);
+    return group;
+  }
+
   private readonly _swaps = signal<TurnSwap[]>([]);
   /** Propuestas de intercambio del grupo cargado (llegan junto con el grupo en loadGroup). */
   readonly swaps = this._swaps.asReadonly();

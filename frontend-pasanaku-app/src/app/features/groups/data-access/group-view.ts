@@ -27,6 +27,7 @@ export const STATUS_LABELS: Record<GroupStatus, string> = {
 };
 
 export const PERIODICITY_LABELS: Record<Periodicity, string> = {
+  WEEKLY: 'Semanal',
   BIWEEKLY: 'Quincenal',
   MONTHLY: 'Mensual',
 };
@@ -48,6 +49,11 @@ export function sortMyGroups(groups: Group[]): Group[] {
   return [...groups].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.name.localeCompare(b.name));
 }
 
+/** Cómo se decide el orden de cobro de este grupo. */
+export function turnModeLabel(group: Group): string {
+  return group.turnsByOrganizer ? 'Lo define el organizador' : TURN_MODE_LABELS[group.turnMode];
+}
+
 export function membersLabel(group: Group): string {
   return `${group.members.length} de ${group.memberCount} ${plural(group.memberCount, 'miembro', 'miembros')}`;
 }
@@ -65,6 +71,7 @@ export function groupProgressLabel(group: Group, userId: string): string {
       return free > 0 ? `${free} ${plural(free, 'cupo libre', 'cupos libres')}` : 'Grupo completo';
     }
     case 'ASSIGNING_TURNS':
+      if (group.turnsByOrganizer) return 'Definiendo los turnos';
       return group.turnMode === 'DRAW' ? 'Esperando el sorteo' : 'Eligiendo turnos';
     case 'ACTIVE': {
       const round = `Ronda ${group.currentRound} de ${group.rounds.length}`;

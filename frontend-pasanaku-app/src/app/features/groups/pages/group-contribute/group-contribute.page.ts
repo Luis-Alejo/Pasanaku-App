@@ -155,7 +155,7 @@ export class GroupContributePage {
     } catch (error) {
       this.errorMessage.set(
         error instanceof ContributionError
-          ? CONTRIBUTION_ERRORS[error.code]
+          ? (error.detail ?? CONTRIBUTION_ERRORS[error.code])
           : 'La transacción no se pudo enviar. Revisa tu conexión e inténtalo de nuevo.',
       );
       this.phase.set('failed');

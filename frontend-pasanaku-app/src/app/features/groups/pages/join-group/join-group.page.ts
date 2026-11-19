@@ -21,7 +21,7 @@ import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { multiplyAmount } from '@shared/utils/format';
 import { checkmarkCircleOutline, cloudOfflineOutline, lockClosedOutline, searchOutline } from 'ionicons/icons';
 
-import { PERIODICITY_LABELS, TURN_MODE_LABELS, VISIBILITY_LABELS, myMember } from '../../data-access/group-view';
+import { PERIODICITY_LABELS, VISIBILITY_LABELS, myMember, turnModeLabel } from '../../data-access/group-view';
 import { GroupsStore } from '../../data-access/groups.store';
 
 const JOIN_ERRORS: Record<JoinGroupErrorCode, string> = {
@@ -69,9 +69,9 @@ export class JoinGroupPage {
   protected readonly accept = new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] });
   protected readonly joining = signal(false);
 
+  protected readonly turnModeLabel = turnModeLabel;
   protected readonly labels = {
     periodicity: PERIODICITY_LABELS,
-    turnMode: TURN_MODE_LABELS,
     visibility: VISIBILITY_LABELS,
   };
   protected readonly icons = {
@@ -93,6 +93,7 @@ export class JoinGroupPage {
     const g = this.group();
     if (!g) return null;
     if (this.isMember()) return 'ALREADY_MEMBER';
+    if (g.memberCount === 0) return null; // privado sin vista previa
     if (g.status !== 'FORMING') return 'CLOSED';
     if (g.members.length >= g.memberCount) return 'FULL';
     return null;
@@ -143,7 +144,9 @@ export class JoinGroupPage {
       await this.router.navigate(['/tabs/groups', g.id], { replaceUrl: true });
     } catch (error) {
       const message =
-        error instanceof JoinGroupError ? JOIN_ERRORS[error.code] : 'No pudimos unirte al grupo. Inténtalo de nuevo.';
+        error instanceof JoinGroupError
+          ? (error.detail ?? JOIN_ERRORS[error.code])
+          : 'No pudimos unirte al grupo. Inténtalo de nuevo.';
       void this.toast.show(message, 'danger');
       // Refresca el grupo: puede que ya esté lleno o cerrado.
       this.retry();

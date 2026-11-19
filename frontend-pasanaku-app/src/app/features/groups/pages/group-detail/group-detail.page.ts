@@ -1,9 +1,10 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { toApiError } from '@core/graphql/api-error';
 import type { Group } from '@core/models/domain.models';
 import { ThemeService } from '@core/services/theme.service';
 import { ToastService } from '@core/services/toast.service';
-import { IonBackButton, IonButton, IonContent, IonSpinner } from '@ionic/angular';
+import { AlertController, IonBackButton, IonButton, IonContent, IonSpinner } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
 import { AmountCardComponent } from '@shared/ui/amount-card/amount-card.component';
 import { AvatarComponent } from '@shared/ui/avatar/avatar.component';
@@ -27,13 +28,13 @@ import {
 import {
   PERIODICITY_LABELS,
   STATUS_LABELS,
-  TURN_MODE_LABELS,
   VISIBILITY_LABELS,
   currentRoundFund,
   incomingProposals,
   myMember,
   roundPayments,
   sortByTurn,
+  turnModeLabel,
   turnSteps,
 } from '../../data-access/group-view';
 import { GroupsStore } from '../../data-access/groups.store';
@@ -63,6 +64,7 @@ export class GroupDetailPage {
   protected readonly store = inject(GroupsStore);
   private readonly toast = inject(ToastService);
   private readonly theme = inject(ThemeService);
+  private readonly alerts = inject(AlertController);
 
   /** Viene de la ruta /tabs/groups/:id (withComponentInputBinding). */
   readonly id = input.required<string>();
@@ -70,11 +72,11 @@ export class GroupDetailPage {
   protected readonly labels = {
     status: STATUS_LABELS,
     periodicity: PERIODICITY_LABELS,
-    turnMode: TURN_MODE_LABELS,
     visibility: VISIBILITY_LABELS,
   };
   protected readonly icons = { error: cloudOfflineOutline, notFound: helpCircleOutline, turns: shuffleOutline };
   protected readonly formatDate = formatDate;
+  protected readonly turnModeLabel = turnModeLabel;
 
   private readonly userId = this.store.currentUserId;
 
@@ -104,7 +106,7 @@ export class GroupDetailPage {
 
   protected readonly members = computed(() => {
     const g = this.store.group();
-    return g ? sortByTurn(g.members) : [];
+    return g ? sortByTurn(g.members).filter((m) => m.userId) : [];
   });
 
   protected readonly isMember = computed(() => {
@@ -123,7 +125,19 @@ export class GroupDetailPage {
   /** Miembro de un grupo privado que todavía suma gente: puede invitar. */
   protected readonly canInvite = computed(() => {
     const g = this.store.group();
-    return !!g && this.isMember() && g.status === 'FORMING' && !!g.inviteCode;
+    return !!g && this.isMember() && g.status === 'FORMING' && !!g.inviteCode && this.isOrganizerOrAny();
+  });
+
+  /** Sin organizador conocido (datos de prueba), cualquier miembro puede invitar. */
+  private readonly isOrganizerOrAny = computed(() => {
+    const organizer = this.store.group()?.organizerUserId;
+    return !organizer || organizer === this.userId();
+  });
+
+  /** Puede definir el orden de cobro (o, con datos de prueba, elegir su turno). */
+  protected readonly canSetTurns = computed(() => {
+    const g = this.store.group();
+    return !!g && this.isMember() && g.status === 'ASSIGNING_TURNS' && (!g.turnsByOrganizer || this.isOrganizerOrAny());
   });
 
   /** Mi aporte de la ronda en curso, si todavía no está pagado. */
@@ -262,6 +276,9 @@ export class GroupDetailPage {
 
   /** Comparte la invitación con el menú del sistema, o la copia si no hay menú. */
   protected async shareInvite(group: Group): Promise<void> {
+    if (group.organizerUserId && !(await this.inviteByPhone())) {
+      return;
+    }
     const code = group.inviteCode ?? '';
     const url = `${location.origin}/join/${code}`;
     const text = `Únete a mi pasanaku "${group.name}" con el código ${code}: ${url}`;
@@ -280,6 +297,33 @@ export class GroupDetailPage {
       void this.toast.show('Invitación copiada', 'success');
     } catch {
       void this.toast.show(`No se pudo copiar. El código es ${code}`, 'danger');
+    }
+  }
+
+  /** Con la API real, invitar es registrar el celular en el contrato. */
+  private async inviteByPhone(): Promise<boolean> {
+    const alert = await this.alerts.create({
+      header: 'Invitar por celular',
+      message: 'La persona ya debe tener una cuenta en Pasanaku.',
+      inputs: [{ name: 'phone', type: 'tel', placeholder: '71234567', attributes: { 'aria-label': 'Celular' } }],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Invitar', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss<{ values: { phone: string } }>();
+    const phone = data?.values.phone.trim();
+    if (role !== 'confirm' || !phone) {
+      return false;
+    }
+    try {
+      await this.store.inviteByPhone(phone);
+      void this.toast.show('Invitación registrada', 'success');
+      return true;
+    } catch (error) {
+      void this.toast.show(toApiError(error).message, 'danger');
+      return false;
     }
   }
 

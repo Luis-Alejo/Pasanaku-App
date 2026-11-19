@@ -71,6 +71,14 @@
             },
             "ci": {
               "progress": false
+            },
+            "real": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.real.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -86,6 +94,9 @@
             },
             "ci": {
               "progress": false
+            },
+            "real": {
+              "buildTarget": "app:build:development,real"
             }
           },
           "defaultConfiguration": "development"
@@ -108,12 +119,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html",
-              "e2e/**/*.ts",
-              "playwright.config.ts"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html", "e2e/**/*.ts", "playwright.config.ts"]
           }
         }
       }

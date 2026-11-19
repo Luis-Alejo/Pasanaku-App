@@ -38,22 +38,26 @@
     <img class="art" src="assets/illustrations/ahorro-colectivo.svg" alt="" decoding="async" />
     <header class="summary">
       <h1 class="name">{{ g.name }}</h1>
+      @if (g.memberCount === 0) {
+      <p class="lead">Para unirte, quien organiza el grupo debe haberte invitado con tu número de celular.</p>
+      } @else {
       <p class="lead">
         Aportas <strong class="amount">{{ g.contributionAmount | money: g.asset }}</strong>
         {{ g.periodicity === 'BIWEEKLY' ? 'cada quincena' : 'cada mes' }}. Cuando te toque, recibes
         <strong class="amount">{{ payout() | money: g.asset }}</strong>.
       </p>
+      }
     </header>
 
+    @if (g.memberCount > 0) {
     <div class="pk-card rules-card" role="group" aria-label="Reglas del grupo">
       <app-info-row label="Aporte" [value]="g.contributionAmount | money: g.asset" tone="brand" />
       <app-info-row label="Periodicidad" [value]="labels.periodicity[g.periodicity]" />
-      <app-info-row label="Orden de cobro" [value]="labels.turnMode[g.turnMode]" />
+      <app-info-row label="Orden de cobro" [value]="turnModeLabel(g)" />
       <app-info-row label="Miembros" [value]="g.members.length + ' de ' + g.memberCount" />
       <app-info-row label="Tipo" [value]="labels.visibility[g.visibility]" />
     </div>
-
-    @if (blocked(); as reason) {
+    } @if (blocked(); as reason) {
     <app-empty-state
       [icon]="reason === 'ALREADY_MEMBER' ? icons.member : icons.closed"
       [title]="blockedMessage(reason)"
@@ -71,8 +75,9 @@
       <ul class="rules">
         <li>Aportas el mismo monto en cada ronda hasta que todos hayan cobrado.</li>
         <li>
-          @if (g.turnMode === 'DRAW') { Tu turno de cobro se sortea cuando el grupo se completa. } @else { Eliges tu
-          turno con el grupo y puedes proponer intercambios. }
+          @if (g.turnsByOrganizer) { Quien organiza el grupo define el orden de cobro. } @else if (g.turnMode ===
+          'DRAW') { Tu turno de cobro se sortea cuando el grupo se completa. } @else { Eliges tu turno con el grupo y
+          puedes proponer intercambios. }
         </li>
         <li>Los aportes y cobros quedan registrados en Stellar Testnet con activos de prueba.</li>
       </ul>

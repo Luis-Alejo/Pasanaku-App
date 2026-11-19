@@ -1,0 +1,107 @@
+fragment GroupSummaryFields on GroupSummary {
+  id
+  name
+  creatorId
+  contributionStroops
+  frequency
+  maxParticipants
+  memberCount
+  isPublic
+  status
+  currentRound
+  roundDurationSeconds
+  createdAt
+}
+
+fragment GroupDetailFields on GroupDetail {
+  id
+  name
+  creatorId
+  contributionStroops
+  frequency
+  maxParticipants
+  memberCount
+  isPublic
+  status
+  currentRound
+  roundDurationSeconds
+  createdAt
+  members {
+    id
+    userId
+    fullName
+    initialTurnOrder
+    currentQueuePosition
+    hasReceivedPayout
+    joinedAt
+  }
+  rounds {
+    id
+    roundNumber
+    deadline
+    isSettled
+    beneficiaryMemberId
+    settleTxHash
+    settledAt
+    payments {
+      id
+      memberId
+      status
+      paidAt
+    }
+  }
+}
+
+query MyGroups {
+  myGroups {
+    ...GroupSummaryFields
+  }
+}
+
+query PublicGroups {
+  publicGroups(limit: 50) {
+    ...GroupSummaryFields
+  }
+}
+
+query GroupDetail($groupId: ID!) {
+  groupDetail(groupId: $groupId) {
+    ...GroupDetailFields
+  }
+}
+
+mutation CreateGroup($input: CreateGroupInput!) {
+  createGroup(input: $input) {
+    ...GroupSummaryFields
+  }
+}
+
+mutation JoinGroup($groupId: ID!) {
+  joinGroup(groupId: $groupId) {
+    txHash
+  }
+}
+
+mutation InviteMember($input: InviteMemberInput!) {
+  inviteMember(input: $input) {
+    txHash
+  }
+}
+
+mutation SetTurnOrder($input: SetTurnOrderInput!) {
+  setTurnOrder(input: $input) {
+    txHash
+  }
+}
+
+mutation StartGroup($groupId: ID!) {
+  startGroup(groupId: $groupId) {
+    txHash
+  }
+}
+
+mutation PayRound($groupId: ID!) {
+  payRound(groupId: $groupId) {
+    txHash
+  }
+}

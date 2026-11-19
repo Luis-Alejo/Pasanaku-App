@@ -9,6 +9,7 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -20,7 +21,13 @@ import {
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import { TurnTimelineComponent } from '@shared/ui/turn-timeline/turn-timeline.component';
 import { formatDate } from '@shared/utils/format';
-import { cloudOfflineOutline, helpCircleOutline, hourglassOutline } from 'ionicons/icons';
+import {
+  arrowDownOutline,
+  arrowUpOutline,
+  cloudOfflineOutline,
+  helpCircleOutline,
+  hourglassOutline,
+} from 'ionicons/icons';
 
 import {
   describeSwap,
@@ -61,6 +68,7 @@ const TURN_ERRORS: Record<TurnErrorCode, string> = {
     IonLabel,
     IonNote,
     IonButton,
+    IonIcon,
     IonSpinner,
     EmptyStateComponent,
     TurnTimelineComponent,
@@ -77,7 +85,13 @@ export class GroupTurnsPage {
   /** Acción en curso (para no repetirla y mostrar "…"). */
   protected readonly busy = signal<string | null>(null);
 
-  protected readonly icons = { error: cloudOfflineOutline, notFound: helpCircleOutline, waiting: hourglassOutline };
+  protected readonly icons = {
+    error: cloudOfflineOutline,
+    notFound: helpCircleOutline,
+    waiting: hourglassOutline,
+    up: arrowUpOutline,
+    down: arrowDownOutline,
+  };
   protected readonly swapStatusLabel = swapStatusLabel;
   protected readonly formatDate = formatDate;
 
@@ -88,6 +102,36 @@ export class GroupTurnsPage {
     const g = this.group();
     return g ? (myMember(g, this.userId()) ?? null) : null;
   });
+
+  protected readonly isOrganizer = computed(() => {
+    const g = this.group();
+    return !!g && g.organizerUserId === this.userId();
+  });
+
+  /** Orden que está armando el organizador (ids de usuario). */
+  private readonly customOrder = signal<string[] | null>(null);
+
+  protected readonly orderedMembers = computed(() => {
+    const members = this.group()?.members ?? [];
+    const order = this.customOrder();
+    if (!order) return members;
+    return order.flatMap((id) => members.filter((m) => m.userId === id));
+  });
+
+  protected move(index: number, delta: number): void {
+    const ids = this.orderedMembers().map((m) => m.userId);
+    const target = index + delta;
+    if (target < 0 || target >= ids.length) return;
+    [ids[index], ids[target]] = [ids[target], ids[index]];
+    this.customOrder.set(ids);
+  }
+
+  protected async confirmOrder(): Promise<void> {
+    await this.run('start', async () => {
+      await this.store.startWithOrder(this.orderedMembers().map((m) => m.userId));
+      void this.toast.show('Orden confirmado: el grupo empezó.', 'success');
+    });
+  }
 
   protected readonly slots = computed(() => {
     const g = this.group();
@@ -199,7 +243,8 @@ export class GroupTurnsPage {
     try {
       await action();
     } catch (error) {
-      const message = error instanceof TurnError ? TURN_ERRORS[error.code] : 'Algo salió mal. Inténtalo de nuevo.';
+      const message =
+        error instanceof TurnError ? (error.detail ?? TURN_ERRORS[error.code]) : 'Algo salió mal. Inténtalo de nuevo.';
       void this.toast.show(message, 'danger');
       // El estado del grupo pudo cambiar: recargar.
       void this.store.loadGroup(this.id());
