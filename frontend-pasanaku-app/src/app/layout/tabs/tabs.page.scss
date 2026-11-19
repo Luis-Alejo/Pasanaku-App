@@ -37,13 +37,18 @@ ion-tab-button:not(.tab-selected) ion-label {
 }
 
 /* Pestaña activa: pastilla índigo con ícono + texto. */
+/* Con 4 pestañas, la activa toma más ancho para que la pastilla no toque el borde. */
+ion-tab-button.tab-selected {
+  flex: 1.6 1 0;
+}
+
 ion-tab-button.tab-selected::part(native) {
   flex: 0 0 auto;
   align-self: center;
   width: auto;
   height: 2.5rem;
   margin: 0 auto;
-  padding: 0 1rem;
+  padding: 0 0.875rem;
   border-radius: var(--pk-radius-pill);
   background: var(--ion-color-primary);
 }

@@ -16,6 +16,10 @@ export const tabsRoutes: Routes = [
         loadChildren: () => import('@features/groups/groups.routes').then((m) => m.groupsRoutes),
       },
       {
+        path: 'wallet',
+        loadChildren: () => import('@features/wallet/wallet.routes').then((m) => m.walletRoutes),
+      },
+      {
         path: 'profile',
         loadChildren: () => import('@features/profile/profile.routes').then((m) => m.profileRoutes),
       },

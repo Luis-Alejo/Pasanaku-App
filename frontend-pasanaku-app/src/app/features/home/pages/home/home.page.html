@@ -83,8 +83,10 @@
     <section class="section" aria-labelledby="todo-title">
       <h2 id="todo-title" class="pk-section-title">Te están esperando</h2>
       <div class="pk-card">
-        @for (t of store.todos(); track t.kind + t.group.id) {
+        @for (t of store.todos(); track t.kind + t.group.id; let i = $index) {
         <app-action-row
+          class="pk-enter"
+          [style.--pk-i]="i"
           [icon]="todoIcons[t.kind]"
           [accent]="t.kind === 'swap' ? 'pink' : 'yellow'"
           [title]="t.text"
@@ -98,8 +100,10 @@
     <section class="section" aria-labelledby="groups-title">
       <h2 id="groups-title" class="pk-section-title">Tus grupos en curso</h2>
       <div class="pk-card">
-        @for (g of store.active(); track g.id) {
+        @for (g of store.active(); track g.id; let i = $index) {
         <app-action-row
+          class="pk-enter"
+          [style.--pk-i]="i"
           [icon]="icons.group"
           [title]="g.name"
           [subtitle]="'Ronda ' + g.currentRound + ' de ' + g.rounds.length"

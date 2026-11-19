@@ -36,8 +36,8 @@
     >
       <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
     </app-empty-state>
-    } @else { @for (group of groups(); track group.id) {
-    <app-group-card [group]="group" [userId]="store.currentUserId()" />
+    } @else { @for (group of groups(); track group.id; let i = $index) {
+    <app-group-card class="pk-enter" [style.--pk-i]="i" [group]="group" [userId]="store.currentUserId()" />
     } @empty { @if (segment() === 'mine') {
     <app-empty-state
       illustration="ahorro-colectivo"

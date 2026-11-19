@@ -5,7 +5,7 @@ import { Capacitor } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 
 /** Raíces de la navegación: desde aquí, "atrás" cierra la app (Material Design 3). */
-const ROOT_PATHS = ['/tabs/home', '/tabs/groups', '/tabs/profile', '/auth/login'];
+const ROOT_PATHS = ['/tabs/home', '/tabs/groups', '/tabs/wallet', '/tabs/profile', '/auth/login'];
 
 /**
  * Botón "atrás" de Android, predecible:
