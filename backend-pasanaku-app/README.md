@@ -1,126 +1,98 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Pasanaku On-Chain — Backend API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Backend custodial y API **GraphQL (Code-First)** de **Pasanaku On-Chain**, construido con **NestJS**, **TypeORM**, **PostgreSQL** y el **SDK de Stellar / Soroban**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Gestiona la autenticación de usuarios, custodia cifrada de wallets Stellar, verificación KYC, red de contactos de referencia, administración de grupos Pasanaku, conversión fiat mediante **Pollar** (QR BOB ↔ USDC) y sincronización idempotente de eventos on-chain.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Stack Tecnológico
 
-## Project setup
+- **Framework:** NestJS (ES Modules) + Apollo GraphQL (Code-First)
+- **Base de Datos:** PostgreSQL + TypeORM (migraciones explícitas)
+- **Blockchain:** `@stellar/stellar-sdk` (Stellar Testnet, Soroban RPC, Fee Bump Transactions)
+- **Seguridad:** JWT, Argon2/Bcrypt, cifrado simétrico **AES-256-GCM** y hashes determinísticos **HMAC-SHA256**
+- **Integración Fiat:** Pasarela **Pollar** (QR bancario en BOB ↔ USDC)
 
-```bash
-$ npm install
+---
+
+## Arquitectura Modular (`src/`)
+
+```text
+src/
+├── config/          # Validación estricta de variables de entorno
+├── database/        # Configuración TypeORM, DataSource (ESM) y migraciones
+├── common/          # Cifrado AES-256-GCM/HMAC, guards JWT, decoradores y utilidades Stroops
+├── auth/            # Registro y login por celular (+591) con emisión de JWT
+├── users/           # Perfil, wallets custodiales, KYC, referencias y listener de reputación
+├── blockchain/      # Único módulo acoplado a Stellar/Soroban (fondeo, invocador e indexador)
+├── groups/          # Creación de grupos, turnos (regla 30%), rondas, aportes, deudas y eventos
+├── transactions/    # Historial financiero e idempotencia (en progreso)
+├── payments/        # Rampa fiat BOB <-> USDC con Pollar y webhooks HMAC (en progreso)
+├── notifications/   # Alertas internas y enlaces de recordatorio (en progreso)
+└── scheduler/       # Tareas programadas para vencimientos y liquidación de rondas (en progreso)
 ```
 
-## Compile and run the project
+---
+
+## Requisitos Previos
+
+- **Node.js** `>= 20` (compatible con Node 26 ESM)
+- **PostgreSQL** `>= 15`
+- **Stellar CLI** (para desplegar contratos en Testnet)
+
+---
+
+## Instalación y Configuración Local
+
+### 1. Instalar dependencias
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+cd backend-pasanaku-app
+npm install
 ```
 
-## Run tests
+### 2. Configurar variables de entorno
+
+Copia el archivo de ejemplo y completa tus credenciales:
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Puedes generar las claves de seguridad rápidamente con Node.js:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# JWT_SECRET
+node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"
+
+# ENCRYPTION_KEY (64 caracteres hex = 32 bytes para AES-256-GCM)
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Asegúrate de tener creados en PostgreSQL la base de datos vacía (ej. `pasanaku`) y configurados en `.env` los identificadores desplegados en Stellar Testnet (`STELLAR_ADMIN_SECRET`, `USDC_CONTRACT_ID`, `REPUTATION_REGISTRY_ID` y `PASANAKU_WASM_HASH`).
 
-## Observability
-
-In production applications, observability is essential for understanding how your system behaves, detecting issues early, and maintaining reliable performance.
-
-[NestJS Observe](https://observe.nestjs.com) automatically instruments your NestJS application, giving you deep visibility into your system with minimal setup:
-
-- **Distributed tracing:** Follow requests across services and understand how they flow through your system.
-- **Waterfall analysis:** Visualize request execution and identify slow operations, bottlenecks, and unexpected delays.
-- **Performance analysis:** Analyze application performance in real time and quickly pinpoint areas that need optimization.
-- **Metrics:** Track key application and infrastructure metrics to understand system health and performance trends.
-- **Logging:** Centralize and correlate logs with traces and other telemetry to make debugging easier.
-- **Error tracking:** Detect errors quickly and investigate their root causes with the surrounding context.
-- **SLA monitoring:** Track service-level objectives and identify when your application is approaching or exceeding defined thresholds.
-- **Alarms and alerts:** Set up alerts for critical errors, performance degradation, SLA violations, and other anomalies so your team can react quickly.
-
-This project is already instrumented. To connect it, run this and approve the code it prints at [observe.nestjs.com/link](https://observe.nestjs.com/link) - signing up for free if you have no account:
+### 3. Compilar y ejecutar migraciones
 
 ```bash
-$ npx @nestjs/observe link
+npm run build
+npx typeorm migration:run -d dist/database/data-source.js
 ```
 
-It writes the app key and secret into `.env` and makes every `nest start` script (`start`, `start:dev`, `start:debug`) load it. In production, set `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment instead.
+### 4. Iniciar el servidor en desarrollo
 
-Or do it by hand: create an application and an API key at [observe.nestjs.com](https://observe.nestjs.com), and set the pair as `OBSERVE_APP_KEY` and `OBSERVE_APP_SECRET` in the environment the app runs in.
+```bash
+npm run start:dev
+```
 
-The free plan needs no payment details and covers 300,000 events a month. You can also browse the [live demo](https://www.observe-demo.nestjs.com/dashboard) first - the whole dashboard over a busy service's data, with nothing to install.
+El **Apollo GraphQL Playground** estará disponible en:
+`http://localhost:3000/graphql`
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Seguridad y Custodia
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Auto-instrument your application with [NestJS Observe](https://observe.nestjs.com). Distributed tracing, metrics, and logging made easy. Error tracking and performance monitoring for your NestJS applications.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Aislamiento Web3:** Ningún módulo fuera de `blockchain/` importa `@stellar/stellar-sdk`.
+- **Cifrado de Secretos:** Las llaves privadas de Stellar (`encryptedPrivateKey`) y los documentos de identidad (`encryptedCi`) se cifran en reposo con **AES-256-GCM** y nunca se exponen en el esquema GraphQL.
+- **Patrocinio de Gas (Fee Bump):** El servidor patrocina las comisiones de red en XLM para que los usuarios finales operen sin fricción.
+- **Escritor Único del Espejo:** Las mutations envían transacciones a Soroban y únicamente los listeners idempotentes del indexador (`ProcessedSorobanEvent`) actualizan el estado de rondas, pagos y deudas en PostgreSQL.
