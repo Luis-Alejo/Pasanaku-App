@@ -178,10 +178,15 @@ export class ContributionError extends Error {
   }
 }
 
+/** Verificación de identidad. Un usuario nuevo empieza en PENDING. */
+export type KycStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+
 /** Usuario con sesión iniciada. */
 export interface User {
   id: string;
   displayName: string;
-  email: string;
+  phone: string;
+  email: string | null;
   walletAddress: string;
+  kycStatus: KycStatus;
 }

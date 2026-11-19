@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+/* Barra del kit (Sign in): título a la izquierda, acción a la derecha. */
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 48px;
+}
+
+.screen-title {
+  min-width: 0;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Compensa que el contenido monta sobre el borde redondeado de la franja. */
+.body {
+  padding: 3rem 0 calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.heading {
+  margin: 0;
+  color: var(--ion-color-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.message {
+  margin: 0.25rem 0 0;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+  text-wrap: pretty;
+}
+
+/* Medidas del marco: 213×165, con 32px arriba y abajo. */
+.art {
+  display: block;
+  width: min(100%, 13.3125rem);
+  height: auto;
+  aspect-ratio: 213 / 165;
+  margin: 2rem auto;
+}

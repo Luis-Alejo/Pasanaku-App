@@ -1,0 +1,8 @@
+<button
+  type="button"
+  [attr.aria-label]="dark() ? 'Activar modo claro' : 'Activar modo oscuro'"
+  [attr.aria-pressed]="dark()"
+  (click)="toggled.emit()"
+>
+  <ion-icon [icon]="dark() ? icons.sun : icons.moon" aria-hidden="true" />
+</button>

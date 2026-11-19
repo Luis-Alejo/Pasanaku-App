@@ -1,0 +1,75 @@
+<ion-content [fullscreen]="true">
+  <app-auth-shell
+    screenTitle="Crear cuenta"
+    heading="Empieza tu pasanaku"
+    message="Tu billetera de Stellar Testnet se crea junto con tu cuenta."
+    illustration="billetera"
+  >
+    <app-theme-toggle shellAction [dark]="theme.isDark()" (toggled)="theme.toggle()" />
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <ion-input
+        formControlName="fullName"
+        autocomplete="name"
+        autocapitalize="words"
+        enterkeyhint="next"
+        label="Nombre completo"
+        labelPlacement="stacked"
+        fill="outline"
+        [maxlength]="limits.nameMax"
+        errorText="Escribe tu nombre completo."
+      />
+      <ion-input
+        formControlName="phone"
+        type="tel"
+        inputmode="tel"
+        autocomplete="tel"
+        enterkeyhint="next"
+        label="Celular"
+        labelPlacement="stacked"
+        fill="outline"
+        helperText="Con él entras a la app. Por ejemplo: 71234567"
+        errorText="Escribe un celular válido: 8 dígitos o con código de país (+591…)."
+      />
+      <ion-input
+        formControlName="email"
+        type="email"
+        inputmode="email"
+        autocomplete="email"
+        enterkeyhint="next"
+        label="Correo (opcional)"
+        labelPlacement="stacked"
+        fill="outline"
+        [maxlength]="limits.emailMax"
+        errorText="Escribe un correo válido o deja el campo vacío."
+      />
+      <ion-input
+        formControlName="password"
+        type="password"
+        autocomplete="new-password"
+        enterkeyhint="go"
+        label="Contraseña"
+        labelPlacement="stacked"
+        fill="outline"
+        [maxlength]="limits.passwordMax"
+        [helperText]="'Al menos ' + limits.passwordMin + ' caracteres.'"
+        [errorText]="'Usa al menos ' + limits.passwordMin + ' caracteres.'"
+      >
+        <ion-input-password-toggle slot="end" [showIcon]="icons.show" [hideIcon]="icons.hide" />
+      </ion-input>
+
+      @if (error()) {
+      <p class="form-error" role="alert">{{ error() }}</p>
+      }
+
+      <ion-button type="submit" expand="block" [disabled]="submitting()">
+        {{ submitting() ? 'Creando cuenta…' : 'Crear cuenta' }}
+      </ion-button>
+      <p class="note">Funciona en Stellar Testnet con activos de prueba. No se mueve dinero real.</p>
+    </form>
+
+    <p class="switch">
+      ¿Ya tienes cuenta?
+      <a routerLink="/auth/login" [queryParams]="returnUrl() ? { returnUrl: returnUrl() } : {}">Inicia sesión</a>
+    </p>
+  </app-auth-shell>
+</ion-content>

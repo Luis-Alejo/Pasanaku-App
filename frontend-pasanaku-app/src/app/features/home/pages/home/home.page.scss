@@ -13,31 +13,6 @@
   overflow-wrap: break-word;
 }
 
-/* Botón de tema donde el kit pone la campana: 48×48 de área táctil. */
-.theme-toggle {
-  display: grid;
-  flex-shrink: 0;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border: 0;
-  border-radius: 50%;
-  background: color-mix(in srgb, currentColor 14%, transparent);
-  color: inherit;
-  font-size: 1.375rem;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.theme-toggle:active {
-  transform: scale(0.94);
-}
-
-.theme-toggle:focus-visible {
-  outline: 2px solid currentColor;
-  outline-offset: 2px;
-}
-
 .page {
   padding: 1.25rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
 }

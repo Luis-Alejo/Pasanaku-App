@@ -1,0 +1,35 @@
+<ion-content [fullscreen]="true">
+  <app-auth-shell
+    screenTitle="Verificar identidad"
+    heading="Un último paso"
+    message="Necesitas verificar tu identidad para crear un grupo o unirte a uno."
+    illustration="acceso"
+  >
+    <app-theme-toggle shellAction [dark]="theme.isDark()" (toggled)="theme.toggle()" />
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <ion-input
+        formControlName="ciNumber"
+        autocomplete="off"
+        autocapitalize="characters"
+        enterkeyhint="go"
+        label="Número de CI"
+        labelPlacement="stacked"
+        fill="outline"
+        helperText="Por ejemplo: 1234567 o 1234567-1A"
+        errorText="Escribe un CI válido, con complemento si tienes."
+      />
+
+      @if (error()) {
+      <p class="form-error" role="alert">{{ error() }}</p>
+      }
+
+      <ion-button type="submit" expand="block" [disabled]="submitting()">
+        {{ submitting() ? 'Verificando…' : 'Verificar' }}
+      </ion-button>
+      <ion-button type="button" expand="block" fill="clear" [disabled]="submitting()" (click)="continue()">
+        Ahora no
+      </ion-button>
+      <p class="note">Tu CI se guarda cifrado y nunca se escribe en la blockchain.</p>
+    </form>
+  </app-auth-shell>
+</ion-content>

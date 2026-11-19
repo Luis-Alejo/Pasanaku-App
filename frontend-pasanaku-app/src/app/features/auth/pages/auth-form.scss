@@ -1,0 +1,46 @@
+/* Estilos comunes de los formularios de acceso. */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.form ion-button {
+  margin: 0;
+}
+
+.form-error {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: var(--pk-radius-card);
+  background: var(--pk-badge-danger-bg);
+  color: var(--pk-badge-danger-fg);
+  font-size: 0.875rem;
+  text-wrap: pretty;
+}
+
+.switch {
+  margin: 1rem 0 0;
+  color: var(--ion-color-medium);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+/* Enlace con área táctil de 48px. */
+.switch a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding-inline: 0.25rem;
+  color: var(--ion-color-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.note {
+  margin: 0;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  text-align: center;
+  text-wrap: pretty;
+}

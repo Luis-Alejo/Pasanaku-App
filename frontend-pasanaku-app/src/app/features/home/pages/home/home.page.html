@@ -3,15 +3,8 @@
     <div class="hello">
       <app-avatar [name]="userName()" size="md" />
       <h1 class="greeting">Hola, {{ store.greetingName() }}</h1>
-      <button
-        type="button"
-        class="theme-toggle"
-        [attr.aria-label]="theme.isDark() ? 'Activar modo claro' : 'Activar modo oscuro'"
-        [attr.aria-pressed]="theme.isDark()"
-        (click)="theme.toggle()"
-      >
-        <ion-icon [icon]="theme.isDark() ? icons.sun : icons.moon" aria-hidden="true" />
-      </button>
+      <!-- Donde el kit pone la campana -->
+      <app-theme-toggle [dark]="theme.isDark()" (toggled)="theme.toggle()" />
     </div>
 
     @if (hero(); as h) {

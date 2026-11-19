@@ -6,7 +6,7 @@
     <div pkOverlap class="person">
       <app-avatar class="person-avatar" [name]="u.displayName" size="lg" />
       <p class="name">{{ u.displayName }}</p>
-      <p class="email">{{ u.email }}</p>
+      <p class="email">{{ u.email ?? u.phone }}</p>
     </div>
   </app-brand-header>
 
@@ -30,6 +30,18 @@
         <p class="hint">Tu cuenta la administra Pasanaku de forma segura: no necesitas guardar claves.</p>
       </div>
     </section>
+
+    @if (u.kycStatus !== 'VERIFIED') {
+    <section class="section" aria-labelledby="identity-title">
+      <h2 id="identity-title" class="pk-section-title">Identidad</h2>
+      <div class="pk-card wallet">
+        <p class="label">Verifícala para crear un grupo o unirte a uno.</p>
+        <ion-button class="identity" expand="block" fill="outline" routerLink="/auth/verify">
+          Verificar identidad
+        </ion-button>
+      </div>
+    </section>
+    }
 
     <section class="section" aria-labelledby="appearance-title">
       <h2 id="appearance-title" class="pk-section-title">Apariencia</h2>
@@ -71,6 +83,10 @@
       </p>
       }
     </section>
+
+    <ion-button class="logout" expand="block" fill="clear" color="danger" (click)="logout()">
+      Cerrar sesión
+    </ion-button>
   </div>
   }
 </ion-content>

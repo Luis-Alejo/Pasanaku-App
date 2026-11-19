@@ -11,6 +11,8 @@ import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular';
 
 import { routes } from '../app.routes';
 
+import { AuthService } from './auth/auth.service';
+import { provideGraphql } from './graphql/graphql.provider';
 import { BackButtonService } from './services/back-button.service';
 import { ThemeService } from './services/theme.service';
 
@@ -19,7 +21,10 @@ export const appProviders: (Provider | EnvironmentProviders)[] = [
   { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
   provideIonicAngular(),
   provideRouter(routes, withPreloading(PreloadAllModules), withComponentInputBinding()),
+  ...provideGraphql(),
   // Tema claro/oscuro guardado por la persona (no el del dispositivo).
   provideAppInitializer(() => inject(ThemeService).init()),
   provideAppInitializer(() => inject(BackButtonService).init()),
+  // Recupera la sesión antes de que los guards decidan la primera pantalla.
+  provideAppInitializer(() => inject(AuthService).restore()),
 ];

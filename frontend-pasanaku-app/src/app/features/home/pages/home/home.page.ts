@@ -12,6 +12,7 @@ import { BrandHeaderComponent } from '@shared/ui/brand-header/brand-header.compo
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import type { QuickAction } from '@shared/ui/quick-actions/quick-actions.component';
 import { QuickActionsComponent } from '@shared/ui/quick-actions/quick-actions.component';
+import { ThemeToggleComponent } from '@shared/ui/theme-toggle/theme-toggle.component';
 import { formatDate } from '@shared/utils/format';
 import {
   addCircleOutline,
@@ -21,9 +22,7 @@ import {
   diceOutline,
   enterOutline,
   handLeftOutline,
-  moonOutline,
   peopleOutline,
-  sunnyOutline,
   swapHorizontalOutline,
   walletOutline,
 } from 'ionicons/icons';
@@ -54,6 +53,7 @@ const TODO_ICONS: Record<TodoKind, string> = {
     BrandHeaderComponent,
     EmptyStateComponent,
     QuickActionsComponent,
+    ThemeToggleComponent,
   ],
 })
 export class HomePage {
@@ -66,8 +66,6 @@ export class HomePage {
   protected readonly icons = {
     error: cloudOfflineOutline,
     ok: checkmarkCircleOutline,
-    sun: sunnyOutline,
-    moon: moonOutline,
     group: peopleOutline,
     payout: cashOutline,
   };

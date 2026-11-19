@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { ThemeService } from '@core/services/theme.service';
 import { ToastService } from '@core/services/toast.service';
@@ -6,7 +7,7 @@ import { explorerAccountUrl } from '@core/stellar/explorer';
 import type { WalletBalance } from '@core/stellar/stellar.service';
 import { StellarService } from '@core/stellar/stellar.service';
 import { environment } from '@env/environment';
-import { IonButton, IonContent, IonIcon, IonSpinner, IonToggle } from '@ionic/angular';
+import { IonButton, IonContent, IonIcon, IonSpinner, IonToggle, NavController } from '@ionic/angular';
 import { formatMoneyParts } from '@shared/pipes/money.pipe';
 import { AvatarComponent } from '@shared/ui/avatar/avatar.component';
 import { BrandHeaderComponent } from '@shared/ui/brand-header/brand-header.component';
@@ -20,6 +21,7 @@ type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
   templateUrl: './profile.page.html',
   styleUrls: ['./profile.page.scss'],
   imports: [
+    RouterLink,
     IonContent,
     IonButton,
     IonIcon,
@@ -34,6 +36,7 @@ export class ProfilePage {
   private readonly auth = inject(AuthService);
   private readonly stellar = inject(StellarService);
   private readonly toast = inject(ToastService);
+  private readonly nav = inject(NavController);
   protected readonly theme = inject(ThemeService);
 
   protected readonly user = this.auth.currentUser;
@@ -77,6 +80,11 @@ export class ProfilePage {
     } catch {
       this.balancesState.set('error');
     }
+  }
+
+  protected logout(): void {
+    this.auth.clearSession();
+    void this.nav.navigateRoot('/auth/login');
   }
 
   /** Copia la dirección; avisa también si falla (sin bloquear el botón). */
