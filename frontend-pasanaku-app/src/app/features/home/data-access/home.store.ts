@@ -4,7 +4,7 @@ import { GroupsApi } from '@core/data/groups.api';
 import type { Contribution, Group, TurnSwap } from '@core/models/domain.models';
 import { todayIso } from '@shared/utils/date';
 
-import { activeGroups, firstName, nextPayout, pendingPayments, todos } from './home-view';
+import { activeGroups, firstName, nextPayout, ongoingGroups, pendingPayments, todos } from './home-view';
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -31,6 +31,8 @@ export class HomeStore {
   readonly payout = computed(() => nextPayout(this._groups(), this.userId()));
   readonly todos = computed(() => todos(this._groups(), this._swaps(), this.userId()));
   readonly active = computed(() => activeGroups(this._groups()));
+  /** Todos los grupos que no terminaron (también los que suman miembros). */
+  readonly ongoing = computed(() => ongoingGroups(this._groups()));
 
   /** Carga (o refresca) el resumen. El spinner solo se usa la primera vez. */
   async load(): Promise<void> {

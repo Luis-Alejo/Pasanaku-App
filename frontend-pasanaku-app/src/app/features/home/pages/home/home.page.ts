@@ -28,6 +28,7 @@ import {
 } from 'ionicons/icons';
 
 import type { TodoKind } from '../../data-access/home-view';
+import { groupStatusText } from '../../data-access/home-view';
 import { HomeStore } from '../../data-access/home.store';
 
 const TODO_ICONS: Record<TodoKind, string> = {
@@ -70,6 +71,7 @@ export class HomePage {
     payout: cashOutline,
   };
   protected readonly formatDate = formatDate;
+  protected readonly groupStatusText = groupStatusText;
   protected readonly userName = computed(() => this.auth.currentUser()?.displayName ?? '');
 
   /**
@@ -92,7 +94,20 @@ export class HomePage {
       };
     }
     const p = this.store.payout();
-    if (p) {
+    if (!p) {
+      // Sin aportes ni cobros todavía: el grupo que se está armando.
+      const g = this.store.ongoing()[0];
+      return g
+        ? {
+            label: 'Aporte por ronda · ' + g.name,
+            amount: g.contributionAmount,
+            asset: g.asset,
+            meta: g.status === 'FORMING' ? 'Sumando miembros' : 'Definiendo turnos',
+            caption: groupStatusText(g),
+          }
+        : null;
+    }
+    {
       return {
         label: 'Tu próximo cobro · ' + p.group.name,
         amount: p.amount,

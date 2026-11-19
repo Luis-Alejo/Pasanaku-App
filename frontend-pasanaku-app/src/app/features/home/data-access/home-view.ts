@@ -116,6 +116,31 @@ export function activeGroups(groups: Group[]): Group[] {
   return groups.filter((g) => g.status === 'ACTIVE').sort((a, b) => a.name.localeCompare(b.name));
 }
 
+const ONGOING_ORDER: Record<string, number> = { ACTIVE: 0, ASSIGNING_TURNS: 1, FORMING: 2 };
+
+/** Grupos que todavía no terminaron: primero los que están en curso. */
+export function ongoingGroups(groups: Group[]): Group[] {
+  return groups
+    .filter((g) => g.status !== 'COMPLETED')
+    .sort((a, b) => ONGOING_ORDER[a.status] - ONGOING_ORDER[b.status] || a.name.localeCompare(b.name));
+}
+
+/** En qué va el grupo, en pocas palabras. */
+export function groupStatusText(group: Group): string {
+  switch (group.status) {
+    case 'FORMING': {
+      const missing = group.memberCount - group.members.length;
+      return `${group.members.length} de ${group.memberCount} miembros · ${missing === 1 ? 'falta 1' : `faltan ${missing}`}`;
+    }
+    case 'ASSIGNING_TURNS':
+      return 'Grupo completo · definiendo turnos';
+    case 'ACTIVE':
+      return `Ronda ${group.currentRound} de ${group.rounds.length}`;
+    default:
+      return 'Cerrado';
+  }
+}
+
 /** Primer nombre para el saludo ("Ana Quispe Mamani" → "Ana"). */
 export function firstName(displayName: string): string {
   return displayName.trim().split(/\s+/)[0] ?? '';
