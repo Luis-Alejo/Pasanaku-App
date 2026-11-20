@@ -5,7 +5,7 @@
       <div class="nav-text">
         <h1 class="name">{{ store.group()?.name ?? 'Grupo' }}</h1>
         @if (store.group(); as g) {
-        <p class="status">{{ labels.status[g.status] }} · {{ labels.visibility[g.visibility] }}</p>
+        <p class="status">{{ statusLabel(g) }} · {{ labels.visibility[g.visibility] }}</p>
         }
       </div>
     </div>
@@ -85,7 +85,7 @@
       <h2 id="rules-title" class="pk-section-title">Reglas del grupo</h2>
       <div class="pk-card">
         <app-info-row label="Aporte" [value]="g.contributionAmount | money: g.asset" tone="brand" />
-        <app-info-row label="Periodicidad" [value]="labels.periodicity[g.periodicity]" />
+        <app-info-row label="Periodicidad" [value]="periodicityLabel(g)" />
         <app-info-row label="Orden de cobro" [value]="turnModeLabel(g)" />
         <app-info-row label="Miembros" [value]="g.members.length + ' de ' + g.memberCount" />
         @if (g.inviteCode && !g.organizerUserId) {
@@ -156,6 +156,27 @@
       </ul>
       }
     </section>
+
+    @if (canManage()) {
+    <section class="section" aria-labelledby="manage-title">
+      <h2 id="manage-title" class="pk-section-title">Administrar grupo</h2>
+      <div class="pk-card manage">
+        <ion-button fill="outline" expand="block" [disabled]="managing()" (click)="rename()">Editar nombre</ion-button>
+        <ion-button
+          fill="clear"
+          color="danger"
+          expand="block"
+          [disabled]="managing() || !canCancel()"
+          (click)="cancelGroup()"
+        >
+          Cancelar grupo
+        </ion-button>
+        @if (!canCancel()) {
+        <p class="manage-note">Ya no se puede cancelar: otros miembros depositaron su garantía en el contrato.</p>
+        }
+      </div>
+    </section>
+    }
 
     <p class="disclaimer">
       Montos en Stellar Testnet con activos de prueba. Las cifras son ilustrativas: no es una oferta financiera.

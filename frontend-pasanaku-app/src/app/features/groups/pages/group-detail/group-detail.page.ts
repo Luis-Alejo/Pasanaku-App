@@ -27,17 +27,20 @@ import {
 
 import {
   PERIODICITY_LABELS,
-  STATUS_LABELS,
   VISIBILITY_LABELS,
   currentRoundFund,
   incomingProposals,
   myMember,
   roundPayments,
   sortByTurn,
+  periodicityLabel,
+  statusLabel,
   turnModeLabel,
   turnSteps,
 } from '../../data-access/group-view';
 import { GroupsStore } from '../../data-access/groups.store';
+
+const REFRESH_MS = 15_000;
 
 @Component({
   selector: 'app-group-detail',
@@ -70,13 +73,14 @@ export class GroupDetailPage {
   readonly id = input.required<string>();
 
   protected readonly labels = {
-    status: STATUS_LABELS,
     periodicity: PERIODICITY_LABELS,
     visibility: VISIBILITY_LABELS,
   };
   protected readonly icons = { error: cloudOfflineOutline, notFound: helpCircleOutline, turns: shuffleOutline };
   protected readonly formatDate = formatDate;
   protected readonly turnModeLabel = turnModeLabel;
+  protected readonly periodicityLabel = periodicityLabel;
+  protected readonly statusLabel = statusLabel;
 
   private readonly userId = this.store.currentUserId;
 
@@ -118,7 +122,11 @@ export class GroupDetailPage {
   protected readonly canJoin = computed(() => {
     const g = this.store.group();
     return (
-      !!g && !this.isMember() && g.visibility === 'PUBLIC' && g.status === 'FORMING' && g.members.length < g.memberCount
+      !!g &&
+      !this.isMember() &&
+      (g.visibility === 'PUBLIC' || !!g.invited) &&
+      g.status === 'FORMING' &&
+      g.members.length < g.memberCount
     );
   });
 
@@ -204,8 +212,8 @@ export class GroupDetailPage {
       label: 'Aporte por ronda',
       amount: g.contributionAmount,
       asset: g.asset,
-      meta: STATUS_LABELS[g.status],
-      caption: PERIODICITY_LABELS[g.periodicity],
+      meta: statusLabel(g),
+      caption: periodicityLabel(g),
     };
   });
 
@@ -256,13 +264,91 @@ export class GroupDetailPage {
     }
   }
 
+  /** El organizador puede editar o cancelar mientras el grupo no empieza. */
+  protected readonly canManage = computed(() => {
+    const g = this.store.group();
+    return (
+      !!g &&
+      !!g.organizerUserId &&
+      g.organizerUserId === this.userId() &&
+      (g.status === 'FORMING' || g.status === 'ASSIGNING_TURNS')
+    );
+  });
+
+  /** Solo se cancela sin otros miembros: sus garantías ya están en el contrato. */
+  protected readonly canCancel = computed(() => (this.store.group()?.members.length ?? 0) <= 1);
+
+  protected readonly managing = signal(false);
+
+  protected async rename(): Promise<void> {
+    const g = this.store.group();
+    if (!g || this.managing()) return;
+    const alert = await this.alerts.create({
+      header: 'Editar nombre',
+      inputs: [
+        { name: 'name', type: 'text', value: g.name, attributes: { maxlength: 60, 'aria-label': 'Nombre del grupo' } },
+      ],
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Guardar', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role, data } = await alert.onDidDismiss<{ values: { name: string } }>();
+    const name = data?.values.name.trim() ?? '';
+    if (role !== 'confirm' || name === g.name) return;
+    if (name.length < 3) {
+      void this.toast.show('El nombre debe tener al menos 3 letras.', 'danger');
+      return;
+    }
+    await this.manage(() => this.store.renameGroup(name), 'Nombre actualizado');
+  }
+
+  protected async cancelGroup(): Promise<void> {
+    const g = this.store.group();
+    if (!g || this.managing()) return;
+    const alert = await this.alerts.create({
+      header: 'Cancelar grupo',
+      message: `¿Cancelar "${g.name}"? Nadie más podrá unirse y no se puede deshacer.`,
+      buttons: [
+        { text: 'Volver', role: 'cancel' },
+        { text: 'Cancelar grupo', role: 'destructive' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role !== 'destructive') return;
+    await this.manage(() => this.store.cancelGroup(), 'Grupo cancelado');
+  }
+
+  private async manage(action: () => Promise<void>, done: string): Promise<void> {
+    this.managing.set(true);
+    try {
+      await action();
+      void this.toast.show(done, 'success');
+    } catch (error) {
+      void this.toast.show(toApiError(error).message, 'danger');
+    } finally {
+      this.managing.set(false);
+    }
+  }
+
+  /** Mientras la pantalla está abierta, revisa cambios de la cadena (aportes de otros, cobros). */
+  private refreshTimer: ReturnType<typeof setInterval> | undefined;
+
   /** Encabezado índigo: la barra de estado del sistema combina con él. */
   ionViewWillEnter(): void {
     this.theme.setHeaderTone('brand');
+    clearInterval(this.refreshTimer);
+    this.refreshTimer = setInterval(() => {
+      const status = this.store.group()?.status;
+      if (status && status !== 'COMPLETED') this.store.refreshGroup();
+    }, REFRESH_MS);
   }
 
   ionViewWillLeave(): void {
     this.theme.setHeaderTone('surface');
+    clearInterval(this.refreshTimer);
   }
 
   constructor() {

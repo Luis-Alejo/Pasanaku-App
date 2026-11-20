@@ -7,7 +7,12 @@ import type {
   Member,
   Round,
 } from '@core/models/domain.models';
-import type { GroupDetailFieldsFragment, GroupSummaryFieldsFragment, RoundPaymentStatus } from '@gql';
+import type {
+  GroupDetailFieldsFragment,
+  GroupPreviewFieldsFragment,
+  GroupSummaryFieldsFragment,
+  RoundPaymentStatus,
+} from '@gql';
 
 /** El contrato trabaja solo en USDC (Stellar usa 7 decimales). */
 export const USDC_ASSET: Asset = { code: 'USDC', decimals: 7 };
@@ -21,7 +26,10 @@ export function stroopsToAmount(stroops: string): string {
   return `${digits.slice(0, cut)}.${digits.slice(cut)}`;
 }
 
-type BackendGroup = GroupSummaryFieldsFragment | GroupDetailFieldsFragment;
+type BackendGroup = GroupSummaryFieldsFragment | GroupDetailFieldsFragment | GroupPreviewFieldsFragment;
+
+/** Menos de un día por ronda: es un grupo de demostración. */
+const DAY_SECONDS = 86_400;
 
 function toStatus(group: BackendGroup, memberCount: number): GroupStatus {
   switch (group.status) {
@@ -54,11 +62,13 @@ function baseGroup(group: BackendGroup, members: Member[]): Group {
     rounds: [],
     currentRound: null,
     createdAt: group.createdAt,
+    demoRoundSeconds: group.roundDurationSeconds < DAY_SECONDS ? group.roundDurationSeconds : undefined,
+    cancelled: group.status === 'CANCELLED' || undefined,
   };
 }
 
 /** Quien no es miembro solo conoce el resumen: los cupos ocupados no tienen nombre. */
-export function groupFromSummary(group: GroupSummaryFieldsFragment): Group {
+export function groupFromSummary(group: GroupSummaryFieldsFragment | GroupPreviewFieldsFragment): Group {
   const members = Array.from({ length: group.memberCount }, (_, i): Member => ({
     id: `slot-${i + 1}`,
     userId: '',
@@ -67,7 +77,8 @@ export function groupFromSummary(group: GroupSummaryFieldsFragment): Group {
     turnNumber: null,
     joinedAt: group.createdAt,
   }));
-  return { ...baseGroup(group, members), detailsHidden: true };
+  const invited = 'isInvited' in group && group.isInvited ? true : undefined;
+  return { ...baseGroup(group, members), detailsHidden: true, invited };
 }
 
 /** Enlace a un grupo privado que todavía no se puede consultar. */
@@ -170,7 +181,7 @@ export function contributionsFromDetail(
       amount: stroopsToAmount(group.contributionStroops),
       status: toContributionStatus(payment.status, round.deadline, now),
       paidAt: payment.paidAt ?? undefined,
-      txHash: txHashOf(round.roundNumber, payment.memberId),
+      txHash: payment.txHash ?? txHashOf(round.roundNumber, payment.memberId),
     })),
   );
 }

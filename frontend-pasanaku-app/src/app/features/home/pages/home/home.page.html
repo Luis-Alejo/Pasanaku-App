@@ -33,7 +33,7 @@
     >
       <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
     </app-empty-state>
-    } @else if (store.loaded()) { @if (!store.hasGroups()) {
+    } @else if (store.loaded()) { @if (!store.hasGroups() && !store.todos().length) {
     <app-empty-state
       illustration="ahorro-colectivo"
       title="Todavía no participas en ningún pasanaku"
@@ -88,7 +88,7 @@
           class="pk-enter"
           [style.--pk-i]="i"
           [icon]="todoIcons[t.kind]"
-          [accent]="t.kind === 'swap' ? 'pink' : 'yellow'"
+          [accent]="t.kind === 'swap' ? 'pink' : t.kind === 'invite' ? 'blue' : 'yellow'"
           [title]="t.text"
           [subtitle]="t.group.name"
           [link]="t.link"

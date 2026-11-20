@@ -21,7 +21,7 @@ export interface UpcomingPayout {
   isCurrent: boolean;
 }
 
-export type TodoKind = 'swap' | 'choose-turn' | 'draw';
+export type TodoKind = 'swap' | 'choose-turn' | 'draw' | 'invite';
 
 export interface Todo {
   kind: TodoKind;
@@ -78,8 +78,18 @@ export function nextPayout(groups: Group[], userId: string): UpcomingPayout | nu
 }
 
 /** Lo que espera una acción del usuario: propuestas de intercambio, elegir turno o sortear. */
-export function todos(groups: Group[], swapsByGroup: Record<string, TurnSwap[]>, userId: string): Todo[] {
-  const list: Todo[] = [];
+export function todos(
+  groups: Group[],
+  swapsByGroup: Record<string, TurnSwap[]>,
+  userId: string,
+  invitations: Group[] = [],
+): Todo[] {
+  const list: Todo[] = invitations.map((group) => ({
+    kind: 'invite' as const,
+    group,
+    text: 'Te invitaron a un grupo',
+    link: ['/tabs/groups', group.id],
+  }));
   for (const group of groups) {
     const me = memberOf(group, userId);
     if (!me) continue;

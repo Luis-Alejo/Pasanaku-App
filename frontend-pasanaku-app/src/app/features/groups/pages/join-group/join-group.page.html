@@ -52,7 +52,7 @@
     @if (g.memberCount > 0) {
     <div class="pk-card rules-card" role="group" aria-label="Reglas del grupo">
       <app-info-row label="Aporte" [value]="g.contributionAmount | money: g.asset" tone="brand" />
-      <app-info-row label="Periodicidad" [value]="labels.periodicity[g.periodicity]" />
+      <app-info-row label="Periodicidad" [value]="periodicityLabel(g)" />
       <app-info-row label="Orden de cobro" [value]="turnModeLabel(g)" />
       <app-info-row label="Miembros" [value]="g.members.length + ' de ' + g.memberCount" />
       <app-info-row label="Tipo" [value]="labels.visibility[g.visibility]" />

@@ -3,10 +3,12 @@ export const environment = {
   production: false,
   useMocks: false,
   /**
-   * Backend en el mismo equipo que sirve la app: en la PC es localhost; desde el
-   * celular (misma red wifi), la IP de la PC con la que se abrió la app.
+   * Mismo origen que la app: el servidor de desarrollo reenvía /graphql al backend
+   * (proxy.conf.json). Así funciona igual en la PC, en el celular y por un túnel.
    */
-  apiUrl: `http://${globalThis.location?.hostname || 'localhost'}:3000/graphql`,
+  apiUrl: '/graphql',
+  /** Ofrecer rondas de demostración al crear grupos (solo Testnet). */
+  demoRounds: true,
   stellar: {
     network: 'testnet',
     /** Explorador público de Testnet; se le agrega el hash. POR CONFIRMAR con el equipo. */

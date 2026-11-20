@@ -70,6 +70,12 @@ export type SubmitKycInput = {
   ciNumber: string;
 };
 
+export type UpdateGroupInput = {
+  description?: string | null | undefined;
+  groupId: string | number;
+  name?: string | null | undefined;
+};
+
 export type SessionUserFragment = { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus };
 
 export type LoginMutationVariables = Exact<{
@@ -100,7 +106,35 @@ export type SubmitKycMutation = { submitKyc: { id: string, fullName: string, pho
 
 export type GroupSummaryFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string };
 
-export type GroupDetailFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null }> }> };
+export type GroupDetailFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }> };
+
+export type GroupPreviewFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, isInvited: boolean, isMember: boolean };
+
+export type GroupPreviewQueryVariables = Exact<{
+  groupId: string | number;
+}>;
+
+
+export type GroupPreviewQuery = { groupPreview: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, isInvited: boolean, isMember: boolean } };
+
+export type MyInvitationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyInvitationsQuery = { myInvitations: Array<{ id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string }> };
+
+export type UpdateGroupMutationVariables = Exact<{
+  input: UpdateGroupInput;
+}>;
+
+
+export type UpdateGroupMutation = { updateGroup: { id: string, name: string } };
+
+export type CancelGroupMutationVariables = Exact<{
+  groupId: string | number;
+}>;
+
+
+export type CancelGroupMutation = { cancelGroup: { id: string, status: GroupStatus } };
 
 export type MyGroupsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -117,7 +151,7 @@ export type GroupDetailQueryVariables = Exact<{
 }>;
 
 
-export type GroupDetailQuery = { groupDetail: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null }> }> } };
+export type GroupDetailQuery = { groupDetail: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }> } };
 
 export type CreateGroupMutationVariables = Exact<{
   input: CreateGroupInput;
@@ -223,8 +257,27 @@ export const GroupDetailFieldsFragmentDoc = gql`
       memberId
       status
       paidAt
+      txHash
     }
   }
+}
+    `;
+export const GroupPreviewFieldsFragmentDoc = gql`
+    fragment GroupPreviewFields on GroupPreview {
+  id
+  name
+  creatorId
+  contributionStroops
+  frequency
+  maxParticipants
+  memberCount
+  isPublic
+  status
+  currentRound
+  roundDurationSeconds
+  createdAt
+  isInvited
+  isMember
 }
     `;
 export const LoginDocument = gql`
@@ -300,6 +353,80 @@ export const SubmitKycDocument = gql`
   })
   export class SubmitKycGQL extends Apollo.Mutation<SubmitKycMutation, SubmitKycMutationVariables> {
     override document = SubmitKycDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GroupPreviewDocument = gql`
+    query GroupPreview($groupId: ID!) {
+  groupPreview(groupId: $groupId) {
+    ...GroupPreviewFields
+  }
+}
+    ${GroupPreviewFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GroupPreviewGQL extends Apollo.Query<GroupPreviewQuery, GroupPreviewQueryVariables> {
+    override document = GroupPreviewDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const MyInvitationsDocument = gql`
+    query MyInvitations {
+  myInvitations {
+    ...GroupSummaryFields
+  }
+}
+    ${GroupSummaryFieldsFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MyInvitationsGQL extends Apollo.Query<MyInvitationsQuery, MyInvitationsQueryVariables> {
+    override document = MyInvitationsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UpdateGroupDocument = gql`
+    mutation UpdateGroup($input: UpdateGroupInput!) {
+  updateGroup(input: $input) {
+    id
+    name
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UpdateGroupGQL extends Apollo.Mutation<UpdateGroupMutation, UpdateGroupMutationVariables> {
+    override document = UpdateGroupDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const CancelGroupDocument = gql`
+    mutation CancelGroup($groupId: ID!) {
+  cancelGroup(groupId: $groupId) {
+    id
+    status
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class CancelGroupGQL extends Apollo.Mutation<CancelGroupMutation, CancelGroupMutationVariables> {
+    override document = CancelGroupDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

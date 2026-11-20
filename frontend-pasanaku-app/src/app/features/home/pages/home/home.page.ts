@@ -22,6 +22,7 @@ import {
   diceOutline,
   enterOutline,
   handLeftOutline,
+  mailOutline,
   peopleOutline,
   swapHorizontalOutline,
   walletOutline,
@@ -35,6 +36,7 @@ const TODO_ICONS: Record<TodoKind, string> = {
   swap: swapHorizontalOutline,
   'choose-turn': handLeftOutline,
   draw: diceOutline,
+  invite: mailOutline,
 };
 
 @Component({

@@ -46,9 +46,9 @@ const DETAIL: GroupDetailFieldsFragment = {
       settleTxHash: null,
       settledAt: null,
       payments: [
-        { id: 'p1', memberId: 'a', status: 'PAID', paidAt: '2026-11-10T12:00:00.000Z' },
-        { id: 'p2', memberId: 'b', status: 'PENDING', paidAt: null },
-        { id: 'p3', memberId: 'c', status: 'DEFAULTED', paidAt: null },
+        { id: 'p1', memberId: 'a', status: 'PAID', paidAt: '2026-11-10T12:00:00.000Z', txHash: null },
+        { id: 'p2', memberId: 'b', status: 'PENDING', paidAt: null, txHash: null },
+        { id: 'p3', memberId: 'c', status: 'DEFAULTED', paidAt: null, txHash: 'tx-servidor' },
       ],
     },
   ],
@@ -78,13 +78,18 @@ describe('group-mappers', () => {
     expect(group.inviteCode).toBe('g1');
   });
 
+  it('marca los grupos de demostración por la duración de la ronda', () => {
+    expect(groupFromDetail({ ...DETAIL, roundDurationSeconds: 180 }).demoRoundSeconds).toBe(180);
+    expect(groupFromDetail({ ...DETAIL, roundDurationSeconds: 1_209_600 }).demoRoundSeconds).toBeUndefined();
+  });
+
   it('traduce los pagos a aportes', () => {
     const now = new Date('2026-11-10T20:00:00.000Z');
     const list = contributionsFromDetail(DETAIL, (_, id) => (id === 'a' ? 'tx-a' : undefined), now);
     expect(list.map((c) => [c.memberId, c.status, c.txHash])).toEqual([
       ['a', 'PAID', 'tx-a'],
       ['b', 'PENDING', undefined],
-      ['c', 'LATE', undefined],
+      ['c', 'LATE', 'tx-servidor'],
     ]);
   });
 });

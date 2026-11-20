@@ -48,7 +48,51 @@ fragment GroupDetailFields on GroupDetail {
       memberId
       status
       paidAt
+      txHash
     }
+  }
+}
+
+fragment GroupPreviewFields on GroupPreview {
+  id
+  name
+  creatorId
+  contributionStroops
+  frequency
+  maxParticipants
+  memberCount
+  isPublic
+  status
+  currentRound
+  roundDurationSeconds
+  createdAt
+  isInvited
+  isMember
+}
+
+query GroupPreview($groupId: ID!) {
+  groupPreview(groupId: $groupId) {
+    ...GroupPreviewFields
+  }
+}
+
+query MyInvitations {
+  myInvitations {
+    ...GroupSummaryFields
+  }
+}
+
+mutation UpdateGroup($input: UpdateGroupInput!) {
+  updateGroup(input: $input) {
+    id
+    name
+  }
+}
+
+mutation CancelGroup($groupId: ID!) {
+  cancelGroup(groupId: $groupId) {
+    id
+    status
   }
 }
 

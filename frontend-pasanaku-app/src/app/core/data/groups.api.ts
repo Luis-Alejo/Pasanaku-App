@@ -16,15 +16,19 @@ import { ContributionError, JoinGroupError, TurnError } from '@core/models/domai
 import { environment } from '@env/environment';
 import type { GroupDetailQuery, GroupSummaryFieldsFragment } from '@gql';
 import {
+  CancelGroupGQL,
   CreateGroupGQL,
   GroupDetailGQL,
+  GroupPreviewGQL,
   InviteMemberGQL,
   JoinGroupGQL,
   MyGroupsGQL,
+  MyInvitationsGQL,
   PayRoundGQL,
   PublicGroupsGQL,
   SetTurnOrderGQL,
   StartGroupGQL,
+  UpdateGroupGQL,
 } from '@gql';
 import { addDays, addMonths, todayIso } from '@shared/utils/date';
 import { multiplyAmount } from '@shared/utils/format';
@@ -49,6 +53,15 @@ import { isSwappable } from './group-rules';
 export abstract class GroupsApi {
   /** Con la API real, el organizador define el orden de cobro. */
   readonly organizerControlsTurns: boolean = false;
+  /** Se pueden crear grupos con rondas de demostración (solo Testnet). */
+  readonly demoRoundsAvailable: boolean = false;
+
+  /** Grupos a los que invitaron al usuario y todavía no se unió. */
+  abstract getInvitations(): Promise<Group[]>;
+  /** El organizador cambia el nombre (solo antes de empezar). */
+  abstract renameGroup(groupId: string, name: string): Promise<void>;
+  /** El organizador cancela el grupo (solo antes de empezar y sin otros miembros). */
+  abstract cancelGroup(groupId: string): Promise<void>;
 
   /** Grupos donde el usuario es miembro. */
   abstract getMyGroups(userId: string): Promise<Group[]>;
@@ -272,6 +285,25 @@ export class MockGroupsApi extends GroupsApi {
     return fail(new TurnError('NOT_ALLOWED'));
   }
 
+  getInvitations(): Promise<Group[]> {
+    return delay([]);
+  }
+
+  renameGroup(groupId: string, name: string): Promise<void> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (group) group.name = name;
+    return delay(undefined);
+  }
+
+  cancelGroup(groupId: string): Promise<void> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (group) {
+      group.status = 'COMPLETED';
+      group.cancelled = true;
+    }
+    return delay(undefined);
+  }
+
   inviteByPhone(): Promise<void> {
     return delay(undefined);
   }
@@ -465,6 +497,9 @@ export class MockGroupsApi extends GroupsApi {
   }
 }
 
+/** Rondas de demostración: 3 minutos y 30 s de gracia (el backend lo permite solo en Testnet). */
+const DEMO_ROUND_SECONDS = 180;
+const DEMO_GRACE_SECONDS = 30;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const DETAIL_MEMO_MS = 1500;
 /** El backend refleja los eventos de la cadena unos segundos después de cada transacción. */
@@ -518,11 +553,16 @@ function contributionError(error: unknown): unknown {
 @Injectable({ providedIn: 'root' })
 export class GraphqlGroupsApi extends GroupsApi {
   override readonly organizerControlsTurns = true;
+  override readonly demoRoundsAvailable = !!environment.demoRounds;
 
   private readonly myGroupsGql = inject(MyGroupsGQL);
   private readonly publicGroupsGql = inject(PublicGroupsGQL);
   private readonly detailGql = inject(GroupDetailGQL);
   private readonly createGql = inject(CreateGroupGQL);
+  private readonly previewGql = inject(GroupPreviewGQL);
+  private readonly invitationsGql = inject(MyInvitationsGQL);
+  private readonly updateGql = inject(UpdateGroupGQL);
+  private readonly cancelGql = inject(CancelGroupGQL);
   private readonly joinGql = inject(JoinGroupGQL);
   private readonly inviteGql = inject(InviteMemberGQL);
   private readonly orderGql = inject(SetTurnOrderGQL);
@@ -591,9 +631,16 @@ export class GraphqlGroupsApi extends GroupsApi {
     } catch (error) {
       if (!(error instanceof ApiError) || error.kind !== 'not-found') throw error;
     }
-    // Solo los miembros ven el detalle; un grupo público se conoce por su resumen.
-    const summary = (await this.summaries('public')).find((g) => g.id === id);
-    return summary ? groupFromSummary(summary) : null;
+    // Solo los miembros ven el detalle; los demás, la vista previa (públicos o con invitación).
+    try {
+      const { groupPreview } = await apiData(
+        this.previewGql.fetch({ variables: { groupId: id }, fetchPolicy: 'no-cache' }),
+      );
+      return groupFromSummary(groupPreview);
+    } catch (error) {
+      if (error instanceof ApiError && error.kind === 'not-found') return null;
+      throw error;
+    }
   }
 
   override async getGroupByCode(code: string): Promise<Group | null> {
@@ -627,6 +674,9 @@ export class GraphqlGroupsApi extends GroupsApi {
             frequency: input.periodicity,
             maxParticipants: input.memberCount,
             isPublic: input.visibility === 'PUBLIC',
+            ...(input.demoRounds && this.demoRoundsAvailable
+              ? { roundDurationSeconds: DEMO_ROUND_SECONDS, graceDurationSeconds: DEMO_GRACE_SECONDS }
+              : {}),
           },
         },
       }),
@@ -642,6 +692,21 @@ export class GraphqlGroupsApi extends GroupsApi {
       throw joinError(error);
     }
     return groupFromDetail(await this.waitFor(groupId, (g) => g.members.some((m) => m.userId === user.id)));
+  }
+
+  override async getInvitations(): Promise<Group[]> {
+    const { myInvitations } = await apiData(this.invitationsGql.fetch({ fetchPolicy: 'no-cache' }));
+    return myInvitations.map((g) => ({ ...groupFromSummary(g), invited: true }));
+  }
+
+  override async renameGroup(groupId: string, name: string): Promise<void> {
+    await apiData(this.updateGql.mutate({ variables: { input: { groupId, name } } }));
+    this.details.delete(groupId);
+  }
+
+  override async cancelGroup(groupId: string): Promise<void> {
+    await apiData(this.cancelGql.mutate({ variables: { groupId } }));
+    this.details.delete(groupId);
   }
 
   override async inviteByPhone(groupId: string, phone: string): Promise<void> {

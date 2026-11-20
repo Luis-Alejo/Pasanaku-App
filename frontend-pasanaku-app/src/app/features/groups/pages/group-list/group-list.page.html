@@ -36,7 +36,14 @@
     >
       <ion-button fill="outline" (click)="retry()">Reintentar</ion-button>
     </app-empty-state>
-    } @else { @for (group of groups(); track group.id; let i = $index) {
+    } @else { @if (segment() === 'mine' && store.invitations().length) {
+    <section class="invitations" aria-labelledby="invitations-title">
+      <h2 id="invitations-title" class="pk-section-title">Te invitaron</h2>
+      @for (group of store.invitations(); track group.id) {
+      <app-group-card class="pk-enter" [group]="group" [userId]="store.currentUserId()" />
+      }
+    </section>
+    } @for (group of groups(); track group.id; let i = $index) {
     <app-group-card class="pk-enter" [style.--pk-i]="i" [group]="group" [userId]="store.currentUserId()" />
     } @empty { @if (segment() === 'mine') {
     <app-empty-state

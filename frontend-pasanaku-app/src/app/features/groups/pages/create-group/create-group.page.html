@@ -55,6 +55,13 @@
         }
       </ion-segment>
     </div>
+    } @if (store.demoRoundsAvailable) {
+    <div class="pk-card demo">
+      <ion-toggle formControlName="demoRounds" justify="space-between">
+        <span class="option-title">Rondas de demostración</span>
+        <span class="option-help">Cada ronda dura 3 minutos, para ver el ciclo completo. Solo en Stellar Testnet.</span>
+      </ion-toggle>
+    </div>
     }
 
     <div class="group" role="group" aria-labelledby="period-label">

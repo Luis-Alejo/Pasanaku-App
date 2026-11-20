@@ -21,7 +21,7 @@ import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { multiplyAmount } from '@shared/utils/format';
 import { checkmarkCircleOutline, cloudOfflineOutline, lockClosedOutline, searchOutline } from 'ionicons/icons';
 
-import { PERIODICITY_LABELS, VISIBILITY_LABELS, myMember, turnModeLabel } from '../../data-access/group-view';
+import { VISIBILITY_LABELS, myMember, periodicityLabel, turnModeLabel } from '../../data-access/group-view';
 import { GroupsStore } from '../../data-access/groups.store';
 
 const JOIN_ERRORS: Record<JoinGroupErrorCode, string> = {
@@ -70,8 +70,8 @@ export class JoinGroupPage {
   protected readonly joining = signal(false);
 
   protected readonly turnModeLabel = turnModeLabel;
+  protected readonly periodicityLabel = periodicityLabel;
   protected readonly labels = {
-    periodicity: PERIODICITY_LABELS,
     visibility: VISIBILITY_LABELS,
   };
   protected readonly icons = {

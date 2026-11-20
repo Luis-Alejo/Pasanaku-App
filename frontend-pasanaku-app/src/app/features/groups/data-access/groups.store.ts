@@ -27,10 +27,13 @@ export class GroupsStore {
   // --- Listas
   private readonly _myGroups = signal<Group[]>([]);
   private readonly _publicGroups = signal<Group[]>([]);
+  private readonly _invitations = signal<Group[]>([]);
   private readonly _listState = signal<LoadState>('idle');
 
   readonly myGroups = computed(() => sortMyGroups(this._myGroups()));
   readonly publicGroups = this._publicGroups.asReadonly();
+  /** Grupos privados a los que invitaron al usuario. */
+  readonly invitations = this._invitations.asReadonly();
   readonly listLoading = computed(() => this._listState() === 'loading');
   readonly listError = computed(() => this._listState() === 'error');
 
@@ -100,6 +103,31 @@ export class GroupsStore {
   /** Invita por celular al grupo cargado. */
   inviteByPhone(phone: string): Promise<void> {
     return this.api.inviteByPhone(this.requireGroupId(), phone);
+  }
+
+  readonly demoRoundsAvailable = this.api.demoRoundsAvailable;
+
+  /** El organizador cambia el nombre del grupo cargado. */
+  async renameGroup(name: string): Promise<void> {
+    const id = this.requireGroupId();
+    await this.api.renameGroup(id, name);
+    await this.loadGroup(id);
+  }
+
+  /** El organizador cancela el grupo cargado. */
+  async cancelGroup(): Promise<void> {
+    const id = this.requireGroupId();
+    await this.api.cancelGroup(id);
+    this._myGroups.update((groups) => groups.filter((g) => g.id !== id));
+    await this.loadGroup(id);
+  }
+
+  /** Recarga el grupo sin mostrar el estado de carga (para ver cambios de la cadena). */
+  refreshGroup(): void {
+    const id = this._group()?.id;
+    if (id && this._detailState() !== 'loading') {
+      void this.loadGroup(id);
+    }
   }
 
   // --- Turnos
@@ -202,9 +230,14 @@ export class GroupsStore {
     const userId = this.currentUserId();
     this._listState.set('loading');
     try {
-      const [mine, publics] = await Promise.all([this.api.getMyGroups(userId), this.api.getPublicGroups(userId)]);
+      const [mine, publics, invitations] = await Promise.all([
+        this.api.getMyGroups(userId),
+        this.api.getPublicGroups(userId),
+        this.api.getInvitations().catch(() => []),
+      ]);
       this._myGroups.set(mine);
       this._publicGroups.set(publics);
+      this._invitations.set(invitations);
       this._listState.set('loaded');
     } catch {
       this._listState.set('error');

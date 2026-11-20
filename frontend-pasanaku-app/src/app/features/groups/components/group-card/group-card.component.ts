@@ -6,11 +6,11 @@ import { MoneyPipe } from '@shared/pipes/money.pipe';
 import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 
 import {
-  PERIODICITY_LABELS,
-  STATUS_LABELS,
   VISIBILITY_LABELS,
   groupProgressLabel,
   membersLabel,
+  periodicityLabel,
+  statusLabel,
 } from '../../data-access/group-view';
 
 /** Tarjeta de un grupo en la lista. Toda la tarjeta lleva al detalle. */
@@ -25,8 +25,8 @@ export class GroupCardComponent {
   /** Usuario actual, para mensajes como "Tu cobro: 15 dic". */
   readonly userId = input.required<string>();
 
-  protected readonly statusLabel = computed(() => STATUS_LABELS[this.group().status]);
-  protected readonly periodicityLabel = computed(() => PERIODICITY_LABELS[this.group().periodicity]);
+  protected readonly statusLabel = computed(() => statusLabel(this.group()));
+  protected readonly periodicityLabel = computed(() => periodicityLabel(this.group()));
   protected readonly visibilityLabel = computed(() => VISIBILITY_LABELS[this.group().visibility]);
   protected readonly membersLabel = computed(() => membersLabel(this.group()));
   protected readonly progressLabel = computed(() => groupProgressLabel(this.group(), this.userId()));

@@ -49,6 +49,18 @@ export function sortMyGroups(groups: Group[]): Group[] {
   return [...groups].sort((a, b) => STATUS_ORDER[a.status] - STATUS_ORDER[b.status] || a.name.localeCompare(b.name));
 }
 
+/** Cada cuánto hay ronda (los grupos de demostración, en minutos). */
+export function periodicityLabel(group: Group): string {
+  return group.demoRoundSeconds
+    ? `Cada ${Math.round(group.demoRoundSeconds / 60)} min (demo)`
+    : PERIODICITY_LABELS[group.periodicity];
+}
+
+/** Estado del grupo para mostrar (distingue los cancelados de los cerrados). */
+export function statusLabel(group: Group): string {
+  return group.cancelled ? 'Cancelado' : STATUS_LABELS[group.status];
+}
+
 /** Cómo se decide el orden de cobro de este grupo. */
 export function turnModeLabel(group: Group): string {
   return group.turnsByOrganizer ? 'Lo define el organizador' : TURN_MODE_LABELS[group.turnMode];
@@ -67,6 +79,7 @@ export function myMember(group: Group, userId: string): Member | undefined {
 export function groupProgressLabel(group: Group, userId: string): string {
   switch (group.status) {
     case 'FORMING': {
+      if (group.invited) return 'Te invitaron · toca para ver y unirte';
       const free = group.memberCount - group.members.length;
       return free > 0 ? `${free} ${plural(free, 'cupo libre', 'cupos libres')}` : 'Grupo completo';
     }
@@ -85,6 +98,7 @@ export function groupProgressLabel(group: Group, userId: string): string {
         : `${round} · Tu cobro: ${formatDate(myRound.dueDate)}`;
     }
     case 'COMPLETED':
+      if (group.cancelled) return 'El organizador canceló el grupo';
       return `${group.rounds.length} ${plural(group.rounds.length, 'ronda completada', 'rondas completadas')}`;
   }
 }

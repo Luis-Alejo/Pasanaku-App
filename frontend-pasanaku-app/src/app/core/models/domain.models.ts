@@ -116,6 +116,12 @@ export interface Group {
   turnsByOrganizer?: boolean;
   /** Quien no es miembro solo ve un resumen (o nada, si es privado). */
   detailsHidden?: boolean;
+  /** Duración de cada ronda si es de demostración (minutos en vez de semanas). */
+  demoRoundSeconds?: number;
+  /** El organizador lo canceló antes de empezar. */
+  cancelled?: boolean;
+  /** El usuario tiene una invitación para unirse. */
+  invited?: boolean;
 }
 
 /** Datos para crear un grupo (formulario "Crear grupo"). */
@@ -129,6 +135,8 @@ export interface CreateGroupInput {
   memberCount: number;
   visibility: GroupVisibility;
   turnMode: TurnMode;
+  /** Rondas de pocos minutos para probar el ciclo completo (solo Testnet). */
+  demoRounds?: boolean;
 }
 
 /** Por qué no se pudo unir alguien a un grupo. */
