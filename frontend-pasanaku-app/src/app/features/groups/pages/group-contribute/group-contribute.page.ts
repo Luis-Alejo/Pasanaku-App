@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
+import { ApiError } from '@core/graphql/api-error';
 import type { ContributeResult, ContributionErrorCode, QrPayment } from '@core/models/domain.models';
 import { ContributionError } from '@core/models/domain.models';
 import { explorerTxUrl, shortHash } from '@core/stellar/explorer';
@@ -213,7 +214,9 @@ export class GroupContributePage {
     this.errorMessage.set(
       error instanceof ContributionError
         ? (error.detail ?? CONTRIBUTION_ERRORS[error.code])
-        : 'No se pudo completar el pago. Revisa tu conexión e inténtalo de nuevo.',
+        : error instanceof ApiError && error.kind !== 'network'
+          ? error.message
+          : 'No se pudo completar el pago. Revisa tu conexión e inténtalo de nuevo.',
     );
     this.phase.set('failed');
   }
