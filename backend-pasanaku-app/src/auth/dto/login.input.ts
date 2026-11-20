@@ -4,12 +4,12 @@ import { IsString, MaxLength } from 'class-validator';
 @InputType()
 export class LoginInput {
   @Field()
-  @IsString()
-  @MaxLength(30)
+  @IsString({ message: 'phone debe ser un texto' })
+  @MaxLength(30, { message: 'phone no puede exceder los 30 caracteres' })
   phone: string;
 
   @Field()
-  @IsString()
-  @MaxLength(72)
+  @IsString({ message: 'password debe ser un texto' })
+  @MaxLength(72, { message: 'password no puede exceder los 72 caracteres' })
   password: string;
 }

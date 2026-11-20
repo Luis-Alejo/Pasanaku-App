@@ -7,19 +7,19 @@ import { ReferenceRelationship } from '../../common/enums/index.js';
 export class RequestReferenceInput {
   @Field({ nullable: true })
   @IsOptional()
-  @IsString()
-  @Matches(/^\+?[\d\s\-().]{8,20}$/, { message: 'Celular inválido' })
+  @IsString({ message: 'contactPhone debe ser un texto' })
+  @Matches(/^\+?[\d\s\-().]{8,20}$/, { message: 'contactPhone inválido' })
   contactPhone?: string;
 
   @Field({ nullable: true })
   @IsOptional()
-  @IsString()
+  @IsString({ message: 'contactCi debe ser un texto' })
   @Matches(/^\d{5,10}([-\s]?[0-9A-Za-z]{1,2})?$/, {
-    message: 'Número de CI inválido',
+    message: 'contactCi inválido',
   })
   contactCi?: string;
 
   @Field(() => ReferenceRelationship)
-  @IsEnum(ReferenceRelationship)
+  @IsEnum(ReferenceRelationship, { message: 'Relación inválida' })
   relationship: ReferenceRelationship;
 }

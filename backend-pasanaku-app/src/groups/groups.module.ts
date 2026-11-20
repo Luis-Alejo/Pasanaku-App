@@ -14,6 +14,7 @@ import { GroupsResolver } from './groups.resolver.js';
 import { GroupsService } from './groups.service.js';
 import { WatchedContractsProvider } from './watched-contracts.provider.js';
 import { GroupInvitation } from './entities/group-invitation.entity.js';
+import { TransactionsModule } from '../transactions/transactions.module.js';
 
 @Global()
 @Module({
@@ -26,6 +27,7 @@ import { GroupInvitation } from './entities/group-invitation.entity.js';
       MemberDebt,
       GroupInvitation,
     ]),
+    TransactionsModule,
     UsersModule,
   ],
   providers: [

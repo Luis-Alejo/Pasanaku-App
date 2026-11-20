@@ -11,26 +11,34 @@ import {
 @InputType()
 export class RegisterInput {
   @Field()
-  @IsString()
-  @MinLength(2)
-  @MaxLength(160)
+  @IsString({ message: 'fullName debe ser un texto' })
+  @MinLength(2, {
+    message: 'fullName debe tener al menos 2 caracteres',
+  })
+  @MaxLength(160, {
+    message: 'fullName no puede exceder los 160 caracteres',
+  })
   fullName: string;
 
   @Field()
-  @IsString()
-  @Matches(/^\+?[\d\s\-().]{8,20}$/, { message: 'Celular inválido' })
+  @IsString({ message: 'phone debe ser un texto' })
+  @Matches(/^\+?[\d\s\-().]{8,20}$/, { message: 'phone inválido' })
   phone: string;
 
   // bcrypt ignora todo lo que pase de 72 bytes
   @Field()
-  @IsString()
-  @MinLength(8)
-  @MaxLength(72)
+  @IsString({ message: 'password debe ser un texto' })
+  @MinLength(8, { message: 'password debe tener al menos 8 caracteres' })
+  @MaxLength(72, {
+    message: 'password no puede exceder los 72 caracteres',
+  })
   password: string;
 
   @Field({ nullable: true })
   @IsOptional()
-  @IsEmail()
-  @MaxLength(254)
+  @IsEmail({}, { message: 'email no es válido' })
+  @MaxLength(254, {
+    message: 'email no puede exceder los 254 caracteres',
+  })
   email?: string;
 }

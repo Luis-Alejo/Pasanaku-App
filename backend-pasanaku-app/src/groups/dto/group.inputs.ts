@@ -22,24 +22,28 @@ const USDC_REGEX = /^\d+(\.\d{1,7})?$/;
 @InputType()
 export class CreateGroupInput {
   @Field(() => String)
-  @IsString()
-  @Length(3, 120)
+  @IsString({ message: 'name debe ser un string' })
+  @Length(3, 120, { message: 'name debe tener entre 3 y 120 caracteres' })
   name: string;
 
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @IsString()
-  @MaxLength(1000)
+  @IsString({ message: 'description debe ser un string' })
+  @MaxLength(1000, {
+    message: 'description no debe exceder los 1000 caracteres',
+  })
   description?: string;
 
   @Field(() => String, { description: 'Cuota en USDC, p. ej. "25" o "12.5"' })
-  @Matches(USDC_REGEX, { message: 'contributionUsdc inválido' })
+  @Matches(USDC_REGEX, {
+    message: 'contributionUsdc debe ser un número con hasta 7 decimales.',
+  })
   contributionUsdc: string;
 
   @Field(() => Int)
-  @IsInt()
-  @Min(2)
-  @Max(20)
+  @IsInt({ message: 'maxParticipants debe ser un número entero' })
+  @Min(2, { message: 'maxParticipants debe ser al menos 2' })
+  @Max(20, { message: 'maxParticipants no debe exceder 20' })
   maxParticipants: number;
 
   @Field(() => Frequency)
@@ -47,49 +51,59 @@ export class CreateGroupInput {
   frequency: Frequency;
 
   @Field(() => Boolean, { defaultValue: true })
-  @IsBoolean()
+  @IsBoolean({ message: 'isPublic debe ser un booleano' })
   isPublic: boolean;
 
   @Field(() => Int, { nullable: true, description: 'Solo Testnet/demo' })
   @IsOptional()
-  @IsInt()
-  @Min(60)
+  @IsInt({ message: 'roundDurationSeconds debe ser un número entero' })
+  @Min(60, { message: 'roundDurationSeconds debe ser al menos 60' })
   roundDurationSeconds?: number;
 
   @Field(() => Int, { nullable: true, description: 'Solo Testnet/demo' })
   @IsOptional()
-  @IsInt()
-  @Min(30)
+  @IsInt({ message: 'graceDurationSeconds debe ser un número entero' })
+  @Min(30, { message: 'graceDurationSeconds debe ser al menos 30' })
   graceDurationSeconds?: number;
 }
 
 @InputType()
 export class InviteMemberInput {
-  @Field(() => ID) @IsUUID() groupId: string;
-  @Field(() => String) @IsString() @Length(6, 20) phone: string;
+  @Field(() => ID)
+  @IsUUID(undefined, { message: 'groupId debe ser un UUID válido' })
+  groupId: string;
+
+  @Field(() => String)
+  @IsString({ message: 'phone debe ser un string' })
+  @Length(6, 20, { message: 'phone debe tener entre 6 y 20 caracteres' })
+  phone: string;
 }
 
 @InputType()
 export class SetTurnOrderInput {
-  @Field(() => ID) @IsUUID() groupId: string;
+  @Field(() => ID)
+  @IsUUID(undefined, { message: 'groupId debe ser un UUID válido' })
+  groupId: string;
 
   @Field(() => [ID], {
     description: 'userId de TODOS los miembros, en orden de turno',
   })
-  @IsArray()
-  @ArrayMinSize(2)
-  @ArrayMaxSize(20)
-  @IsUUID('all', { each: true })
+  @IsArray({ message: 'userIds debe ser un arreglo de UUIDs' })
+  @ArrayMinSize(2, { message: 'userIds debe tener al menos 2 elementos' })
+  @ArrayMaxSize(20, { message: 'userIds no debe exceder 20 elementos' })
+  @IsUUID('all', { each: true, message: 'Cada userId debe ser un UUID válido' })
   userIds: string[];
 }
 
 @InputType()
 export class PayArrearsInput {
-  @Field(() => ID) @IsUUID() groupId: string;
+  @Field(() => ID)
+  @IsUUID(undefined, { message: 'groupId debe ser un UUID válido' })
+  groupId: string;
 
   @Field(() => Int, { description: 'Número de la ronda original de la deuda' })
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'round debe ser un número entero' })
+  @Min(1, { message: 'round debe ser al menos 1' })
   round: number;
 
   @Field(() => String, {
@@ -97,21 +111,25 @@ export class PayArrearsInput {
     description: 'USDC; si se omite, paga el saldo completo',
   })
   @IsOptional()
-  @Matches(USDC_REGEX, { message: 'amountUsdc inválido' })
+  @Matches(USDC_REGEX, { message: 'amountUsdc debe ser un número con hasta 7 decimales.' })
   amountUsdc?: string;
 }
 
 @InputType()
 export class UpdateGroupInput {
-  @Field(() => ID) @IsUUID() groupId: string;
+  @Field(() => ID)
+  @IsUUID(undefined, { message: 'groupId debe ser un UUID válido' })
+  groupId: string;
+
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @IsString()
-  @Length(3, 120)
+  @IsString({ message: 'name debe ser un string' })
+  @Length(3, 120, { message: 'name debe tener entre 3 y 120 caracteres' })
   name?: string;
+
   @Field(() => String, { nullable: true })
   @IsOptional()
-  @IsString()
-  @MaxLength(1000)
+  @IsString({ message: 'description debe ser un string' })
+  @MaxLength(1000, { message: 'description no debe exceder 1000 caracteres' })
   description?: string;
 }

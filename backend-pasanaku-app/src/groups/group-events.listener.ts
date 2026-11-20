@@ -2,7 +2,11 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { EntityManager } from 'typeorm';
 import { SorobanPasanakuService } from '../blockchain/index.js';
-import { DebtStatus, GroupStatus, RoundPaymentStatus } from '../common/enums/index.js';
+import {
+  DebtStatus,
+  GroupStatus,
+  RoundPaymentStatus,
+} from '../common/enums/index.js';
 import { User } from '../users/entities/user.entity.js';
 import {
   BaseGroupEvent,
@@ -27,6 +31,8 @@ import { RoundPayment } from './entities/round-payment.entity.js';
 import { Round } from './entities/round.entity.js';
 import { applyQueueOrder } from './utils/queue.util.js';
 import { GroupInvitation } from './entities/group-invitation.entity.js';
+import { TransactionsService } from '../transactions/transactions.service.js';
+import { TX_TYPE } from '../transactions/transactions.constants.js';
 
 const OPTS = { suppressErrors: false } as const;
 const add = (a: string, b: string | bigint): string =>
@@ -45,7 +51,10 @@ const sub = (a: string, b: string | bigint): string => {
 export class GroupEventsListener {
   private readonly logger = new Logger(GroupEventsListener.name);
 
-  constructor(private readonly pasanaku: SorobanPasanakuService) {}
+  constructor(
+    private readonly pasanaku: SorobanPasanakuService,
+    private readonly transactions: TransactionsService,
+  ) {}
 
   @OnEvent(GROUP_EVENT.JOINED, OPTS)
   async onJoined(e: GroupJoinedEvent): Promise<void> {
@@ -270,6 +279,24 @@ export class GroupEventsListener {
     const group = await this.group(e);
     if (!group) return;
     const m = e.manager;
+    const refundable = await m.find(GroupMember, {
+      where: { groupId: group.id },
+    });
+    for (const mem of refundable) {
+      if (BigInt(mem.guaranteeBalanceStroops) <= 0n) continue;
+      await this.transactions.recordChainTransaction(
+        {
+          idempotencyKey: `chain:${e.eventId}:${mem.userId}`,
+          userId: mem.userId,
+          groupId: group.id,
+          type: TX_TYPE.GUARANTEE_REFUND,
+          amountStroops: mem.guaranteeBalanceStroops,
+          stellarTxHash: e.txHash,
+          occurredAt: e.ledgerClosedAt,
+        },
+        m,
+      );
+    }
     await m.update(PasanakuGroup, group.id, {
       status: GroupStatus.COMPLETED,
       nextDeadline: null,

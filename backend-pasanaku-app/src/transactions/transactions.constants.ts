@@ -6,6 +6,7 @@ export const TX_TYPE = {
   ROUND_CONTRIBUTION: TransactionType.ROUND_PAYMENT, // cuota de ronda
   ARREARS_PAYMENT: TransactionType.ARREARS_PAYMENT, // pago de deuda
   PAYOUT: TransactionType.PAYOUT, // pozo recibido
+  GUARANTEE_REFUND: TransactionType.GUARANTEE_REFUND,
 } as const;
 
 export const TX_STATUS = {

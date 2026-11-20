@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { BadRequestException, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Args, ID, Int, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -22,7 +22,15 @@ export class TransactionsResolver {
   @Query(() => [TransactionRecordType])
   groupTransactions(
     @CurrentUser('id') userId: string,
-    @Args('groupId', { type: () => ID }, ParseUUIDPipe) groupId: string,
+    @Args(
+      'groupId',
+      { type: () => ID },
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('Identificador inválido.'),
+      }),
+    )
+    groupId: string,
     @Args('limit', { type: () => Int, defaultValue: 20 }) limit: number,
     @Args('offset', { type: () => Int, defaultValue: 0 }) offset: number,
   ) {
