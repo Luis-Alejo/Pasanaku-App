@@ -440,7 +440,7 @@ Hay poco tiempo (entrega el 22 de noviembre): **prioriza que funcione sobre que 
   - Si en algún momento hay que elegir entre "igual a Figma" y "legible o accesible", gana legible y accesible, y me lo cuentas en el resumen.
 - [x] **Paso 9 — GraphQL real** (sección 7): Apollo + Codegen, reemplazar mocks por la API cuando el backend esté disponible. *Puede adelantarse si el backend está listo antes.*
 - [x] **Paso 10 — Autenticación** (login, registro, guards) según lo que defina el backend.
-- [ ] **Paso 11 — Ensayo de la demo** (recorrer el "camino de la demo" de la sección 5 en navegador y en Android; corregir lo que falle).
+- [x] **Paso 11 — Ensayo de la demo** (recorrer el "camino de la demo" de la sección 5 en navegador y en Android; corregir lo que falle).
 
 Solo si sobra tiempo: animaciones y pulido (skills de animación), billetera como pestaña propia y firma con wallet.
 
