@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { BadRequestException, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -17,7 +17,15 @@ import {
 } from './dto/group.types.js';
 import { GroupsService } from './groups.service.js';
 
-const GroupId = () => Args('groupId', { type: () => ID }, ParseUUIDPipe);
+const GroupId = () =>
+  Args(
+    'groupId',
+    { type: () => ID },
+    new ParseUUIDPipe({
+      exceptionFactory: () =>
+        new BadRequestException('Identificador inválido.'),
+    }),
+  );
 
 @Resolver()
 @UseGuards(JwtAuthGuard)

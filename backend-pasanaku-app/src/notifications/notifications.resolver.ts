@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { BadRequestException, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Args, ID, Int, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -34,7 +34,14 @@ export class NotificationsResolver {
   @Mutation(() => NotificationItemType)
   markNotificationAsRead(
     @CurrentUser('id') userId: string,
-    @Args('notificationId', { type: () => ID }, ParseUUIDPipe)
+    @Args(
+      'notificationId',
+      { type: () => ID },
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('Identificador inválido.'),
+      }),
+    )
     notificationId: string,
   ) {
     return this.notifications.markAsRead(userId, notificationId);

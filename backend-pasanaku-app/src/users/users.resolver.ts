@@ -1,4 +1,4 @@
-import { ParseUUIDPipe, UseGuards } from '@nestjs/common';
+import { BadRequestException, ParseUUIDPipe, UseGuards } from '@nestjs/common';
 import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
@@ -29,8 +29,24 @@ export class UsersResolver {
   @Query(() => [UserReference], { name: 'defaulterReferences' })
   defaulterReferences(
     @CurrentUser('id') userId: string,
-    @Args('groupId', { type: () => ID }, ParseUUIDPipe) groupId: string,
-    @Args('memberId', { type: () => ID }, ParseUUIDPipe) memberId: string,
+    @Args(
+      'groupId',
+      { type: () => ID },
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('Identificador inválido'),
+      }),
+    )
+    groupId: string,
+    @Args(
+      'memberId',
+      { type: () => ID },
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('Identificador inválido'),
+      }),
+    )
+    memberId: string,
   ): Promise<UserReference[]> {
     return this.users.getDefaulterReferences(userId, groupId, memberId);
   }
@@ -62,7 +78,15 @@ export class UsersResolver {
   @Mutation(() => UserReference)
   revokeReference(
     @CurrentUser('id') userId: string,
-    @Args('referenceId', { type: () => ID }, ParseUUIDPipe) referenceId: string,
+    @Args(
+      'referenceId',
+      { type: () => ID },
+      new ParseUUIDPipe({
+        exceptionFactory: () =>
+          new BadRequestException('Identificador inválido'),
+      }),
+    )
+    referenceId: string,
   ): Promise<UserReference> {
     return this.users.revokeReference(userId, referenceId);
   }

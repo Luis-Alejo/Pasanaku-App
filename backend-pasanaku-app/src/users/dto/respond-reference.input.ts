@@ -4,10 +4,10 @@ import { IsBoolean, IsUUID } from 'class-validator';
 @InputType()
 export class RespondReferenceInput {
   @Field(() => ID)
-  @IsUUID()
+  @IsUUID(undefined, { message: 'referenceId debe ser un UUID válido' })
   referenceId: string;
 
   @Field()
-  @IsBoolean()
+  @IsBoolean({ message: 'accept debe ser un valor booleano' })
   accept: boolean;
 }

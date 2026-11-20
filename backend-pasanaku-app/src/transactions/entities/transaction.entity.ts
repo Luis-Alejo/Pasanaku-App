@@ -9,7 +9,7 @@ import type { Round } from '../../groups/entities/round.entity.js';
 
 @Entity('transactions')
 @Index('UQ_transactions_idempotency_key', ['idempotencyKey'], { unique: true })
-@Index('UQ_transactions_stellar_hash', ['stellarTxHash'], { unique: true })
+@Index('UQ_transactions_stellar_hash', ['stellarTxHash', 'userId', 'type'], { unique: true })
 @Index('UQ_transactions_pollar_reference', ['pollarReference'], { unique: true })
 export class Transaction {
   @PrimaryGeneratedColumn('uuid')
@@ -48,7 +48,7 @@ export class Transaction {
   @Column({ type: 'varchar', length: 160, nullable: true, unique: true })
   pollarReference: string | null;
 
-  @Column({ type: 'varchar', length: 64, nullable: true, unique: true })
+  @Column({ type: 'varchar', length: 64, nullable: true })
   stellarTxHash: string | null;
 
   @Column({ type: 'boolean', default: true })

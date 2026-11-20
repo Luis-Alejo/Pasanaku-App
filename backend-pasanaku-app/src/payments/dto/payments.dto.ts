@@ -28,12 +28,12 @@ registerEnumType(PaymentPurpose, { name: 'PaymentPurpose' });
 @InputType()
 export class InitiateQrPaymentInput {
   @Field(() => PaymentPurpose)
-  @IsEnum(PaymentPurpose)
+  @IsEnum(PaymentPurpose, { message: 'purpose inválido' })
   purpose: PaymentPurpose;
 
   @Field(() => ID, { nullable: true, description: 'Requerido salvo TOPUP' })
   @IsOptional()
-  @IsUUID()
+  @IsUUID(undefined, { message: 'groupId debe ser un UUID válido' })
   groupId?: string;
 
   @Field(() => Int, {
@@ -41,8 +41,8 @@ export class InitiateQrPaymentInput {
     description: 'Ronda original de la deuda (ARREARS)',
   })
   @IsOptional()
-  @IsInt()
-  @Min(1)
+  @IsInt({ message: 'round debe ser un número entero' })
+  @Min(1, { message: 'round debe ser al menos 1' })
   round?: number;
 
   @Field(() => String, {
@@ -50,7 +50,7 @@ export class InitiateQrPaymentInput {
     description: 'Solo TOPUP, p. ej. "100" o "55.50"',
   })
   @IsOptional()
-  @Matches(/^\d+(\.\d{1,2})?$/, { message: 'amountBob inválido' })
+  @Matches(/^\d+(\.\d{1,2})?$/, { message: 'amountBob debe tener hasta 2 decimales.' })
   amountBob?: string;
 
   @Field(() => String, {
@@ -58,8 +58,8 @@ export class InitiateQrPaymentInput {
     description: 'Reintentos del cliente sin duplicar el cobro',
   })
   @IsOptional()
-  @IsString()
-  @Length(8, 64)
+  @IsString({ message: 'idempotencyKey debe ser un texto' })
+  @Length(8, 64, { message: 'idempotencyKey debe tener entre 8 y 64 caracteres' })
   idempotencyKey?: string;
 }
 

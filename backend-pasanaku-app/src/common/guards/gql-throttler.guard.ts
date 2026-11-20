@@ -1,6 +1,6 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { GqlExecutionContext } from '@nestjs/graphql';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerException, ThrottlerGuard } from '@nestjs/throttler';
 
 /** ThrottlerGuard compatible con GraphQL (y con REST, p. ej. el webhook). */
 @Injectable()
@@ -19,5 +19,11 @@ export class GqlThrottlerGuard extends ThrottlerGuard {
     }
     const http = context.switchToHttp();
     return { req: http.getRequest(), res: http.getResponse() };
+  }
+
+  protected async throwThrottlingException(): Promise<void> {
+    throw new ThrottlerException(
+      'Demasiados intentos. Espera un minuto e intenta de nuevo.',
+    );
   }
 }

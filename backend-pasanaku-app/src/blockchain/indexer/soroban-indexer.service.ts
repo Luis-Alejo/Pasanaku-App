@@ -88,6 +88,19 @@ export class SorobanIndexerService {
         pagingToken: null,
       });
 
+    const groupContractIds = (await this.watched?.getGroupContractIds()) ?? [];
+
+    // Primer arranque con BD nueva (sin cursor y sin grupos registrados): no hay historial que
+    // recuperar, así que se empieza en el ledger actual en vez de re-leer todo lo que conserva
+    // el RPC (~5 min). Si ya hay grupos pero falta el cursor, se mantiene el comportamiento
+    // anterior (desde el ledger más antiguo) para no perder sus eventos.
+    if (cursor.lastLedger === 0 && groupContractIds.length === 0) {
+      cursor.lastLedger = health.latestLedger;
+      this.logger.log(
+        `Primer arranque sin grupos: el indexador empieza en el ledger ${health.latestLedger}`,
+      );
+    }
+
     if (cursor.lastLedger > 0 && cursor.lastLedger + 1 < health.oldestLedger) {
       this.logger.warn(
         `El RPC ya no conserva los ledgers ${cursor.lastLedger + 1}-${health.oldestLedger - 1}: ` +
@@ -103,7 +116,7 @@ export class SorobanIndexerService {
     if (start > health.latestLedger) return;
     const end = Math.min(health.latestLedger, start + MAX_LEDGERS_PER_POLL - 1);
 
-    const contractIds = await this.contractsToWatch();
+    const contractIds = [...new Set([this.registryId, ...groupContractIds])];
     const events: rpc.Api.EventResponse[] = [];
     for (const batch of chunk(
       contractIds,
@@ -131,11 +144,6 @@ export class SorobanIndexerService {
         `Ledgers ${start}-${end}: ${processed} evento(s) nuevo(s) de ${events.length} leído(s)`,
       );
     }
-  }
-
-  private async contractsToWatch(): Promise<string[]> {
-    const groups = (await this.watched?.getGroupContractIds()) ?? [];
-    return [...new Set([this.registryId, ...groups])];
   }
 
   private async fetchEvents(
