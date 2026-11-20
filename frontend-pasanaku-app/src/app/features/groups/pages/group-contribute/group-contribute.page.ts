@@ -1,5 +1,6 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '@core/auth/auth.service';
 import type { ContributeResult, ContributionErrorCode, QrPayment } from '@core/models/domain.models';
 import { ContributionError } from '@core/models/domain.models';
 import { explorerTxUrl, shortHash } from '@core/stellar/explorer';
@@ -70,6 +71,7 @@ const CONTRIBUTION_ERRORS: Record<ContributionErrorCode, string> = {
 })
 export class GroupContributePage {
   protected readonly store = inject(GroupsStore);
+  private readonly auth = inject(AuthService);
 
   /** De la ruta /tabs/groups/:id/contribute */
   readonly id = input.required<string>();
@@ -100,6 +102,11 @@ export class GroupContributePage {
     const g = this.group();
     return g ? (myMember(g, this.store.currentUserId()) ?? null) : null;
   });
+
+  /** El backend no manda la dirección de cada miembro: la propia sale de la sesión. */
+  protected readonly walletAddress = computed(
+    () => this.me()?.walletAddress || this.auth.currentUser()?.walletAddress || '',
+  );
 
   protected readonly round = computed(() => {
     const g = this.group();

@@ -42,7 +42,7 @@
               } {{ n.title }}
             </span>
             <span class="message">{{ n.message }}</span>
-            <time class="date" [attr.datetime]="n.createdAt">{{ formatDate(n.createdAt, true) }}</time>
+            <time class="date" [attr.datetime]="n.createdAt">{{ formatDateTime(n.createdAt) }}</time>
           </span>
         </button>
       </li>

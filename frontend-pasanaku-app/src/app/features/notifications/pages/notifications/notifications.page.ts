@@ -14,7 +14,7 @@ import {
   NavController,
 } from '@ionic/angular';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
-import { formatDate } from '@shared/utils/format';
+import { formatDateTime } from '@shared/utils/format';
 import { alarmOutline, alertCircleOutline, cashOutline, hourglassOutline, notificationsOutline } from 'ionicons/icons';
 
 const KIND_ICONS: Record<NotificationKind, string> = {
@@ -57,7 +57,7 @@ export class NotificationsPage {
 
   protected readonly kindIcons = KIND_ICONS;
   protected readonly kindAccents = KIND_ACCENTS;
-  protected readonly formatDate = formatDate;
+  protected readonly formatDateTime = formatDateTime;
   protected readonly loadFailed = signal(false);
 
   async ionViewWillEnter(): Promise<void> {

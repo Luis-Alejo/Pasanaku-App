@@ -7,19 +7,42 @@ const dayMonthYear = new Intl.DateTimeFormat(LOCALE, {
   year: 'numeric',
   timeZone: 'UTC',
 });
+// Momentos (fecha con hora): en la zona horaria del teléfono.
+const localDayMonth = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short' });
+const localDayMonthYear = new Intl.DateTimeFormat(LOCALE, { day: 'numeric', month: 'short', year: 'numeric' });
+const localDayMonthTime = new Intl.DateTimeFormat(LOCALE, {
+  day: 'numeric',
+  month: 'short',
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+});
 const plurals = new Intl.PluralRules(LOCALE);
 
+const isDateOnly = (value: string) => value.length === 10;
+
 /**
- * Formatea una fecha "YYYY-MM-DD" (o ISO completa) como "15 nov" o "15 nov 2026".
- * Se formatea en UTC: una fecha sin hora no debe correrse un día por la zona horaria
- * (en Bolivia, UTC-4, "2026-11-15" sería el 14 a las 20:00).
+ * Formatea una fecha como "15 nov" o "15 nov 2026".
+ * - "YYYY-MM-DD" (solo día) se formatea en UTC: no debe correrse un día por la zona
+ *   horaria (en Bolivia, UTC-4, "2026-11-15" sería el 14 a las 20:00).
+ * - Un momento ISO completo (con hora) se muestra en la hora local: un aviso de las
+ *   22:00 en Bolivia es de ese día, aunque en UTC ya sea el siguiente.
  */
 export function formatDate(value: string, withYear = false): string {
-  const date = new Date(value.length === 10 ? `${value}T00:00:00Z` : value);
+  const date = new Date(isDateOnly(value) ? `${value}T00:00:00Z` : value);
   if (Number.isNaN(date.getTime())) {
     return '';
   }
-  return (withYear ? dayMonthYear : dayMonth).format(date);
+  if (isDateOnly(value)) {
+    return (withYear ? dayMonthYear : dayMonth).format(date);
+  }
+  return (withYear ? localDayMonthYear : localDayMonth).format(date);
+}
+
+/** Un momento con hora local: "19 nov, 22:48". */
+export function formatDateTime(value: string): string {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : localDayMonthTime.format(date);
 }
 
 /** "1 miembro", "6 miembros": elige la forma según la cantidad. */
