@@ -101,6 +101,10 @@ ion-back-button {
   overflow-wrap: break-word;
 }
 
+.rep {
+  margin-inline-start: 0.375rem;
+}
+
 .turn {
   flex-shrink: 0;
   color: var(--ion-color-medium);

@@ -2,7 +2,17 @@
   <app-brand-header>
     <div class="hello">
       <app-avatar [name]="userName()" size="md" />
-      <h1 class="greeting">Hola, {{ store.greetingName() }}</h1>
+      <div class="greeting-block">
+        <h1 class="greeting">Hola, {{ store.greetingName() }}</h1>
+        @if (myReputation(); as rep) {
+        <app-reputation-badge
+          [score]="rep.score"
+          [tone]="rep.tone"
+          [label]="'Tu reputación: ' + rep.score + ', ' + rep.label"
+          [onBrand]="true"
+        />
+        }
+      </div>
       <app-icon-badge-button
         [icon]="icons.bell"
         label="Notificaciones"

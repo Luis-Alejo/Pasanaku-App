@@ -34,6 +34,24 @@
       </div>
     </section>
 
+    @if (u.reputation !== undefined) {
+    <section class="section" aria-labelledby="reputation-title">
+      <h2 id="reputation-title" class="pk-section-title">Reputación</h2>
+      <div class="pk-card reputation">
+        <div class="rep-head">
+          <p class="rep-score">{{ u.reputation }} <span class="rep-max">/ {{ rules.max }}</span></p>
+        </div>
+        <p class="rep-level" [class]="'rep-level tone--' + repTone(u.reputation)">Nivel {{ repLabel(u.reputation) }}</p>
+        <app-info-row label="Grupos completados" [value]="'' + (u.completedGroups ?? 0)" />
+        <app-info-row label="Incumplimientos" [value]="'' + (u.defaultCount ?? 0)" />
+        <p class="hint">
+          Empiezas con {{ rules.start }} y sube hasta {{ rules.max }} al completar grupos sin faltas. Baja si no pagas a
+          tiempo. Con {{ rules.publicLimit }} o menos ya no puedes unirte a grupos públicos.
+        </p>
+      </div>
+    </section>
+    }
+
     <section class="section" aria-labelledby="appearance-title">
       <h2 id="appearance-title" class="pk-section-title">Apariencia</h2>
       <div class="pk-card">

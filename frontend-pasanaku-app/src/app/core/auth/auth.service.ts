@@ -43,6 +43,16 @@ export class AuthService {
     }
   }
 
+  /** Vuelve a pedir los datos del usuario (por ejemplo, la reputación). Sin conexión, deja los que hay. */
+  async refreshUser(): Promise<void> {
+    if (!this.user()) return;
+    try {
+      this.user.set(await this.api.me());
+    } catch {
+      // Se mantienen los datos actuales.
+    }
+  }
+
   async login(data: LoginData): Promise<User> {
     return this.startSession(await this.api.login(data));
   }

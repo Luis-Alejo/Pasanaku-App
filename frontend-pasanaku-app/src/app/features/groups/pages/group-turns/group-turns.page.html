@@ -50,7 +50,16 @@
         @for (m of orderedMembers(); track m.id; let i = $index; let first = $first; let last = $last) {
         <li class="order-row">
           <span class="turn-number" aria-hidden="true">{{ i + 1 }}</span>
-          <span class="order-name"><span class="visually-hidden">Turno {{ i + 1 }}:</span> {{ m.displayName }}</span>
+          <span class="order-name"
+            ><span class="visually-hidden">Turno {{ i + 1 }}:</span> {{ m.displayName }} @if (m.reputation !==
+            undefined) {
+            <app-reputation-badge
+              [score]="m.reputation"
+              [tone]="repTone(m.reputation)"
+              [label]="'Reputación ' + m.reputation"
+            />
+            }</span
+          >
           <ion-button
             fill="clear"
             [disabled]="first || busy() !== null"

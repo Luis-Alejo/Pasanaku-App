@@ -48,6 +48,9 @@ function toUser(user: SessionUserFragment): User {
     email: user.email ?? null,
     walletAddress: user.stellarPublicKey,
     kycStatus: user.kycStatus,
+    reputation: user.reputationScore,
+    completedGroups: user.completedGroups,
+    defaultCount: user.defaultCount,
   };
 }
 

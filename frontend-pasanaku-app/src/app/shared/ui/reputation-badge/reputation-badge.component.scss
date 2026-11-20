@@ -1,0 +1,44 @@
+:host {
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--pk-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+ion-icon {
+  font-size: 0.875rem;
+}
+
+/* Colores de los badges de estado (legibles en claro y oscuro). */
+:host(.tone--excellent) .badge,
+:host(.tone--good) .badge {
+  background: var(--pk-badge-success-bg);
+  color: var(--pk-badge-success-fg);
+}
+
+:host(.tone--fair) .badge {
+  background: var(--pk-badge-warning-bg);
+  color: var(--pk-badge-warning-fg);
+}
+
+:host(.tone--low) .badge {
+  background: var(--pk-badge-danger-bg);
+  color: var(--pk-badge-danger-fg);
+}
+
+/* Sobre la franja índigo: translúcido, con el color del texto de la franja. */
+:host(.on-brand) .badge {
+  background: color-mix(in srgb, currentColor 16%, transparent);
+  color: inherit;
+}

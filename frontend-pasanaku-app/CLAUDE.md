@@ -55,11 +55,12 @@ Se presenta como un pasanaku digital y verificable, **no** como una herramienta 
 - **Periodicidad:** semanal, quincenal o mensual. En Testnet hay **rondas de demostración de 3 minutos** (30 s de gracia) para ver el ciclo completo.
 - **Desembolso:** lo hace el **scheduler del backend** cuando vence el plazo más la gracia. Quien no paga a tiempo usa primero su **garantía** (1 cuota); si ya la usó, queda una **deuda** que puede pagar después (aporte atrasado).
 - **Firma:** **custodial**. El backend guarda cifrada la clave Stellar de cada usuario, firma y paga las comisiones (fee bump). La app nunca maneja claves.
+- **Reputación (decidido):** empieza en 100 y sube hasta 200 al completar grupos sin faltas; baja con cada incumplimiento. Con 40 o menos no se pueden usar grupos públicos. Se ve junto al nombre de cada persona (Inicio, grupos, turnos, perfil). Límites en `core/models/reputation.ts`; la fuente de verdad es el contrato `reputation_registry` (hoy aún suma sin tope y usa 80 para públicos: **POR CONFIRMAR con Luis**).
 - **Identidad (KYC):** para crear o unirse a un grupo hay que verificar el CI (en la demo se aprueba solo).
 - **Tono legal en la UI:** las cifras son ilustrativas; no presentes la app como oferta financiera ni prometas rendimientos.
 
 ### Fuera del MVP (versión 2 o posterior, NO implementar ahora)
-Reputación e historial de cumplimiento, Soulbound Tokens o credenciales, reglas de salida, resolución de disputas, grupos por niveles, fondo de reserva e integraciones con cooperativas o proveedores.
+Soulbound Tokens o credenciales, reglas de salida, resolución de disputas, grupos por niveles, fondo de reserva e integraciones con cooperativas o proveedores.
 
 Equipo de 3 personas, repositorio monorepo `Luis-Alejo/Pasanaku-App`:
 

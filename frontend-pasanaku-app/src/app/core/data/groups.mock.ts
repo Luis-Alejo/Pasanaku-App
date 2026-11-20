@@ -48,7 +48,9 @@ function member(
   turnNumber: number | null,
   joinedAt: string,
 ): Member {
-  return { id, userId, displayName, walletAddress, turnNumber, joinedAt };
+  // Reputación de ejemplo: Luis tuvo un atraso; Ana completó grupos.
+  const reputation = userId === 'user-luis' ? 90 : userId === 'user-ana' ? 120 : 100;
+  return { id, userId, displayName, walletAddress, turnNumber, joinedAt, reputation };
 }
 
 /** Aportes de una ronda. `statuses` permite marcar a alguien como pendiente o atrasado. */

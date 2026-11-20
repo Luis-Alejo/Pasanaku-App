@@ -98,6 +98,11 @@
             <ion-radio value="PUBLIC" justify="start" labelPlacement="end">
               <span class="option-title">Público</span>
               <span class="option-help">Cualquiera puede unirse mientras haya cupos.</span>
+              @if (!canPublic()) {
+              <span class="option-help warning">
+                Tu reputación es de {{ publicLimit }} o menos: no puedes crear grupos públicos.
+              </span>
+              }
             </ion-radio>
           </ion-item>
         </ion-radio-group>

@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { toApiError } from '@core/graphql/api-error';
 import type { Group } from '@core/models/domain.models';
 import { ContributionError } from '@core/models/domain.models';
+import { reputationTone } from '@core/models/reputation';
 import { ThemeService } from '@core/services/theme.service';
 import { ToastService } from '@core/services/toast.service';
 import { AlertController, IonBackButton, IonButton, IonContent, IonSpinner } from '@ionic/angular';
@@ -15,6 +16,7 @@ import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
 import { PaymentStatusBadgeComponent } from '@shared/ui/payment-status-badge/payment-status-badge.component';
 import type { QuickAction } from '@shared/ui/quick-actions/quick-actions.component';
 import { QuickActionsComponent } from '@shared/ui/quick-actions/quick-actions.component';
+import { ReputationBadgeComponent } from '@shared/ui/reputation-badge/reputation-badge.component';
 import { TurnTimelineComponent } from '@shared/ui/turn-timeline/turn-timeline.component';
 import { formatDate, plural } from '@shared/utils/format';
 import {
@@ -62,6 +64,7 @@ const REFRESH_MS = 15_000;
     PaymentStatusBadgeComponent,
     QuickActionsComponent,
     TurnTimelineComponent,
+    ReputationBadgeComponent,
   ],
 })
 export class GroupDetailPage {
@@ -82,6 +85,7 @@ export class GroupDetailPage {
   protected readonly turnModeLabel = turnModeLabel;
   protected readonly periodicityLabel = periodicityLabel;
   protected readonly statusLabel = statusLabel;
+  protected readonly repTone = reputationTone;
 
   private readonly userId = this.store.currentUserId;
 

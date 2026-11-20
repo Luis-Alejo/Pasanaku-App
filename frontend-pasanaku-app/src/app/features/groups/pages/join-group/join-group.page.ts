@@ -2,8 +2,10 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '@core/auth/auth.service';
 import type { JoinGroupErrorCode } from '@core/models/domain.models';
 import { JoinGroupError } from '@core/models/domain.models';
+import { REPUTATION, canUsePublicGroups } from '@core/models/reputation';
 import { ToastService } from '@core/services/toast.service';
 import {
   IonBackButton,
@@ -30,6 +32,7 @@ const JOIN_ERRORS: Record<JoinGroupErrorCode, string> = {
   ALREADY_MEMBER: 'Ya eres parte de este grupo.',
   FULL: 'El grupo se llenó antes de que pudieras unirte.',
   CLOSED: 'Este grupo ya no acepta miembros.',
+  LOW_REPUTATION: `Tu reputación es de ${REPUTATION.publicLimit} o menos: no puedes unirte a grupos públicos.`,
 };
 
 /**
@@ -61,6 +64,7 @@ export class JoinGroupPage {
   protected readonly store = inject(GroupsStore);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
 
   /** De /join/:code */
   readonly code = input<string>();
@@ -99,6 +103,9 @@ export class JoinGroupPage {
     if (g.memberCount === 0) return null; // privado sin vista previa
     if (g.status !== 'FORMING') return 'CLOSED';
     if (g.members.length >= g.memberCount) return 'FULL';
+    if (g.visibility === 'PUBLIC' && !canUsePublicGroups(this.auth.currentUser()?.reputation)) {
+      return 'LOW_REPUTATION';
+    }
     return null;
   });
 

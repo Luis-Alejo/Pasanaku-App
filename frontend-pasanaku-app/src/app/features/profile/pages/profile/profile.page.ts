@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
+import { REPUTATION, reputationLabel, reputationTone } from '@core/models/reputation';
 import { ThemeService } from '@core/services/theme.service';
 import { IonButton, IonContent, IonToggle, NavController } from '@ionic/angular';
 import { AvatarComponent } from '@shared/ui/avatar/avatar.component';
@@ -19,10 +20,14 @@ export class ProfilePage {
   protected readonly theme = inject(ThemeService);
 
   protected readonly user = this.auth.currentUser;
+  protected readonly rules = REPUTATION;
+  protected readonly repTone = reputationTone;
+  protected readonly repLabel = reputationLabel;
 
   /** Encabezado índigo: la barra de estado del sistema combina con él. */
   ionViewWillEnter(): void {
     this.theme.setHeaderTone('brand');
+    void this.auth.refreshUser();
   }
 
   ionViewWillLeave(): void {

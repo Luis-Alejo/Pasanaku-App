@@ -140,6 +140,7 @@ export function groupFromDetail(group: GroupDetailFieldsFragment): Group {
     id: m.id,
     userId: m.userId,
     displayName: m.fullName,
+    reputation: m.reputationScore,
     walletAddress: '',
     // Mientras el grupo no empieza, el backend solo guarda el orden de llegada.
     turnNumber: open ? null : m.initialTurnOrder,

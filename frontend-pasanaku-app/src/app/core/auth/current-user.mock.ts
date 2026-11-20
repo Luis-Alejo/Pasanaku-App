@@ -11,4 +11,7 @@ export const MOCK_CURRENT_USER: User = {
   email: 'ana@example.com',
   walletAddress: 'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
   kycStatus: 'VERIFIED',
+  reputation: 120,
+  completedGroups: 2,
+  defaultCount: 0,
 };
