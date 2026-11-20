@@ -116,6 +116,17 @@ Las pantallas piden datos a un *store*, el store a una interfaz (`GroupsApi`, `A
 interfaz usa los mocks o el backend según `useMocks`. La guía completa de arquitectura, diseño y convenciones está en
 [`CLAUDE.md`](./CLAUDE.md).
 
+## Publicación (Vercel)
+
+El archivo `vercel.json` ya tiene la configuración: instala con `npm install`, compila con `npm run build`, publica
+la carpeta `www` y envía todas las rutas a `index.html` (así se puede recargar dentro de cualquier pantalla).
+
+1. En vercel.com, **Add New → Project** e importa el repositorio `Luis-Alejo/Pasanaku-App`.
+2. En **Root Directory** elige `frontend-pasanaku-app`. El resto lo toma de `vercel.json`.
+3. **Deploy.** La rama de producción es `main`; cada pull request recibe un enlace de vista previa.
+
+La build de producción usa el backend de Railway (`src/environments/environment.prod.ts`).
+
 ## Notas
 
 - La app **no guarda claves de Stellar**: el backend las custodia cifradas y firma las transacciones.
