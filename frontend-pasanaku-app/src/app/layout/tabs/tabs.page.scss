@@ -22,6 +22,15 @@ ion-tab-button {
   font-family: var(--pk-font-family);
 }
 
+/*
+ * Ionic pinta el hover (mouse) con --color-selected. En la activa es el texto de la
+ * pastilla (blanco en claro, oscuro en oscuro); en las inactivas eso las hacía
+ * invisibles en computadora. Al pasar el mouse, las inactivas se ven en color primario.
+ */
+ion-tab-button:not(.tab-selected) {
+  --color-selected: var(--ion-color-primary);
+}
+
 ion-tab-button ion-icon {
   font-size: 1.5rem;
 }
