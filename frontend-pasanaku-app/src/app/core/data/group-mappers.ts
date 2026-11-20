@@ -146,11 +146,22 @@ export function groupFromDetail(group: GroupDetailFieldsFragment): Group {
     joinedAt: m.joinedAt,
   }));
   const first = group.rounds.find((r) => r.roundNumber === 1);
+  const roundNumberById = new Map(group.rounds.map((r) => [r.id, r.roundNumber]));
   return {
     ...baseGroup(group, members),
     status: toStatus(group, group.members.length),
     rounds: toRounds(group),
     currentRound: group.status === 'ACTIVE' && group.currentRound > 0 ? group.currentRound : null,
+    debts: group.debts.map((d) => ({
+      id: d.id,
+      roundNumber: roundNumberById.get(d.originalRoundId) ?? 0,
+      debtorMemberId: d.debtorMemberId,
+      beneficiaryMemberId: d.beneficiaryMemberId,
+      original: stroopsToAmount(d.originalAmountStroops),
+      remaining: stroopsToAmount(d.remainingAmountStroops),
+      settled: d.status === 'SETTLED',
+      lastTxHash: d.lastPaymentTxHash ?? undefined,
+    })),
     turnsAssignedAt: first
       ? new Date(new Date(first.deadline).getTime() - group.roundDurationSeconds * 1000).toISOString()
       : undefined,

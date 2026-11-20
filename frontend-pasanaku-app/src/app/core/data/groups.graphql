@@ -51,6 +51,16 @@ fragment GroupDetailFields on GroupDetail {
       txHash
     }
   }
+  debts {
+    id
+    debtorMemberId
+    beneficiaryMemberId
+    originalRoundId
+    originalAmountStroops
+    remainingAmountStroops
+    status
+    lastPaymentTxHash
+  }
 }
 
 fragment GroupPreviewFields on GroupPreview {

@@ -1,0 +1,6 @@
+<a class="button" [routerLink]="link()" [attr.aria-label]="ariaLabel()">
+  <ion-icon [icon]="icon()" aria-hidden="true" />
+  @if (count() > 0) {
+    <span class="badge" aria-hidden="true">{{ badge() }}</span>
+  }
+</a>

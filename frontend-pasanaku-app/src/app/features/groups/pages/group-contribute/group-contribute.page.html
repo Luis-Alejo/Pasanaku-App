@@ -11,7 +11,7 @@
   @if (phase() === 'sending') {
   <div class="status-panel" role="status">
     <ion-spinner aria-hidden="true" />
-    <p class="status-title">Procesando en Stellar Testnet…</p>
+    <p class="status-title">{{ sendingText() }}</p>
     <p class="status-text">Suele tardar unos segundos. No cierres la app hasta que se confirme.</p>
   </div>
   } @else if (phase() === 'done' && result(); as r) {
@@ -54,6 +54,25 @@
     <ion-button expand="block" fill="clear" [routerLink]="['/tabs/groups', r.group.id, 'history']">
       Ver historial
     </ion-button>
+  </div>
+  } @else if (phase() === 'qr' && qr(); as q) {
+  <div class="page">
+    <app-amount-card
+      label="Paga en bolivianos"
+      [amount]="q.amountBob"
+      [asset]="bob"
+      [meta]="q.simulated ? 'Modo de prueba' : 'QR bancario'"
+      [caption]="'Equivale a ' + (q.amountUsdc | money: group()!.asset) + ' · 1 USDC = ' + (q.exchangeRate | money: bob)"
+    />
+    <app-qr-code class="qr" [value]="q.payload" [image]="q.imageBase64" label="QR para pagar tu aporte en bolivianos" />
+    <p class="notice">
+      @if (q.simulated) { Es un QR de prueba: no cobra dinero real. Toca "Simular pago" para continuar. } @else {
+      Escanéalo con la app de tu banco. Cuando el pago se confirme, tu aporte se registra en Stellar. }
+    </p>
+    <ion-button expand="block" class="send" (click)="confirmQr()">
+      {{ q.simulated ? 'Simular pago' : 'Ya pagué' }}
+    </ion-button>
+    <ion-button expand="block" fill="clear" (click)="backToReview()">Volver</ion-button>
   </div>
   } @else if (phase() === 'failed') {
   <app-empty-state [icon]="icons.failed" title="No se registró tu aporte" [message]="errorMessage()">
@@ -126,6 +145,11 @@
     <ion-button expand="block" class="send" (click)="send()">
       Aportar {{ g.contributionAmount | money: g.asset }}
     </ion-button>
+    @if (store.qrPaymentsAvailable) {
+    <ion-button expand="block" fill="outline" class="qr-button" (click)="payWithQr()">
+      Pagar con QR en bolivianos
+    </ion-button>
+    }
     <p class="notice">
       Se registra en Stellar Testnet con activos de prueba. No se mueve dinero real. @if (store.canSimulate) { Con datos
       de prueba, las transacciones no existen en la red. }

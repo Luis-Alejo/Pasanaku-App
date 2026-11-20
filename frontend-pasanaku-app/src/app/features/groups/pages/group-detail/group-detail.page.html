@@ -65,6 +65,11 @@
     <ion-button class="cta" expand="block" [routerLink]="['/tabs/groups', g.id, 'turns']">
       {{ g.turnsByOrganizer ? 'Definir turnos' : g.turnMode === 'DRAW' ? 'Ir al sorteo' : 'Elegir mi turno' }}
     </ion-button>
+    } @else if (myDebt(); as debt) {
+    <p class="hint late">Tienes un aporte atrasado de la ronda {{ debt.roundNumber }}.</p>
+    <ion-button class="cta" expand="block" [disabled]="payingDebt()" (click)="payDebt()">
+      {{ payingDebt() ? 'Pagando en Stellar…' : 'Pagar atraso de ' + (debt.remaining | money: g.asset) }}
+    </ion-button>
     } @else if (myPendingPayment(); as mine) { @if (mine.status === 'LATE') {
     <p class="hint late">Tu aporte de la ronda {{ g.currentRound }} está atrasado.</p>
     }
@@ -157,7 +162,22 @@
       }
     </section>
 
-    @if (canManage()) {
+    @if (debts().length) {
+    <section class="section" aria-labelledby="debts-title">
+      <h2 id="debts-title" class="pk-section-title">Aportes atrasados</h2>
+      <ul class="pk-card people">
+        @for (d of debts(); track d.id) {
+        <li class="person">
+          <span class="person-name">
+            {{ d.mine ? 'Debes' : d.debtorName + ' debe' }} a {{ d.beneficiaryName }}
+            <span class="turn">· ronda {{ d.roundNumber }}</span>
+          </span>
+          <span class="debt-amount">{{ d.remaining | money: g.asset }}</span>
+        </li>
+        }
+      </ul>
+    </section>
+    } @if (canManage()) {
     <section class="section" aria-labelledby="manage-title">
       <h2 id="manage-title" class="pk-section-title">Administrar grupo</h2>
       <div class="pk-card manage">

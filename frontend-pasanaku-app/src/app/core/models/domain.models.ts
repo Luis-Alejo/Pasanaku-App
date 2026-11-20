@@ -122,6 +122,36 @@ export interface Group {
   cancelled?: boolean;
   /** El usuario tiene una invitación para unirse. */
   invited?: boolean;
+  /** Deudas por aportes que no se pagaron a tiempo. */
+  debts?: Debt[];
+}
+
+/** Lo que un miembro quedó debiendo al que cobró una ronda (aporte no pagado a tiempo). */
+export interface Debt {
+  id: string;
+  roundNumber: number;
+  debtorMemberId: string;
+  beneficiaryMemberId: string;
+  original: string;
+  remaining: string;
+  settled: boolean;
+  lastTxHash?: string;
+}
+
+/** Cobro por QR en bolivianos (Pollar). El backend lo convierte a USDC. */
+export interface QrPayment {
+  reference: string;
+  amountBob: string;
+  /** Bolivianos por 1 USDC. */
+  exchangeRate: string;
+  /** Lo que se acredita en USDC. */
+  amountUsdc: string;
+  /** Texto del QR (si no viene la imagen, la app lo dibuja). */
+  payload: string;
+  imageBase64?: string;
+  expiresAt?: string;
+  /** Pago simulado (Testnet): se confirma con un botón. */
+  simulated: boolean;
 }
 
 /** Datos para crear un grupo (formulario "Crear grupo"). */

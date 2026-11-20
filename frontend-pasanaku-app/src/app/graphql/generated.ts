@@ -19,6 +19,11 @@ export type CreateGroupInput = {
   roundDurationSeconds?: number | null | undefined;
 };
 
+export type DebtStatus =
+  | 'OPEN'
+  | 'PARTIALLY_PAID'
+  | 'SETTLED';
+
 export type Frequency =
   | 'BIWEEKLY'
   | 'MONTHLY'
@@ -29,6 +34,18 @@ export type GroupStatus =
   | 'CANCELLED'
   | 'COMPLETED'
   | 'OPEN';
+
+export type InitiateQrPaymentInput = {
+  /** Solo TOPUP, p. ej. "100" o "55.50" */
+  amountBob?: string | null | undefined;
+  /** Requerido salvo TOPUP */
+  groupId?: string | number | null | undefined;
+  /** Reintentos del cliente sin duplicar el cobro */
+  idempotencyKey?: string | null | undefined;
+  purpose: PaymentPurpose;
+  /** Ronda original de la deuda (ARREARS) */
+  round?: number | null | undefined;
+};
 
 export type InviteMemberInput = {
   groupId: string | number;
@@ -44,6 +61,27 @@ export type LoginInput = {
   password: string;
   phone: string;
 };
+
+export type NotificationType =
+  | 'DEFAULT_ALERT'
+  | 'GRACE_WARNING'
+  | 'PAYMENT_REMINDER'
+  | 'PAYOUT_RECEIVED'
+  | 'REFERENCE_REQUEST';
+
+export type PayArrearsInput = {
+  /** USDC; si se omite, paga el saldo completo */
+  amountUsdc?: string | null | undefined;
+  groupId: string | number;
+  /** Número de la ronda original de la deuda */
+  round: number;
+};
+
+export type PaymentPurpose =
+  | 'ARREARS'
+  | 'CONTRIBUTION'
+  | 'JOIN'
+  | 'TOPUP';
 
 export type RegisterInput = {
   email?: string | null | undefined;
@@ -69,6 +107,12 @@ export type SetTurnOrderInput = {
 export type SubmitKycInput = {
   ciNumber: string;
 };
+
+export type TransactionStatus =
+  | 'CONFIRMED'
+  | 'FAILED'
+  | 'PENDING_CHAIN'
+  | 'PENDING_FIAT';
 
 export type UpdateGroupInput = {
   description?: string | null | undefined;
@@ -106,7 +150,7 @@ export type SubmitKycMutation = { submitKyc: { id: string, fullName: string, pho
 
 export type GroupSummaryFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string };
 
-export type GroupDetailFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }> };
+export type GroupDetailFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }>, debts: Array<{ id: string, debtorMemberId: string, beneficiaryMemberId: string, originalRoundId: string, originalAmountStroops: string, remainingAmountStroops: string, status: DebtStatus, lastPaymentTxHash: string | null }> };
 
 export type GroupPreviewFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, isInvited: boolean, isMember: boolean };
 
@@ -151,7 +195,7 @@ export type GroupDetailQueryVariables = Exact<{
 }>;
 
 
-export type GroupDetailQuery = { groupDetail: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }> } };
+export type GroupDetailQuery = { groupDetail: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }>, debts: Array<{ id: string, debtorMemberId: string, beneficiaryMemberId: string, originalRoundId: string, originalAmountStroops: string, remainingAmountStroops: string, status: DebtStatus, lastPaymentTxHash: string | null }> } };
 
 export type CreateGroupMutationVariables = Exact<{
   input: CreateGroupInput;
@@ -194,6 +238,49 @@ export type PayRoundMutationVariables = Exact<{
 
 
 export type PayRoundMutation = { payRound: { txHash: string } };
+
+export type MyNotificationsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyNotificationsQuery = { myNotifications: Array<{ id: string, type: NotificationType, title: string, message: string, groupId: string | null, isRead: boolean, createdAt: string }> };
+
+export type UnreadNotificationsCountQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UnreadNotificationsCountQuery = { unreadNotificationsCount: number };
+
+export type MarkNotificationAsReadMutationVariables = Exact<{
+  id: string | number;
+}>;
+
+
+export type MarkNotificationAsReadMutation = { markNotificationAsRead: { id: string, isRead: boolean } };
+
+export type MarkAllNotificationsAsReadMutationVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MarkAllNotificationsAsReadMutation = { markAllNotificationsAsRead: number };
+
+export type InitiateQrPaymentMutationVariables = Exact<{
+  input: InitiateQrPaymentInput;
+}>;
+
+
+export type InitiateQrPaymentMutation = { initiateQrPayment: { transactionId: string, pollarReference: string, amountBob: string, amountStroops: string, exchangeRate: string, qrPayload: string, qrImageBase64: string | null, expiresAt: string | null, mock: boolean } };
+
+export type SimulateQrPaymentMutationVariables = Exact<{
+  reference: string;
+}>;
+
+
+export type SimulateQrPaymentMutation = { simulateQrPayment: { id: string, status: TransactionStatus, stellarTxHash: string | null } };
+
+export type PayArrearsMutationVariables = Exact<{
+  input: PayArrearsInput;
+}>;
+
+
+export type PayArrearsMutation = { payArrears: { txHash: string } };
 
 export const SessionUserFragmentDoc = gql`
     fragment SessionUser on User {
@@ -259,6 +346,16 @@ export const GroupDetailFieldsFragmentDoc = gql`
       paidAt
       txHash
     }
+  }
+  debts {
+    id
+    debtorMemberId
+    beneficiaryMemberId
+    originalRoundId
+    originalAmountStroops
+    remainingAmountStroops
+    status
+    lastPaymentTxHash
   }
 }
     `;
@@ -589,6 +686,145 @@ export const PayRoundDocument = gql`
   })
   export class PayRoundGQL extends Apollo.Mutation<PayRoundMutation, PayRoundMutationVariables> {
     override document = PayRoundDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const MyNotificationsDocument = gql`
+    query MyNotifications {
+  myNotifications(limit: 30) {
+    id
+    type
+    title
+    message
+    groupId
+    isRead
+    createdAt
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MyNotificationsGQL extends Apollo.Query<MyNotificationsQuery, MyNotificationsQueryVariables> {
+    override document = MyNotificationsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UnreadNotificationsCountDocument = gql`
+    query UnreadNotificationsCount {
+  unreadNotificationsCount
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UnreadNotificationsCountGQL extends Apollo.Query<UnreadNotificationsCountQuery, UnreadNotificationsCountQueryVariables> {
+    override document = UnreadNotificationsCountDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const MarkNotificationAsReadDocument = gql`
+    mutation MarkNotificationAsRead($id: ID!) {
+  markNotificationAsRead(notificationId: $id) {
+    id
+    isRead
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MarkNotificationAsReadGQL extends Apollo.Mutation<MarkNotificationAsReadMutation, MarkNotificationAsReadMutationVariables> {
+    override document = MarkNotificationAsReadDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const MarkAllNotificationsAsReadDocument = gql`
+    mutation MarkAllNotificationsAsRead {
+  markAllNotificationsAsRead
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MarkAllNotificationsAsReadGQL extends Apollo.Mutation<MarkAllNotificationsAsReadMutation, MarkAllNotificationsAsReadMutationVariables> {
+    override document = MarkAllNotificationsAsReadDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const InitiateQrPaymentDocument = gql`
+    mutation InitiateQrPayment($input: InitiateQrPaymentInput!) {
+  initiateQrPayment(input: $input) {
+    transactionId
+    pollarReference
+    amountBob
+    amountStroops
+    exchangeRate
+    qrPayload
+    qrImageBase64
+    expiresAt
+    mock
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class InitiateQrPaymentGQL extends Apollo.Mutation<InitiateQrPaymentMutation, InitiateQrPaymentMutationVariables> {
+    override document = InitiateQrPaymentDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SimulateQrPaymentDocument = gql`
+    mutation SimulateQrPayment($reference: String!) {
+  simulateQrPayment(pollarReference: $reference) {
+    id
+    status
+    stellarTxHash
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class SimulateQrPaymentGQL extends Apollo.Mutation<SimulateQrPaymentMutation, SimulateQrPaymentMutationVariables> {
+    override document = SimulateQrPaymentDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const PayArrearsDocument = gql`
+    mutation PayArrears($input: PayArrearsInput!) {
+  payArrears(input: $input) {
+    txHash
+  }
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class PayArrearsGQL extends Apollo.Mutation<PayArrearsMutation, PayArrearsMutationVariables> {
+    override document = PayArrearsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

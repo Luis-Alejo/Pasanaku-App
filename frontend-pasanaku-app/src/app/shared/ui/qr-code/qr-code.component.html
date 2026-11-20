@@ -1,0 +1,9 @@
+<div class="frame">
+  @if (src(); as url) {
+    <img [src]="url" [alt]="label()" width="240" height="240" />
+  } @else if (failed()) {
+    <p class="error">No pudimos dibujar el QR.</p>
+  } @else {
+    <span class="placeholder" aria-hidden="true"></span>
+  }
+</div>

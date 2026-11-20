@@ -7,6 +7,7 @@ import type {
   Contribution,
   CreateGroupInput,
   Group,
+  QrPayment,
   TurnSwap,
   User,
 } from '@core/models/domain.models';
@@ -106,6 +107,30 @@ export class GroupsStore {
   }
 
   readonly demoRoundsAvailable = this.api.demoRoundsAvailable;
+  readonly qrPaymentsAvailable = this.api.qrPaymentsAvailable;
+
+  /** QR en bolivianos para el aporte de la ronda en curso. */
+  startQrContribution(): Promise<QrPayment> {
+    return this.api.startQrPayment(this.requireGroupId(), 'CONTRIBUTION');
+  }
+
+  simulateQrPayment(reference: string): Promise<void> {
+    return this.api.simulateQrPayment(reference);
+  }
+
+  /** Tras pagar el QR: espera el registro del aporte y actualiza el grupo. */
+  async confirmQrContribution(roundNumber: number): Promise<ContributeResult> {
+    const result = await this.api.waitForContribution(this.requireGroupId(), this.requireUser().id, roundNumber);
+    this.applyContribution(result);
+    return result;
+  }
+
+  /** Paga la deuda del usuario de esa ronda. */
+  async payArrears(roundNumber: number): Promise<void> {
+    const group = await this.api.payArrears(this.requireGroupId(), this.requireUser().id, roundNumber);
+    this._group.set(group);
+    void this.loadGroup(group.id);
+  }
 
   /** El organizador cambia el nombre del grupo cargado. */
   async renameGroup(name: string): Promise<void> {

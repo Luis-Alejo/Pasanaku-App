@@ -108,6 +108,13 @@ ion-back-button {
   font-weight: 500;
 }
 
+.debt-amount {
+  flex-shrink: 0;
+  color: var(--pk-badge-danger-fg);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 .manage {
   display: flex;
   flex-direction: column;

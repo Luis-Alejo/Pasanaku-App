@@ -8,6 +8,7 @@ import type {
   CreateGroupInput,
   Group,
   Payout,
+  QrPayment,
   Round,
   TurnSwap,
   User,
@@ -21,12 +22,15 @@ import {
   GroupDetailGQL,
   GroupPreviewGQL,
   InviteMemberGQL,
+  InitiateQrPaymentGQL,
   JoinGroupGQL,
   MyGroupsGQL,
   MyInvitationsGQL,
+  PayArrearsGQL,
   PayRoundGQL,
   PublicGroupsGQL,
   SetTurnOrderGQL,
+  SimulateQrPaymentGQL,
   StartGroupGQL,
   UpdateGroupGQL,
 } from '@gql';
@@ -55,6 +59,18 @@ export abstract class GroupsApi {
   readonly organizerControlsTurns: boolean = false;
   /** Se pueden crear grupos con rondas de demostración (solo Testnet). */
   readonly demoRoundsAvailable: boolean = false;
+
+  /** Se puede aportar con un QR en bolivianos (Pollar). */
+  readonly qrPaymentsAvailable: boolean = false;
+
+  /** Pide un QR en bolivianos para el aporte de la ronda en curso o para pagar un atraso. */
+  abstract startQrPayment(groupId: string, purpose: 'CONTRIBUTION' | 'ARREARS', round?: number): Promise<QrPayment>;
+  /** Solo en simulación: da el QR por pagado. */
+  abstract simulateQrPayment(reference: string): Promise<void>;
+  /** Espera a que el aporte del usuario en la ronda quede registrado (tras pagar con QR). */
+  abstract waitForContribution(groupId: string, userId: string, roundNumber: number): Promise<ContributeResult>;
+  /** Paga completa la deuda del usuario de esa ronda. Devuelve el grupo actualizado. */
+  abstract payArrears(groupId: string, userId: string, roundNumber: number): Promise<Group>;
 
   /** Grupos a los que invitaron al usuario y todavía no se unió. */
   abstract getInvitations(): Promise<Group[]>;
@@ -287,6 +303,43 @@ export class MockGroupsApi extends GroupsApi {
 
   getInvitations(): Promise<Group[]> {
     return delay([]);
+  }
+
+  override readonly qrPaymentsAvailable = true;
+  private readonly qrs = new Map<string, { groupId: string; result?: ContributeResult }>();
+
+  startQrPayment(groupId: string): Promise<QrPayment> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return fail(new ContributionError('NOT_FOUND'));
+    const reference = `mock_${this.nextId++}`;
+    this.qrs.set(reference, { groupId });
+    const rate = '6.96';
+    return delay({
+      reference,
+      amountBob: (Number(group.contributionAmount) * Number(rate)).toFixed(2),
+      exchangeRate: rate,
+      amountUsdc: group.contributionAmount,
+      payload: `pasanaku-mock://pay/${reference}`,
+      simulated: true,
+    });
+  }
+
+  async simulateQrPayment(reference: string): Promise<void> {
+    const qr = this.qrs.get(reference);
+    if (!qr) throw new ContributionError('NOT_FOUND');
+    const group = this.groups.find((g) => g.id === qr.groupId);
+    const me = group?.members.find((m) => m.userId === 'user-ana');
+    if (group && me) qr.result = await this.contribute(group.id, me.userId);
+  }
+
+  waitForContribution(groupId: string): Promise<ContributeResult> {
+    const found = [...this.qrs.values()].find((q) => q.groupId === groupId && q.result);
+    return found?.result ? Promise.resolve(found.result) : fail(new ContributionError('NOT_ACTIVE'));
+  }
+
+  payArrears(groupId: string): Promise<Group> {
+    const group = this.groups.find((g) => g.id === groupId);
+    return group ? delay(group) : fail(new ContributionError('NOT_FOUND'));
   }
 
   renameGroup(groupId: string, name: string): Promise<void> {
@@ -554,6 +607,7 @@ function contributionError(error: unknown): unknown {
 export class GraphqlGroupsApi extends GroupsApi {
   override readonly organizerControlsTurns = true;
   override readonly demoRoundsAvailable = !!environment.demoRounds;
+  override readonly qrPaymentsAvailable = true;
 
   private readonly myGroupsGql = inject(MyGroupsGQL);
   private readonly publicGroupsGql = inject(PublicGroupsGQL);
@@ -563,6 +617,9 @@ export class GraphqlGroupsApi extends GroupsApi {
   private readonly invitationsGql = inject(MyInvitationsGQL);
   private readonly updateGql = inject(UpdateGroupGQL);
   private readonly cancelGql = inject(CancelGroupGQL);
+  private readonly qrGql = inject(InitiateQrPaymentGQL);
+  private readonly simulateGql = inject(SimulateQrPaymentGQL);
+  private readonly arrearsGql = inject(PayArrearsGQL);
   private readonly joinGql = inject(JoinGroupGQL);
   private readonly inviteGql = inject(InviteMemberGQL);
   private readonly orderGql = inject(SetTurnOrderGQL);
@@ -707,6 +764,75 @@ export class GraphqlGroupsApi extends GroupsApi {
   override async cancelGroup(groupId: string): Promise<void> {
     await apiData(this.cancelGql.mutate({ variables: { groupId } }));
     this.details.delete(groupId);
+  }
+
+  override async startQrPayment(
+    groupId: string,
+    purpose: 'CONTRIBUTION' | 'ARREARS',
+    round?: number,
+  ): Promise<QrPayment> {
+    try {
+      const { initiateQrPayment: qr } = await apiData(
+        this.qrGql.mutate({
+          variables: { input: { groupId, purpose, round, idempotencyKey: crypto.randomUUID() } },
+        }),
+      );
+      return {
+        reference: qr.pollarReference,
+        amountBob: qr.amountBob,
+        exchangeRate: qr.exchangeRate,
+        amountUsdc: stroopsToAmount(qr.amountStroops),
+        payload: qr.qrPayload,
+        imageBase64: qr.qrImageBase64 ?? undefined,
+        expiresAt: qr.expiresAt ?? undefined,
+        simulated: qr.mock,
+      };
+    } catch (error) {
+      throw contributionError(error);
+    }
+  }
+
+  override async simulateQrPayment(reference: string): Promise<void> {
+    await apiData(this.simulateGql.mutate({ variables: { reference } }));
+  }
+
+  override async waitForContribution(groupId: string, userId: string, roundNumber: number): Promise<ContributeResult> {
+    const paid = (g: GroupDetailData) => {
+      const member = g.members.find((m) => m.userId === userId);
+      return g.rounds.some(
+        (r) =>
+          r.roundNumber === roundNumber && r.payments.some((p) => p.memberId === member?.id && p.status !== 'PENDING'),
+      );
+    };
+    const after = await this.waitFor(groupId, paid);
+    if (!paid(after)) {
+      throw new ContributionError(
+        'NOT_ACTIVE',
+        'Todavía no recibimos tu pago. Lo verás aquí cuando el banco lo confirme.',
+      );
+    }
+    const member = after.members.find((m) => m.userId === userId);
+    const contribution = contributionsFromDetail(after).find(
+      (c) => c.roundNumber === roundNumber && c.memberId === member?.id,
+    );
+    if (!contribution) throw new ContributionError('NOT_MEMBER');
+    return { group: groupFromDetail(after), contribution };
+  }
+
+  override async payArrears(groupId: string, userId: string, roundNumber: number): Promise<Group> {
+    try {
+      await apiData(this.arrearsGql.mutate({ variables: { input: { groupId, round: roundNumber } } }));
+    } catch (error) {
+      throw contributionError(error);
+    }
+    const settled = (g: GroupDetailData) => {
+      const member = g.members.find((m) => m.userId === userId);
+      const round = g.rounds.find((r) => r.roundNumber === roundNumber);
+      return !g.debts.some(
+        (d) => d.debtorMemberId === member?.id && d.originalRoundId === round?.id && d.status !== 'SETTLED',
+      );
+    };
+    return groupFromDetail(await this.waitFor(groupId, settled));
   }
 
   override async inviteByPhone(groupId: string, phone: string): Promise<void> {

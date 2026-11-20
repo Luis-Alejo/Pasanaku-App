@@ -2,6 +2,7 @@ import { Component, computed, effect, inject, input, signal, untracked } from '@
 import { RouterLink } from '@angular/router';
 import { toApiError } from '@core/graphql/api-error';
 import type { Group } from '@core/models/domain.models';
+import { ContributionError } from '@core/models/domain.models';
 import { ThemeService } from '@core/services/theme.service';
 import { ToastService } from '@core/services/toast.service';
 import { AlertController, IonBackButton, IonButton, IonContent, IonSpinner } from '@ionic/angular';
@@ -261,6 +262,61 @@ export class GroupDetailPage {
     const g = this.store.group();
     if (id === 'invite' && g) {
       void this.shareInvite(g);
+    }
+  }
+
+  /** Deudas abiertas del grupo, con los nombres. */
+  protected readonly debts = computed(() => {
+    const g = this.store.group();
+    const name = (id: string) => g?.members.find((m) => m.id === id)?.displayName ?? 'Un miembro';
+    const me = g ? myMember(g, this.userId()) : undefined;
+    return (g?.debts ?? [])
+      .filter((d) => !d.settled)
+      .map((d) => ({
+        ...d,
+        debtorName: name(d.debtorMemberId),
+        beneficiaryName: name(d.beneficiaryMemberId),
+        mine: d.debtorMemberId === me?.id,
+      }));
+  });
+
+  /** El atraso del usuario más antiguo (se paga primero). */
+  protected readonly myDebt = computed(
+    () =>
+      this.debts()
+        .filter((d) => d.mine)
+        .sort((a, b) => a.roundNumber - b.roundNumber)[0] ?? null,
+  );
+
+  protected readonly payingDebt = signal(false);
+
+  protected async payDebt(): Promise<void> {
+    const debt = this.myDebt();
+    const g = this.store.group();
+    if (!debt || !g || this.payingDebt()) return;
+    const amount = new MoneyPipe().transform(debt.remaining, g.asset);
+    const alert = await this.alerts.create({
+      header: 'Pagar atraso',
+      message: `Vas a pagar ${amount} a ${debt.beneficiaryName} por la ronda ${debt.roundNumber}.`,
+      buttons: [
+        { text: 'Cancelar', role: 'cancel' },
+        { text: 'Pagar', role: 'confirm' },
+      ],
+    });
+    await alert.present();
+    const { role } = await alert.onDidDismiss();
+    if (role !== 'confirm') return;
+    this.payingDebt.set(true);
+    try {
+      await this.store.payArrears(debt.roundNumber);
+      void this.toast.show('Atraso pagado', 'success');
+    } catch (error) {
+      void this.toast.show(
+        error instanceof ContributionError && error.detail ? error.detail : 'No se pudo pagar. Inténtalo de nuevo.',
+        'danger',
+      );
+    } finally {
+      this.payingDebt.set(false);
     }
   }
 

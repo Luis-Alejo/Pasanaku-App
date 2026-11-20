@@ -26,6 +26,7 @@ const DETAIL: GroupDetailFieldsFragment = {
   roundDurationSeconds: 86400,
   createdAt: '2026-11-01T00:00:00.000Z',
   members: [member('a', 3, true), member('b', 1), member('c', 2)],
+  debts: [],
   rounds: [
     {
       id: 'r1',
@@ -81,6 +82,27 @@ describe('group-mappers', () => {
   it('marca los grupos de demostración por la duración de la ronda', () => {
     expect(groupFromDetail({ ...DETAIL, roundDurationSeconds: 180 }).demoRoundSeconds).toBe(180);
     expect(groupFromDetail({ ...DETAIL, roundDurationSeconds: 1_209_600 }).demoRoundSeconds).toBeUndefined();
+  });
+
+  it('traduce las deudas con el número de ronda', () => {
+    const group = groupFromDetail({
+      ...DETAIL,
+      debts: [
+        {
+          id: 'd1',
+          debtorMemberId: 'c',
+          beneficiaryMemberId: 'a',
+          originalRoundId: 'r1',
+          originalAmountStroops: '50000000',
+          remainingAmountStroops: '20000000',
+          status: 'PARTIALLY_PAID',
+          lastPaymentTxHash: null,
+        },
+      ],
+    });
+    expect(group.debts).toEqual([
+      expect.objectContaining({ roundNumber: 1, remaining: '2.0000000', original: '5.0000000', settled: false }),
+    ]);
   });
 
   it('traduce los pagos a aportes', () => {
