@@ -40,13 +40,13 @@ describe('home-view', () => {
     expect(todos(mine, swaps, ANA).map((t) => [t.kind, t.group.id])).toEqual([
       ['choose-turn', 'group-equipo-futbol'],
       ['draw', 'group-vecinos-edificio'],
-      ['swap', 'group-familia-quispe'],
+      ['swap', 'group-familia'],
     ]);
   });
 
   it('filtra los grupos en curso y saluda por el primer nombre', () => {
-    expect(activeGroups(mine).map((g) => g.name)).toEqual(['Ahorro compañeros de oficina', 'Pasanaku familia Quispe']);
-    expect(firstName('  Ana Quispe Mamani ')).toBe('Ana');
+    expect(activeGroups(mine).map((g) => g.name)).toEqual(['Ahorro compañeros de oficina', 'Pasanaku de la familia']);
+    expect(firstName('  Ana María ')).toBe('Ana');
   });
 
   it('muestra también los grupos que todavía suman miembros', () => {

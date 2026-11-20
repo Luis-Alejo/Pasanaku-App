@@ -6,9 +6,9 @@ import type { User } from '@core/models/domain.models';
  */
 export const MOCK_CURRENT_USER: User = {
   id: 'user-ana',
-  displayName: 'Ana Quispe Mamani',
+  displayName: 'Ana María',
   phone: '+59170000000',
-  email: 'ana.quispe@example.com',
+  email: 'ana@example.com',
   walletAddress: 'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
   kycStatus: 'VERIFIED',
 };

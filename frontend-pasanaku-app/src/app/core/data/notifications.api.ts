@@ -90,7 +90,7 @@ export class MockNotificationsApi extends NotificationsApi {
       kind: 'PAYMENT_REMINDER',
       title: 'Se acerca tu aporte',
       message: 'Tu aporte de la ronda 3 vence pronto.',
-      groupId: 'group-familia-quispe',
+      groupId: 'group-familia',
       read: false,
       createdAt: '2026-11-14T13:00:00.000Z',
     },

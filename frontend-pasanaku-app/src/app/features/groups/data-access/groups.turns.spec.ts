@@ -7,17 +7,17 @@ import { describeSwap, incomingProposals, isSwappable, swapCandidates, turnSlots
 
 const ANA = 'user-ana';
 const byId = (id: string) => MOCK_GROUPS.find((g) => g.id === id) as Group;
-const family = byId('group-familia-quispe');
+const family = byId('group-familia');
 const football = byId('group-equipo-futbol');
 
 describe('turnos: funciones de vista', () => {
   it('lista los turnos libres y ocupados', () => {
     const slots = turnSlots(football, ANA);
     expect(slots.map((s) => s.member?.displayName ?? null)).toEqual([
-      'Marco Antonio Vargas',
-      'Luis Fernando Choque',
+      'Marco Antonio',
+      'Luis Fernando',
       null,
-      'Diego Rojas',
+      'Diego',
       null,
     ]);
     expect(slots.some((s) => s.isMine)).toBe(false);
@@ -32,14 +32,14 @@ describe('turnos: funciones de vista', () => {
 
   it('ofrece candidatos sin propuesta pendiente con el usuario', () => {
     // María (turno 6) ya le propuso a Ana: no aparece; Luis (turno 5) sí.
-    expect(swapCandidates(family, MOCK_TURN_SWAPS, ANA).map((m) => m.displayName)).toEqual(['Luis Fernando Choque']);
+    expect(swapCandidates(family, MOCK_TURN_SWAPS, ANA).map((m) => m.displayName)).toEqual(['Luis Fernando']);
   });
 
   it('describe la propuesta desde el punto de vista del usuario', () => {
     const [incoming] = incomingProposals(family, MOCK_TURN_SWAPS, ANA);
     expect(describeSwap(incoming, family, ANA)).toMatchObject({
       direction: 'incoming',
-      text: 'María Elena Gutiérrez te propone su turno 6 a cambio de tu turno 4.',
+      text: 'María Elena te propone su turno 6 a cambio de tu turno 4.',
     });
   });
 });
@@ -70,7 +70,7 @@ describe('turnos: MockGroupsApi', () => {
     const api = new MockGroupsApi();
     const swap = await api.respondSwap('swap-fam-2', ANA, true);
     expect(swap.status).toBe('ACCEPTED');
-    const group = (await api.getGroup('group-familia-quispe')) as Group;
+    const group = (await api.getGroup('group-familia')) as Group;
     const turnOf = (userId: string) => group.members.find((m) => m.userId === userId)?.turnNumber;
     expect(turnOf(ANA)).toBe(6);
     expect(turnOf('user-maria')).toBe(4);
@@ -83,20 +83,16 @@ describe('turnos: MockGroupsApi', () => {
     const api = new MockGroupsApi();
     await expect(api.respondSwap('swap-fam-2', 'user-maria', false)).rejects.toEqual(new TurnError('NOT_MEMBER'));
     expect((await api.respondSwap('swap-fam-2', ANA, false)).status).toBe('REJECTED');
-    const group = (await api.getGroup('group-familia-quispe')) as Group;
+    const group = (await api.getGroup('group-familia')) as Group;
     expect(group.members.find((m) => m.userId === ANA)?.turnNumber).toBe(4);
   });
 
   it('no deja proponer turnos que ya empezaron ni repetir propuestas', async () => {
     const api = new MockGroupsApi();
     // Carmen (turno 3) está cobrando en la ronda en curso.
-    await expect(api.proposeSwap('group-familia-quispe', ANA, 'm-fam-3')).rejects.toEqual(
-      new TurnError('SWAP_NOT_ALLOWED'),
-    );
-    const swap = await api.proposeSwap('group-familia-quispe', ANA, 'm-fam-5');
+    await expect(api.proposeSwap('group-familia', ANA, 'm-fam-3')).rejects.toEqual(new TurnError('SWAP_NOT_ALLOWED'));
+    const swap = await api.proposeSwap('group-familia', ANA, 'm-fam-5');
     expect(swap).toMatchObject({ fromTurn: 4, toTurn: 5, status: 'PROPOSED' });
-    await expect(api.proposeSwap('group-familia-quispe', ANA, 'm-fam-5')).rejects.toEqual(
-      new TurnError('SWAP_NOT_ALLOWED'),
-    );
+    await expect(api.proposeSwap('group-familia', ANA, 'm-fam-5')).rejects.toEqual(new TurnError('SWAP_NOT_ALLOWED'));
   });
 });

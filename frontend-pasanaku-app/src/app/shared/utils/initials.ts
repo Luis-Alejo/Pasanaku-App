@@ -15,7 +15,7 @@ function firstGrapheme(word: string): string {
 
 /**
  * Iniciales para un avatar: primer nombre + último apellido.
- * "Ana Quispe Mamani" → "AM"; "María José de la Cruz" → "MC"; "Jo" → "J".
+ * "Ana María" → "AM"; "María José de los Ángeles" → "MÁ"; "Jo" → "J".
  * Si el texto es un email, usa la parte antes de la @.
  */
 export function initials(name: string): string {

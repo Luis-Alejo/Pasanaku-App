@@ -9,7 +9,7 @@ import { AuthService } from './auth.service';
 
 const USER: User = {
   id: 'u1',
-  displayName: 'Rosa Mamani',
+  displayName: 'Rosa',
   phone: '+59171234567',
   email: null,
   walletAddress: 'GROSA',

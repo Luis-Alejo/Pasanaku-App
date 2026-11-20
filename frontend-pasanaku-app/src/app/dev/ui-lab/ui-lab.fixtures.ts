@@ -66,23 +66,23 @@ const DEMO: LabFixture = {
   emptyStates: [
     {
       title: 'Aún no tienes grupos',
-      message: 'Crea un pasanaku o únete con un código.',
+      message: 'Crea un pasanaku o pide que te inviten.',
       withIcon: true,
       illustration: 'ahorro-colectivo',
       actionLabel: 'Crear grupo',
     },
   ],
   steps: [
-    { id: '1', title: 'Rosa Mamani', subtitle: '15 sep', state: 'done', avatarName: 'Rosa Mamani' },
-    { id: '2', title: 'Jorge Quispe', subtitle: '15 oct', state: 'done', avatarName: 'Jorge Quispe' },
-    { id: '3', title: 'Carmen Quispe', subtitle: '15 nov', state: 'current', avatarName: 'Carmen Quispe' },
+    { id: '1', title: 'Rosa', subtitle: '15 sep', state: 'done', avatarName: 'Rosa' },
+    { id: '2', title: 'Jorge', subtitle: '15 oct', state: 'done', avatarName: 'Jorge' },
+    { id: '3', title: 'Carmen', subtitle: '15 nov', state: 'current', avatarName: 'Carmen' },
     {
       id: '4',
-      title: 'Ana Quispe Mamani',
+      title: 'Ana María',
       subtitle: '15 dic',
       state: 'upcoming',
       highlight: true,
-      avatarName: 'Ana Quispe Mamani',
+      avatarName: 'Ana María',
     },
   ],
   actions: DEMO_ACTIONS,
@@ -96,18 +96,18 @@ const DEMO: LabFixture = {
     { label: 'Aporte', value: '500,00 BOB', brand: true },
     { label: 'Periodicidad', value: 'Mensual' },
   ],
-  avatars: ['Ana Quispe Mamani', 'Jorge Quispe'],
+  avatars: ['Ana María', 'Jorge'],
 };
 
 const WORST: LabFixture = {
-  greeting: 'Hola, Aleksandra Wiśniewska-Kowalczyk',
+  greeting: 'Hola, Maximiliana Guadalupe Esperanza',
   statuses: ['LATE', 'PAID', 'PENDING', 'PAID', 'LATE'],
   amountCards: [
     {
       label: 'Fondo acumulado de la ronda de aportes de noviembre (familia extendida)',
       amount: '1234567890.9900000',
       asset: LONG_ASSET,
-      caption: '5 de 6 aportes confirmados en Stellar Testnet · falta Luis Fernando Choque Villarroel',
+      caption: '5 de 6 aportes confirmados en Stellar Testnet · falta Luis Fernando',
       meta: 'Ronda 18 de 20',
     },
     { label: 'Cobro', amount: '0', asset: BOB },
@@ -121,7 +121,7 @@ const WORST: LabFixture = {
         'Cuando alguien te invite vas a ver el grupo aquí. También puedes buscar grupos públicos o crear uno nuevo con tus propias reglas: monto, moneda, periodicidad y orden de cobro.',
       withIcon: true,
       illustration: 'billetera',
-      actionLabel: 'Unirme con un código de invitación',
+      actionLabel: 'Pedir una invitación a quien organiza',
     },
     { title: 'Sin resultados', withIcon: false },
     { title: 'Sin movimientos', withIcon: true },
@@ -129,19 +129,19 @@ const WORST: LabFixture = {
   steps: [
     {
       id: '1',
-      title: 'María José de la Cruz y Fernández Villarroel',
+      title: 'María José de los Ángeles Guadalupe',
       subtitle: '15 de septiembre de 2026',
       state: 'done',
-      avatarName: 'María José de la Cruz y Fernández Villarroel',
+      avatarName: 'María José de los Ángeles Guadalupe',
     },
     { id: '2', title: 'Jo', state: 'done', avatarName: 'Jo' },
     {
       id: '3',
-      title: 'Aleksandra Wiśniewska-Kowalczyk',
+      title: 'Maximiliana Guadalupe Esperanza',
       subtitle: 'Cobra 1.234.567.890,99 BOBTESTNET12 · vence el 15 de noviembre de 2026',
       state: 'current',
       highlight: true,
-      avatarName: 'Aleksandra Wiśniewska-Kowalczyk',
+      avatarName: 'Maximiliana Guadalupe Esperanza',
     },
     {
       id: '4',
@@ -167,7 +167,7 @@ const WORST: LabFixture = {
     { value: 'other', label: 'Otro' },
   ],
   infoRows: [
-    { label: 'Código de invitación', value: 'QUISPE26', brand: true },
+    { label: 'Código de invitación', value: 'FAMILIA26', brand: true },
     {
       label: 'Fondo acumulado de la ronda de aportes',
       value: '1.234.567.890,99 BOBTESTNET12 · Mensual',
@@ -175,7 +175,7 @@ const WORST: LabFixture = {
     },
     { label: 'Miembros', value: '20 de 20 miembros · Público' },
   ],
-  avatars: ['María José de la Cruz y Fernández', 'Jo', '👩🏽‍💻 Priya', 'Ólafur Darri Ólafsson', ''],
+  avatars: ['María José de los Ángeles', 'Jo', '👩🏽‍💻 Priya', 'Ólafur Darri', ''],
 };
 
 const EMPTY: LabFixture = {
@@ -198,11 +198,11 @@ const ONE: LabFixture = {
   steps: [
     {
       id: '1',
-      title: 'Ana Quispe Mamani',
+      title: 'Ana María',
       subtitle: '15 dic',
       state: 'current',
       highlight: true,
-      avatarName: 'Ana Quispe Mamani',
+      avatarName: 'Ana María',
     },
   ],
   actions: [DEMO_ACTIONS[0]],

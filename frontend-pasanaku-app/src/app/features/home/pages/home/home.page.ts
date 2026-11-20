@@ -1,7 +1,6 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
-import { JoinCodeService } from '@core/services/join-code.service';
 import { NotificationsService } from '@core/services/notifications.service';
 import { ThemeService } from '@core/services/theme.service';
 import { IonButton, IonContent, IonIcon, IonSpinner } from '@ionic/angular';
@@ -22,7 +21,6 @@ import {
   checkmarkCircleOutline,
   cloudOfflineOutline,
   diceOutline,
-  enterOutline,
   handLeftOutline,
   mailOutline,
   peopleOutline,
@@ -31,6 +29,7 @@ import {
   notificationsOutline,
   alertCircleOutline,
   checkmarkDoneOutline,
+  cardOutline,
 } from 'ionicons/icons';
 
 import type { TodoKind } from '../../data-access/home-view';
@@ -71,7 +70,6 @@ export class HomePage {
   protected readonly theme = inject(ThemeService);
   protected readonly notifications = inject(NotificationsService);
   private readonly auth = inject(AuthService);
-  private readonly joinCode = inject(JoinCodeService);
 
   protected readonly todoIcons = TODO_ICONS;
   protected readonly icons = {
@@ -145,7 +143,7 @@ export class HomePage {
       },
       { id: 'groups', label: 'Mis grupos', icon: peopleOutline, accent: 'teal', link: '/tabs/groups' },
       { id: 'create', label: 'Crear grupo', icon: addCircleOutline, accent: 'orange', link: '/tabs/groups/new' },
-      { id: 'join', label: 'Unirme con código', icon: enterOutline, accent: 'blue' },
+      { id: 'wallet', label: 'Billetera', icon: cardOutline, accent: 'blue', link: '/tabs/wallet' },
     ];
   });
 
@@ -158,12 +156,6 @@ export class HomePage {
 
   ionViewWillLeave(): void {
     this.theme.setHeaderTone('surface');
-  }
-
-  protected onAction(id: string): void {
-    if (id === 'join') {
-      void this.joinCode.askAndOpen();
-    }
   }
 
   protected retry(): void {

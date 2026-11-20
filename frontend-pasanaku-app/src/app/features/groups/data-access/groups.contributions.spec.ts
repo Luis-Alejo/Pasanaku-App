@@ -31,8 +31,8 @@ describe('aportes y desembolso: MockGroupsApi', () => {
 
   it('un aporte atrasado también cuenta y completa la ronda', async () => {
     const api = new MockGroupsApi(0);
-    // En la familia Quispe solo falta Luis (atrasado).
-    const { payout, group } = await api.contribute('group-familia-quispe', 'user-luis');
+    // En la familia solo falta Luis (atrasado).
+    const { payout, group } = await api.contribute('group-familia', 'user-luis');
     expect(payout?.recipientMemberId).toBe('m-fam-3');
     expect(group.currentRound).toBe(4);
   });
@@ -60,7 +60,7 @@ describe('aportes y desembolso: MockGroupsApi', () => {
 });
 
 describe('historyEvents', () => {
-  const family = MOCK_GROUPS.find((g) => g.id === 'group-familia-quispe') as Group;
+  const family = MOCK_GROUPS.find((g) => g.id === 'group-familia') as Group;
   const events = historyEvents(family, MOCK_CONTRIBUTIONS, MOCK_TURN_SWAPS, ANA);
 
   it('ordena del más reciente al más antiguo y termina con la creación', () => {
@@ -84,7 +84,7 @@ describe('historyEvents', () => {
       rounds: family.rounds.map((r) => (r.number === 3 ? { ...r, status: 'PAID_OUT', paidOutAt: at } : r)),
     };
     const contributions = MOCK_CONTRIBUTIONS.map((c) =>
-      c.id === 'group-familia-quispe-r3-m-fam-5' ? { ...c, status: 'PAID' as const, paidAt: at, txHash: 'x' } : c,
+      c.id === 'group-familia-r3-m-fam-5' ? { ...c, status: 'PAID' as const, paidAt: at, txHash: 'x' } : c,
     );
     const [first, second] = historyEvents(g, contributions, [], ANA);
     expect([first.kind, second.kind]).toEqual(['payout', 'contribution']);

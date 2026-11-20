@@ -2,12 +2,12 @@ import { initials } from './initials';
 
 describe('initials', () => {
   it.each([
-    ['Ana Quispe Mamani', 'AM'],
-    ['María José de la Cruz y Fernández', 'MF'],
+    ['Ana María', 'AM'],
+    ['María José de los Ángeles', 'MÁ'],
     ['Jo', 'J'],
     ['  Sam   Lee ', 'SL'],
     ['Christopher Alexander Montgomery III', 'CM'],
-    ['Ólafur Darri Ólafsson', 'ÓÓ'],
+    ['Ólafur Darri', 'ÓD'],
     ['dana', 'D'],
     ['bartholomew.fitzgerald@northwind.example.com', 'BF'],
     ['', '?'],

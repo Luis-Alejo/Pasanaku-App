@@ -9,7 +9,7 @@ describe('JoinGroupPage', () => {
   it('should create', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), GroupsStore] });
     const fixture = TestBed.createComponent(JoinGroupPage);
-    fixture.componentRef.setInput('code', 'QUISPE26');
+    fixture.componentRef.setInput('code', 'FAMILIA26');
     fixture.detectChanges();
     expect(fixture.componentInstance).toBeTruthy();
   });
