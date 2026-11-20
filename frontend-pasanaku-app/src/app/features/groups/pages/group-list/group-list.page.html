@@ -49,7 +49,7 @@
     <app-empty-state
       illustration="ahorro-colectivo"
       title="Aún no tienes grupos"
-      message="Crea un pasanaku o únete con el código que te compartieron."
+      message="Crea un pasanaku o pide que te inviten con tu número de celular."
     >
       <ion-button expand="block" routerLink="/tabs/groups/new">Crear grupo</ion-button>
     </app-empty-state>
@@ -59,10 +59,6 @@
       title="No hay grupos públicos con cupo"
       message="Vuelve más tarde o crea tu propio grupo."
     />
-    } } @if (segment() === 'mine') {
-    <ion-button class="join-code" fill="clear" expand="block" (click)="askInviteCode()">
-      ¿Tienes un código? Unirme con código
-    </ion-button>
-    } }
+    } } }
   </div>
 </ion-content>

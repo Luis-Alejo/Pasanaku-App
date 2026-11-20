@@ -13,7 +13,7 @@ import type {
  * `environment.useMocks`). Fecha de referencia: mediados de noviembre de 2026.
  *
  * Grupos:
- * - Familia Quispe: privado, acuerdo, BOB, en la ronda 3 (hay un aporte
+ * - Familia: privado, acuerdo, BOB, en la ronda 3 (hay un aporte
  *   atrasado y un intercambio de turno propuesto a Ana).
  * - Oficina: privado, sorteo, USDC, ronda 1 (Ana tiene el aporte pendiente).
  * - Emprendedores y Útiles escolares: públicos, sumando miembros.
@@ -87,14 +87,14 @@ function paidOutRound(groupId: string, number: number, dueDate: string, recipien
 }
 
 // ---------------------------------------------------------------------------
-// Familia Quispe: privado, acuerdo, BOB, ronda 3 de 6
+// Familia: privado, acuerdo, BOB, ronda 3 de 6
 // ---------------------------------------------------------------------------
-const FAMILY_ID = 'group-familia-quispe';
+const FAMILY_ID = 'group-familia';
 const familyMembers: Member[] = [
   member(
     'm-fam-1',
     'user-rosa',
-    'Rosa Mamani',
+    'Rosa',
     'G4X7YXM3HP327AKNBTVU7L7TPOZLOMJAM6HNYK7Y4GWXGW7C5Z7LLP4R',
     1,
     '2026-08-20T14:00:00Z',
@@ -102,7 +102,7 @@ const familyMembers: Member[] = [
   member(
     'm-fam-2',
     'user-jorge',
-    'Jorge Quispe',
+    'Jorge',
     'GHO6PLC4P7LJWT5FWCQCKHQQGGOKF7M7GYYCZEUX46BMD44SK77DYOHL',
     2,
     '2026-08-20T14:05:00Z',
@@ -110,7 +110,7 @@ const familyMembers: Member[] = [
   member(
     'm-fam-3',
     'user-carmen',
-    'Carmen Quispe',
+    'Carmen',
     'GM3OVX72Z5F7CYDNFAJ24QCYWNEZ2OFQWIGMDL7TJPYJA5DP7PT4EEKL',
     3,
     '2026-08-20T15:10:00Z',
@@ -118,7 +118,7 @@ const familyMembers: Member[] = [
   member(
     'm-fam-4',
     'user-ana',
-    'Ana Quispe Mamani',
+    'Ana María',
     'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
     4,
     '2026-08-20T15:12:00Z',
@@ -126,7 +126,7 @@ const familyMembers: Member[] = [
   member(
     'm-fam-5',
     'user-luis',
-    'Luis Fernando Choque',
+    'Luis Fernando',
     'G5B4MCMH3ARBKHD7QW2EHRZZHGPYDRNRTJSJAQ5RC2DO2RAZ3ZTIA5P4',
     5,
     '2026-08-21T09:30:00Z',
@@ -134,7 +134,7 @@ const familyMembers: Member[] = [
   member(
     'm-fam-6',
     'user-maria',
-    'María Elena Gutiérrez',
+    'María Elena',
     'GN53E66IFD2CJOAEE25JYJWTYILB3VBQZATRSFZBP3AQIBM44QFJ6WRN',
     6,
     '2026-08-22T18:45:00Z',
@@ -150,7 +150,7 @@ const officeMembers: Member[] = [
   member(
     'm-ofi-1',
     'user-diego',
-    'Diego Rojas',
+    'Diego',
     'GVTHMBAWJWGJWRC6TZRFOMKABTLVFLH7V6SBFCJNRAMLBMQRJC2TJ2VH',
     1,
     '2026-11-01T13:00:00Z',
@@ -158,7 +158,7 @@ const officeMembers: Member[] = [
   member(
     'm-ofi-2',
     'user-ana',
-    'Ana Quispe Mamani',
+    'Ana María',
     'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
     2,
     '2026-11-01T13:20:00Z',
@@ -166,7 +166,7 @@ const officeMembers: Member[] = [
   member(
     'm-ofi-3',
     'user-valeria',
-    'Valeria Flores',
+    'Valeria',
     'GD4HZ2LQ2JYQU4NIFDDFXUKSQ3G5USQ4EM7Z5LR3KYVQ5NH3J4M6DHUY',
     3,
     '2026-11-02T08:15:00Z',
@@ -174,7 +174,7 @@ const officeMembers: Member[] = [
   member(
     'm-ofi-4',
     'user-marco',
-    'Marco Antonio Vargas',
+    'Marco Antonio',
     'GBWI6R2326HWSVGOBLUMNCI6UIQYVNDZMVZ6ELVOOJMIX4JULOTVPWCV',
     4,
     '2026-11-02T10:40:00Z',
@@ -182,7 +182,7 @@ const officeMembers: Member[] = [
   member(
     'm-ofi-5',
     'user-paola',
-    'Paola Céspedes',
+    'Paola',
     'GORBK7BMQGPFJXEF2VINUBVNHOT4OHEUMXWBIKBDK6WDFNTOVSWPBNWF',
     5,
     '2026-11-03T19:05:00Z',
@@ -197,7 +197,7 @@ const promoMembers: Member[] = [
   member(
     'm-pro-1',
     'user-ana',
-    'Ana Quispe Mamani',
+    'Ana María',
     'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
     1,
     '2026-02-10T16:00:00Z',
@@ -205,7 +205,7 @@ const promoMembers: Member[] = [
   member(
     'm-pro-2',
     'user-sofia',
-    'Sofía Aguilar',
+    'Sofía',
     'GSFC66HUF5W3D6CJ43HT5EGUKTFBMEQFIT4IQMV2TNRHVSEU3RLJGSJC',
     2,
     '2026-02-10T16:30:00Z',
@@ -213,7 +213,7 @@ const promoMembers: Member[] = [
   member(
     'm-pro-3',
     'user-daniel',
-    'Daniel Torrez',
+    'Daniel',
     'GM5UXAAEH57N2DTJNUWC2OOOQEBH7WMWA6JEZKBG3IJUBL2QI2Y7URF4',
     3,
     '2026-02-11T11:00:00Z',
@@ -221,7 +221,7 @@ const promoMembers: Member[] = [
   member(
     'm-pro-4',
     'user-jorge',
-    'Jorge Quispe',
+    'Jorge',
     'GHO6PLC4P7LJWT5FWCQCKHQQGGOKF7M7GYYCZEUX46BMD44SK77DYOHL',
     4,
     '2026-02-12T20:20:00Z',
@@ -237,7 +237,7 @@ const entrepreneurMembers: Member[] = [
   member(
     'm-emp-1',
     'user-rodrigo',
-    'Rodrigo Suárez',
+    'Rodrigo',
     'GVTHMBAWJWGJWRC6TZRFOMKABTLVFLH7V6SBFCJNRAMLBMQRJC2TJ2VH',
     null,
     '2026-11-05T12:00:00Z',
@@ -245,7 +245,7 @@ const entrepreneurMembers: Member[] = [
   member(
     'm-emp-2',
     'user-gabriela',
-    'Gabriela Antelo',
+    'Gabriela',
     'GD4HZ2LQ2JYQU4NIFDDFXUKSQ3G5USQ4EM7Z5LR3KYVQ5NH3J4M6DHUY',
     null,
     '2026-11-06T09:10:00Z',
@@ -253,7 +253,7 @@ const entrepreneurMembers: Member[] = [
   member(
     'm-emp-3',
     'user-ernesto',
-    'Ernesto Justiniano',
+    'Ernesto',
     'GBWI6R2326HWSVGOBLUMNCI6UIQYVNDZMVZ6ELVOOJMIX4JULOTVPWCV',
     null,
     '2026-11-08T17:25:00Z',
@@ -261,7 +261,7 @@ const entrepreneurMembers: Member[] = [
   member(
     'm-emp-4',
     'user-lucia',
-    'Lucía Paz',
+    'Lucía',
     'GORBK7BMQGPFJXEF2VINUBVNHOT4OHEUMXWBIKBDK6WDFNTOVSWPBNWF',
     null,
     '2026-11-10T21:00:00Z',
@@ -269,7 +269,7 @@ const entrepreneurMembers: Member[] = [
   member(
     'm-emp-5',
     'user-hugo',
-    'Hugo Cuéllar',
+    'Hugo',
     'GSFC66HUF5W3D6CJ43HT5EGUKTFBMEQFIT4IQMV2TNRHVSEU3RLJGSJC',
     null,
     '2026-11-12T08:45:00Z',
@@ -277,7 +277,7 @@ const entrepreneurMembers: Member[] = [
   member(
     'm-emp-6',
     'user-natalia',
-    'Natalia Ribera',
+    'Natalia',
     'GM5UXAAEH57N2DTJNUWC2OOOQEBH7WMWA6JEZKBG3IJUBL2QI2Y7URF4',
     null,
     '2026-11-14T14:30:00Z',
@@ -289,7 +289,7 @@ const schoolMembers: Member[] = [
   member(
     'm-esc-1',
     'user-patricia',
-    'Patricia Rocha',
+    'Patricia',
     'G4X7YXM3HP327AKNBTVU7L7TPOZLOMJAM6HNYK7Y4GWXGW7C5Z7LLP4R',
     null,
     '2026-11-09T10:00:00Z',
@@ -297,7 +297,7 @@ const schoolMembers: Member[] = [
   member(
     'm-esc-2',
     'user-wilson',
-    'Wilson Calle',
+    'Wilson',
     'GHO6PLC4P7LJWT5FWCQCKHQQGGOKF7M7GYYCZEUX46BMD44SK77DYOHL',
     null,
     '2026-11-11T15:30:00Z',
@@ -305,7 +305,7 @@ const schoolMembers: Member[] = [
   member(
     'm-esc-3',
     'user-veronica',
-    'Verónica Limachi',
+    'Verónica',
     'GM3OVX72Z5F7CYDNFAJ24QCYWNEZ2OFQWIGMDL7TJPYJA5DP7PT4EEKL',
     null,
     '2026-11-15T19:15:00Z',
@@ -321,7 +321,7 @@ const footballMembers: Member[] = [
   member(
     'm-fut-1',
     'user-marco',
-    'Marco Antonio Vargas',
+    'Marco Antonio',
     'GBWI6R2326HWSVGOBLUMNCI6UIQYVNDZMVZ6ELVOOJMIX4JULOTVPWCV',
     1,
     '2026-11-08T20:00:00Z',
@@ -329,7 +329,7 @@ const footballMembers: Member[] = [
   member(
     'm-fut-2',
     'user-ana',
-    'Ana Quispe Mamani',
+    'Ana María',
     'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
     null,
     '2026-11-08T20:10:00Z',
@@ -337,7 +337,7 @@ const footballMembers: Member[] = [
   member(
     'm-fut-3',
     'user-diego',
-    'Diego Rojas',
+    'Diego',
     'GVTHMBAWJWGJWRC6TZRFOMKABTLVFLH7V6SBFCJNRAMLBMQRJC2TJ2VH',
     4,
     '2026-11-09T09:00:00Z',
@@ -345,7 +345,7 @@ const footballMembers: Member[] = [
   member(
     'm-fut-4',
     'user-hugo',
-    'Hugo Cuéllar',
+    'Hugo',
     'GSFC66HUF5W3D6CJ43HT5EGUKTFBMEQFIT4IQMV2TNRHVSEU3RLJGSJC',
     null,
     '2026-11-10T18:40:00Z',
@@ -353,7 +353,7 @@ const footballMembers: Member[] = [
   member(
     'm-fut-5',
     'user-luis',
-    'Luis Fernando Choque',
+    'Luis Fernando',
     'G5B4MCMH3ARBKHD7QW2EHRZZHGPYDRNRTJSJAQ5RC2DO2RAZ3ZTIA5P4',
     2,
     '2026-11-12T21:15:00Z',
@@ -366,7 +366,7 @@ const neighborMembers: Member[] = [
   member(
     'm-vec-1',
     'user-patricia',
-    'Patricia Rocha',
+    'Patricia',
     'G4X7YXM3HP327AKNBTVU7L7TPOZLOMJAM6HNYK7Y4GWXGW7C5Z7LLP4R',
     null,
     '2026-11-02T10:00:00Z',
@@ -374,7 +374,7 @@ const neighborMembers: Member[] = [
   member(
     'm-vec-2',
     'user-ana',
-    'Ana Quispe Mamani',
+    'Ana María',
     'GIPG6TEOBQC6MMJ6LIRGYCVJJLNKZAZTZXBUZ4SKJSGBVHWV7TJEK4RQ',
     null,
     '2026-11-02T11:30:00Z',
@@ -382,7 +382,7 @@ const neighborMembers: Member[] = [
   member(
     'm-vec-3',
     'user-wilson',
-    'Wilson Calle',
+    'Wilson',
     'GHO6PLC4P7LJWT5FWCQCKHQQGGOKF7M7GYYCZEUX46BMD44SK77DYOHL',
     null,
     '2026-11-03T08:20:00Z',
@@ -390,7 +390,7 @@ const neighborMembers: Member[] = [
   member(
     'm-vec-4',
     'user-veronica',
-    'Verónica Limachi',
+    'Verónica',
     'GM3OVX72Z5F7CYDNFAJ24QCYWNEZ2OFQWIGMDL7TJPYJA5DP7PT4EEKL',
     null,
     '2026-11-06T17:00:00Z',
@@ -432,7 +432,7 @@ export const MOCK_GROUPS: Group[] = [
   },
   {
     id: FAMILY_ID,
-    name: 'Pasanaku familia Quispe',
+    name: 'Pasanaku de la familia',
     contributionAmount: '500.0000000',
     asset: MOCK_ASSETS.BOB,
     periodicity: 'MONTHLY',
@@ -440,7 +440,7 @@ export const MOCK_GROUPS: Group[] = [
     visibility: 'PRIVATE',
     turnMode: 'AGREEMENT',
     status: 'ACTIVE',
-    inviteCode: 'QUISPE26',
+    inviteCode: 'FAMILIA26',
     members: familyMembers,
     currentRound: 3,
     createdAt: '2026-08-20T14:00:00Z',
@@ -532,7 +532,7 @@ export const MOCK_GROUPS: Group[] = [
 ];
 
 export const MOCK_CONTRIBUTIONS: Contribution[] = [
-  // Familia Quispe: rondas 1 y 2 completas; en la 3 Luis está atrasado.
+  // Familia: rondas 1 y 2 completas; en la 3 Luis está atrasado.
   ...roundContributions(FAMILY_ID, 1, familyIds, '500.0000000', '2026-09-12T20:00:00Z'),
   ...roundContributions(FAMILY_ID, 2, familyIds, '500.0000000', '2026-10-13T18:30:00Z'),
   ...roundContributions(FAMILY_ID, 3, familyIds, '500.0000000', '2026-11-14T21:10:00Z', {

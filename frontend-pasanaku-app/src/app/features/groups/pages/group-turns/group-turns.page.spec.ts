@@ -9,7 +9,7 @@ describe('GroupTurnsPage', () => {
   it('should create', () => {
     TestBed.configureTestingModule({ providers: [provideRouter([]), GroupsStore] });
     const fixture = TestBed.createComponent(GroupTurnsPage);
-    fixture.componentRef.setInput('id', 'group-familia-quispe');
+    fixture.componentRef.setInput('id', 'group-familia');
     fixture.detectChanges();
     expect(fixture.componentInstance).toBeTruthy();
   });

@@ -1,6 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { JoinCodeService } from '@core/services/join-code.service';
 import type { SegmentCustomEvent } from '@ionic/angular';
 import {
   IonButton,
@@ -44,7 +43,6 @@ type Segment = 'mine' | 'public';
 })
 export class GroupListPage {
   protected readonly store = inject(GroupsStore);
-  private readonly joinCode = inject(JoinCodeService);
 
   protected readonly segment = signal<Segment>('mine');
   protected readonly groups = computed(() =>
@@ -68,10 +66,5 @@ export class GroupListPage {
 
   protected retry(): void {
     void this.store.loadLists();
-  }
-
-  /** Pide el código de invitación y abre la pantalla para unirse. */
-  protected askInviteCode(): void {
-    void this.joinCode.askAndOpen();
   }
 }

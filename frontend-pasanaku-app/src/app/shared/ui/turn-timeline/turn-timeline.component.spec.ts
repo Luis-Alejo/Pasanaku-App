@@ -4,9 +4,9 @@ import type { TimelineStep } from './turn-timeline.component';
 import { TurnTimelineComponent } from './turn-timeline.component';
 
 const STEPS: TimelineStep[] = [
-  { id: '1', title: 'Rosa Mamani', subtitle: '15 sep', state: 'done' },
-  { id: '2', title: 'Carmen Quispe', subtitle: '15 nov', state: 'current' },
-  { id: '3', title: 'Ana Quispe Mamani', subtitle: '15 dic', state: 'upcoming', highlight: true },
+  { id: '1', title: 'Rosa', subtitle: '15 sep', state: 'done' },
+  { id: '2', title: 'Carmen', subtitle: '15 nov', state: 'current' },
+  { id: '3', title: 'Ana María', subtitle: '15 dic', state: 'upcoming', highlight: true },
 ];
 
 describe('TurnTimelineComponent', () => {

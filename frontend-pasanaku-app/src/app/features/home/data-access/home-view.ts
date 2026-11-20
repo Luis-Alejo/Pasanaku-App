@@ -167,7 +167,7 @@ export function groupStatusText(group: Group): string {
   }
 }
 
-/** Primer nombre para el saludo ("Ana Quispe Mamani" → "Ana"). */
+/** Primer nombre para el saludo ("Ana María" → "Ana"). */
 export function firstName(displayName: string): string {
   return displayName.trim().split(/\s+/)[0] ?? '';
 }

@@ -18,11 +18,11 @@ import { peopleOutline } from 'ionicons/icons';
 import type { LabDataset } from './ui-lab.fixtures';
 import { LAB_FIXTURES } from './ui-lab.fixtures';
 
-const FAMILY = MOCK_GROUPS.find((g) => g.id === 'group-familia-quispe') as Group;
+const FAMILY = MOCK_GROUPS.find((g) => g.id === 'group-familia') as Group;
 const WORST_GROUP: Group = {
   ...FAMILY,
   id: 'lab-worst',
-  name: 'Pasanaku intergeneracional de la familia Wiśniewska-Kowalczyk y amigos del barrio',
+  name: 'Pasanaku intergeneracional de la familia, los vecinos y los amigos del barrio',
   contributionAmount: '99999.9900000',
   asset: { code: 'BOBTESTNET12', decimals: 7 },
   status: 'ASSIGNING_TURNS',

@@ -42,10 +42,9 @@
     <app-empty-state
       illustration="ahorro-colectivo"
       title="Todavía no participas en ningún pasanaku"
-      message="Crea un grupo con tu familia o amigos, o únete con un código de invitación."
+      message="Crea un grupo con tu familia o amigos, o pide que te inviten con tu número de celular."
     >
       <ion-button expand="block" routerLink="/tabs/groups/new">Crear grupo</ion-button>
-      <ion-button expand="block" fill="clear" (click)="onAction('join')">Unirme con código</ion-button>
     </app-empty-state>
     } @else { @if (store.pending()[0]; as next) { @if (next.status === 'LATE') {
     <p class="late" role="note">Tu aporte está atrasado.</p>
@@ -64,7 +63,7 @@
       class="restart"
       illustration="ahorro-colectivo"
       title="No tienes grupos en curso"
-      message="Tu pasanaku ya terminó. Crea uno nuevo o únete con un código para seguir ahorrando."
+      message="Tu pasanaku ya terminó. Crea uno nuevo o pide que te inviten para seguir ahorrando."
     />
     } @else if (store.active().length) {
     <p class="ok">
@@ -73,7 +72,7 @@
     </p>
     }
 
-    <app-quick-actions class="section" label="Accesos rápidos" [actions]="actions()" (selected)="onAction($event)" />
+    <app-quick-actions class="section" label="Accesos rápidos" [actions]="actions()" />
 
     <!-- Si arriba se muestra el aporte, el cobro va como fila -->
     @if (store.pending().length && store.payout(); as p) {

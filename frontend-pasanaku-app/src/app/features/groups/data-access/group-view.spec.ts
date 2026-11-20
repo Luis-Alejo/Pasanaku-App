@@ -12,7 +12,7 @@ import {
 
 const ANA = 'user-ana';
 const byId = (id: string) => MOCK_GROUPS.find((g) => g.id === id) as Group;
-const family = byId('group-familia-quispe');
+const family = byId('group-familia');
 const office = byId('group-oficina');
 const entrepreneurs = byId('group-emprendedores-scz');
 const promo = byId('group-viaje-promo');
@@ -50,14 +50,14 @@ describe('group-view', () => {
   it('da el estado del aporte de cada miembro (sin registro = pendiente)', () => {
     const payments = roundPayments(family, MOCK_CONTRIBUTIONS, 3, ANA);
     expect(payments.map((p) => p.status)).toEqual(['PAID', 'PAID', 'PAID', 'PAID', 'LATE', 'PAID']);
-    expect(payments.find((p) => p.isMe)?.member.displayName).toBe('Ana Quispe Mamani');
+    expect(payments.find((p) => p.isMe)?.member.displayName).toBe('Ana María');
     expect(roundPayments(family, [], 4, ANA).every((p) => p.status === 'PENDING')).toBe(true);
   });
 
   it('arma la línea de turnos y resalta el turno del usuario', () => {
     const steps = turnSteps(family, ANA);
     expect(steps.map((s) => s.state)).toEqual(['done', 'done', 'current', 'upcoming', 'upcoming', 'upcoming']);
-    expect(steps.filter((s) => s.highlight).map((s) => s.title)).toEqual(['Ana Quispe Mamani']);
+    expect(steps.filter((s) => s.highlight).map((s) => s.title)).toEqual(['Ana María']);
     expect(turnSteps(entrepreneurs, ANA)).toEqual([]);
   });
 });

@@ -64,7 +64,7 @@ describe('MockGroupsApi', () => {
 
   it.each([
     ['NOT_FOUND', 'no-existe', ANA],
-    ['ALREADY_MEMBER', 'group-familia-quispe', ANA],
+    ['ALREADY_MEMBER', 'group-familia', ANA],
     ['CLOSED', 'group-viaje-promo', OTHER(9)],
   ] as const)('rechaza unirse con %s', async (code, groupId, user) => {
     const api = new MockGroupsApi();

@@ -5,7 +5,7 @@ import { AvatarComponent } from './avatar.component';
 describe('AvatarComponent', () => {
   it('muestra iniciales, es decorativo y aplica tamaño', () => {
     const fixture = TestBed.createComponent(AvatarComponent);
-    fixture.componentRef.setInput('name', 'Ana Quispe Mamani');
+    fixture.componentRef.setInput('name', 'Ana María');
     fixture.componentRef.setInput('size', 'lg');
     fixture.detectChanges();
     const el = fixture.nativeElement as HTMLElement;
