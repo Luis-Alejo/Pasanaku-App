@@ -92,7 +92,7 @@
       </ion-checkbox>
     </section>
 
-    <ion-button expand="block" class="join" [disabled]="joining()" (click)="join()">
+    <ion-button expand="block" class="join" [disabled]="joining() || !accepted()" (click)="join()">
       {{ joining() ? 'Uniéndote…' : 'Unirme al grupo' }}
     </ion-button>
     }

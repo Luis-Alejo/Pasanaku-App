@@ -15,13 +15,21 @@ import {
 } from '@ionic/angular';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import { formatDateTime } from '@shared/utils/format';
-import { alarmOutline, alertCircleOutline, cashOutline, hourglassOutline, notificationsOutline } from 'ionicons/icons';
+import {
+  alarmOutline,
+  alertCircleOutline,
+  cashOutline,
+  hourglassOutline,
+  notificationsOutline,
+  mailOutline,
+} from 'ionicons/icons';
 
 const KIND_ICONS: Record<NotificationKind, string> = {
   PAYMENT_REMINDER: alarmOutline,
   GRACE_WARNING: hourglassOutline,
   DEFAULT_ALERT: alertCircleOutline,
   PAYOUT_RECEIVED: cashOutline,
+  INVITATION: mailOutline,
   OTHER: notificationsOutline,
 };
 
@@ -30,6 +38,7 @@ const KIND_ACCENTS: Record<NotificationKind, string> = {
   GRACE_WARNING: 'yellow',
   DEFAULT_ALERT: 'pink',
   PAYOUT_RECEIVED: 'teal',
+  INVITATION: 'blue',
   OTHER: 'blue',
 };
 

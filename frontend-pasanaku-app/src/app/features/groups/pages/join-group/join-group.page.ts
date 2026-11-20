@@ -1,4 +1,5 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import type { JoinGroupErrorCode } from '@core/models/domain.models';
@@ -68,6 +69,8 @@ export class JoinGroupPage {
 
   protected readonly accept = new FormControl(false, { nonNullable: true, validators: [Validators.requiredTrue] });
   protected readonly joining = signal(false);
+  /** El botón de unirse se habilita al marcar "Acepto las condiciones". */
+  protected readonly accepted = toSignal(this.accept.valueChanges, { initialValue: this.accept.value });
 
   protected readonly turnModeLabel = turnModeLabel;
   protected readonly periodicityLabel = periodicityLabel;

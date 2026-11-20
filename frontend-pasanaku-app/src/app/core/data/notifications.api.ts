@@ -10,7 +10,8 @@ import {
 import type { Observable } from 'rxjs';
 import { firstValueFrom } from 'rxjs';
 
-export type NotificationKind = 'PAYMENT_REMINDER' | 'GRACE_WARNING' | 'DEFAULT_ALERT' | 'PAYOUT_RECEIVED' | 'OTHER';
+export type NotificationKind =
+  'PAYMENT_REMINDER' | 'GRACE_WARNING' | 'DEFAULT_ALERT' | 'PAYOUT_RECEIVED' | 'INVITATION' | 'OTHER';
 
 /** Aviso para el usuario (lo genera el backend). */
 export interface AppNotification {

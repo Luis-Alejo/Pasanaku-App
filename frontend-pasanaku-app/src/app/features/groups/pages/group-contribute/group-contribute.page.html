@@ -61,13 +61,14 @@
       label="Paga en bolivianos"
       [amount]="q.amountBob"
       [asset]="bob"
-      [meta]="q.simulated ? 'Modo de prueba' : 'QR bancario'"
+      [meta]="q.simulated ? 'Pago simulado' : 'QR bancario'"
       [caption]="'Equivale a ' + (q.amountUsdc | money: group()!.asset) + ' · 1 USDC = ' + (q.exchangeRate | money: bob)"
     />
     <app-qr-code class="qr" [value]="q.payload" [image]="q.imageBase64" label="QR para pagar tu aporte en bolivianos" />
     <p class="notice">
-      @if (q.simulated) { Es un QR de prueba: no cobra dinero real. Toca "Simular pago" para continuar. } @else {
-      Escanéalo con la app de tu banco. Cuando el pago se confirme, tu aporte se registra en Stellar. }
+      @if (q.simulated) { Pago simulado en Stellar Testnet: no cobra dinero real. Toca "Simular pago" para continuar. En
+      producción se pagará con el QR de tu banco a través de Pollar. } @else { Escanéalo con la app de tu banco. Cuando
+      el pago se confirme, tu aporte se registra en Stellar. }
     </p>
     <ion-button expand="block" class="send" (click)="confirmQr()">
       {{ q.simulated ? 'Simular pago' : 'Ya pagué' }}
