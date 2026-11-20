@@ -80,6 +80,14 @@
                   "with": "src/environments/environment.real.ts"
                 }
               ]
+            },
+            "cloud": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.cloud.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -99,6 +107,9 @@
             "real": {
               "buildTarget": "app:build:development,real",
               "proxyConfig": "proxy.conf.json"
+            },
+            "cloud": {
+              "buildTarget": "app:build:development,cloud"
             }
           },
           "defaultConfiguration": "development"

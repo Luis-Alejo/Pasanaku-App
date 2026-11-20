@@ -392,7 +392,8 @@ Todos los pares de texto/fondo de esta sección cumplen WCAG AA (≥ 4.5:1 en te
 - **Entornos** (`src/environments/`):
   - `environment.ts`: datos de prueba (`useMocks: true`). Es el que usan `npm start` y las pruebas.
   - `environment.real.ts`: backend real (`useMocks: false`, `apiUrl: '/graphql'`, `demoRounds: true`). Lo usan `npm run start:real` y `npm run start:phone`; el servidor de desarrollo reenvía `/graphql` a `localhost:3000` con `proxy.conf.json`, así que basta un solo puerto (4200), incluso desde el celular.
-  - `environment.prod.ts`: build de producción. Sigue con datos de prueba hasta tener la URL del backend publicado (**POR CONFIRMAR**).
+  - `environment.cloud.ts`: backend publicado en Railway (`https://pasanaku-app-production.up.railway.app/graphql`). Lo usa `npm run start:cloud`, abierto también a la red local para el celular.
+  - `environment.prod.ts`: build de producción, también contra el backend de Railway (para hosting o APK).
 - **Espera tras cada transacción:** el backend refleja lo que pasa en la cadena unos segundos después (indexador). `GroupsApi` vuelve a consultar hasta ver el cambio (`waitFor`, hasta 60 s).
 - Sin *subscriptions*: no hacen falta, la app consulta cada cierto tiempo.
 
@@ -466,9 +467,9 @@ Solo si sobra tiempo: animaciones y pulido (skills de animación), billetera com
 - Ensayos completos contra el backend real: 2 personas (ciclo y cierre) y 3 personas (QR, garantía, deuda y avisos).
 
 ### Pendiente / próximos pasos (a coordinar con el equipo)
-- **Backend (Luis):** Pollar en modo real (credenciales); registrar `GUARANTEE_REFUND` al cerrar; el indexador debería empezar desde el último ledger con una base de datos nueva; mensajes de validación en español.
-- **Demo Day (28 nov):** guion, usuarios y grupos preparados, y cómo conectar los celulares (misma red o túnel).
-- **Publicación:** backend y frontend en un hosting, `environment.prod.ts` con la URL real y la app nativa (APK con Capacitor + Android Studio).
+- **Backend (Luis):** Pollar en modo real (credenciales). Ya resueltos en `main`: `GUARANTEE_REFUND` al cerrar, indexador desde el último ledger y mensajes de validación en español.
+- **Demo Day (28 nov):** guion, usuarios y grupos preparados.
+- **Publicación:** el backend ya está en Railway; falta publicar el frontend (hosting estático) y armar la app nativa (APK con Capacitor + Android Studio).
 - **POR CONFIRMAR:** licencia del kit de Figma (atribución).
 
 ---
@@ -513,6 +514,7 @@ No aplican a este proyecto: `animate-expo` (React Native), `write-swift` (Swift)
 npm start                   # desarrollo con datos de prueba (http://localhost:4200)
 npm run start:real          # contra el backend local (http://localhost:4200, proxy a :3000)
 npm run start:phone         # igual, abierto a la red local: http://<IP-de-la-PC>:4200 desde el celular
+npm run start:cloud         # contra el backend publicado en Railway (también abierto a la red local)
 npm run build               # compilar
 npm run lint                # revisar estilo y errores
 npm run test:unit           # pruebas unitarias (Vitest)
