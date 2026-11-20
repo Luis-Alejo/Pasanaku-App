@@ -62,6 +62,16 @@ Usa datos simulados (`src/environments/environment.ts`, `useMocks: true`). Sirve
 La app llama a `/graphql` en su mismo origen y el servidor de desarrollo lo reenvía al backend (`proxy.conf.json`),
 así que solo hace falta el puerto 4200.
 
+### Con el backend publicado (Railway)
+
+```bash
+npm run start:cloud   # http://localhost:4200
+```
+
+Usa el backend de `https://pasanaku-app-production.up.railway.app/graphql`, así que no hace falta levantar el backend
+ni PostgreSQL. Cada persona puede correrlo en su casa y todas comparten los mismos grupos. Desde el celular, en la
+misma wifi que la PC, abre `http://<IP-de-la-PC>:4200`.
+
 ### Desde el celular (misma red wifi)
 
 ```bash
@@ -81,6 +91,7 @@ y su propio CI.
 | `npm start` | Desarrollo con datos de prueba |
 | `npm run start:real` | Desarrollo contra el backend local |
 | `npm run start:phone` | Igual, abierto a la red local |
+| `npm run start:cloud` | Contra el backend publicado en Railway |
 | `npm run build` | Compilar (producción) |
 | `npm run lint` | ESLint, verificación de tipos de e2e y Prettier |
 | `npm run test:unit` | Pruebas unitarias (Vitest) |
@@ -105,9 +116,20 @@ Las pantallas piden datos a un *store*, el store a una interfaz (`GroupsApi`, `A
 interfaz usa los mocks o el backend según `useMocks`. La guía completa de arquitectura, diseño y convenciones está en
 [`CLAUDE.md`](./CLAUDE.md).
 
+## Publicación (Vercel)
+
+El archivo `vercel.json` ya tiene la configuración: instala con `npm install`, compila con `npm run build`, publica
+la carpeta `www` y envía todas las rutas a `index.html` (así se puede recargar dentro de cualquier pantalla).
+
+1. En vercel.com, **Add New → Project** e importa el repositorio `Luis-Alejo/Pasanaku-App`.
+2. En **Root Directory** elige `frontend-pasanaku-app`. El resto lo toma de `vercel.json`.
+3. **Deploy.** La rama de producción es `main`; cada pull request recibe un enlace de vista previa.
+
+La build de producción usa el backend de Railway (`src/environments/environment.prod.ts`).
+
 ## Notas
 
 - La app **no guarda claves de Stellar**: el backend las custodia cifradas y firma las transacciones.
-- La build de producción (`environment.prod.ts`) aún usa datos de prueba. Antes de publicarla o armar el APK hay que
-  configurar la URL del backend publicado.
+- La build de producción (`environment.prod.ts`) apunta al backend de Railway: sirve para publicar el frontend o
+  armar el APK.
 - Diseño basado en el UI kit comunitario "Bank & Wallet App UI Kit" de Figma, adaptado a Pasanaku.

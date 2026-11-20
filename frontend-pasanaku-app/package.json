@@ -19,7 +19,8 @@
     "test:e2e": "playwright test",
     "codegen": "graphql-codegen",
     "start:real": "ng serve --configuration real",
-    "start:phone": "ng serve --configuration real --host 0.0.0.0"
+    "start:phone": "ng serve --configuration real --host 0.0.0.0",
+    "start:cloud": "ng serve --configuration cloud --host 0.0.0.0"
   },
   "private": true,
   "dependencies": {
@@ -69,5 +70,8 @@
     "vitest": "^5.1.0"
   },
   "prettier": "@ionic/prettier-config",
-  "description": "An Ionic project"
+  "description": "An Ionic project",
+  "engines": {
+    "node": ">=20.19"
+  }
 }
