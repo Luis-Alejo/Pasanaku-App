@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule, ObserveInstrument } from './app.module.js';
 import { ValidationPipe } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { AppModule, ObserveInstrument } from './app.module.js';
 
 function printBanner(port: number | string) {
   const banner = `
@@ -18,9 +19,12 @@ function printBanner(port: number | string) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     instrument: ObserveInstrument,
+    rawBody: true,
   });
+
+  app.set('trust proxy', 1);
 
   app.enableCors({
     origin: true,

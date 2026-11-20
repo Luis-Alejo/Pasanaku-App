@@ -7,6 +7,7 @@ export enum TransactionType {
   PAYOUT = 'PAYOUT',
   GUARANTEE_REFUND = 'GUARANTEE_REFUND',
   PENALTY_SLASH = 'PENALTY_SLASH',
+  DEPOSIT = 'DEPOSIT',
 }
 
 export enum TransactionStatus {

@@ -95,7 +95,8 @@ export class SorobanInvokerService {
     const result = await this.submit('pasanaku', operation, admin);
     if (!result.returnValue) {
       throw new SorobanSimulationError(
-        'El despliegue no devolvió el ID del contrato',
+        `El despliegue (tx ${result.txHash}) se confirmó pero no se pudo leer el ID del contrato; ` +
+          'recupéralo con el hash en el RPC (returnValue de getTransaction)',
       );
     }
     const contractId = scValToNative(result.returnValue) as string;

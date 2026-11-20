@@ -13,6 +13,7 @@ import { GroupObligationsService } from './group-obligations.service.js';
 import { GroupsResolver } from './groups.resolver.js';
 import { GroupsService } from './groups.service.js';
 import { WatchedContractsProvider } from './watched-contracts.provider.js';
+import { GroupInvitation } from './entities/group-invitation.entity.js';
 
 @Global()
 @Module({
@@ -23,6 +24,7 @@ import { WatchedContractsProvider } from './watched-contracts.provider.js';
       Round,
       RoundPayment,
       MemberDebt,
+      GroupInvitation,
     ]),
     UsersModule,
   ],

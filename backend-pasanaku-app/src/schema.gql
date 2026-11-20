@@ -2,6 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+type AppNotification {
+  createdAt: DateTime!
+  groupId: ID
+  id: ID!
+  isRead: Boolean!
+  message: String!
+  title: String!
+  type: NotificationType!
+}
+
 type AuthPayload {
   accessToken: String!
   user: User!
@@ -23,6 +33,10 @@ input CreateGroupInput {
 
   """Solo Testnet/demo"""
   roundDurationSeconds: Int
+}
+
+enum Currency {
+  BOB
 }
 
 """
@@ -84,6 +98,31 @@ type GroupMember {
   userId: ID!
 }
 
+type GroupPreview {
+  contractAddress: String
+  contributionStroops: String!
+  createdAt: DateTime!
+  creatorId: ID!
+  currentRound: Int!
+  description: String
+  frequency: Frequency!
+  graceDeadline: DateTime
+  graceDurationSeconds: Int!
+  guaranteeStroops: String!
+  id: ID!
+  isInvited: Boolean!
+  isMember: Boolean!
+  isPublic: Boolean!
+  maxParticipants: Int!
+  memberCount: Int!
+  minReputationReq: Int!
+  name: String!
+  nextDeadline: DateTime
+  roundDurationSeconds: Int!
+  setupCompleted: Boolean!
+  status: GroupStatus!
+}
+
 enum GroupStatus {
   ACTIVE
   CANCELLED
@@ -114,6 +153,23 @@ type GroupSummary {
   status: GroupStatus!
 }
 
+input InitiateQrPaymentInput {
+  """
+  Solo TOPUP, p. ej. "100" o "55.50"
+  """
+  amountBob: String
+
+  """Requerido salvo TOPUP"""
+  groupId: ID
+
+  """Reintentos del cliente sin duplicar el cobro"""
+  idempotencyKey: String
+  purpose: PaymentPurpose!
+
+  """Ronda original de la deuda (ARREARS)"""
+  round: Int
+}
+
 input InviteMemberInput {
   groupId: ID!
   phone: String!
@@ -135,6 +191,7 @@ type MemberDebt {
   createdAt: DateTime!
   debtorMemberId: ID!
   id: ID!
+  lastPaymentTxHash: String
   originalAmountStroops: String!
   originalRoundId: ID!
   remainingAmountStroops: String!
@@ -142,10 +199,14 @@ type MemberDebt {
 }
 
 type Mutation {
+  cancelGroup(groupId: ID!): GroupSummary!
   createGroup(input: CreateGroupInput!): GroupSummary!
+  initiateQrPayment(input: InitiateQrPaymentInput!): QrPaymentType!
   inviteMember(input: InviteMemberInput!): TxResultType!
   joinGroup(groupId: ID!): TxResultType!
   login(input: LoginInput!): AuthPayload!
+  markAllNotificationsAsRead: Int!
+  markNotificationAsRead(notificationId: ID!): AppNotification!
   payArrears(input: PayArrearsInput!): TxResultType!
   payRound(groupId: ID!): TxResultType!
   register(input: RegisterInput!): AuthPayload!
@@ -154,8 +215,18 @@ type Mutation {
   retryGroupSetup(groupId: ID!): GroupSummary!
   revokeReference(referenceId: ID!): UserReference!
   setTurnOrder(input: SetTurnOrderInput!): TxResultType!
+  simulateQrPayment(pollarReference: String!): TransactionRecord!
   startGroup(groupId: ID!): TxResultType!
   submitKyc(input: SubmitKycInput!): User!
+  updateGroup(input: UpdateGroupInput!): GroupSummary!
+}
+
+enum NotificationType {
+  DEFAULT_ALERT
+  GRACE_WARNING
+  PAYMENT_REMINDER
+  PAYOUT_RECEIVED
+  REFERENCE_REQUEST
 }
 
 input PayArrearsInput {
@@ -167,19 +238,44 @@ input PayArrearsInput {
   round: Int!
 }
 
+enum PaymentPurpose {
+  ARREARS
+  CONTRIBUTION
+  JOIN
+  TOPUP
+}
+
 type PublicUser {
   fullName: String!
   id: ID!
   phone: String!
 }
 
+type QrPaymentType {
+  amountBob: String!
+  amountStroops: String!
+  exchangeRate: String!
+  expiresAt: DateTime
+  mock: Boolean!
+  pollarReference: String!
+  qrImageBase64: String
+  qrPayload: String!
+  transactionId: ID!
+}
+
 type Query {
   defaulterReferences(groupId: ID!, memberId: ID!): [UserReference!]!
   groupDetail(groupId: ID!): GroupDetail!
+  groupPreview(groupId: ID!): GroupPreview!
+  groupTransactions(groupId: ID!, limit: Int! = 20, offset: Int! = 0): [TransactionRecord!]!
   me: User!
   myGroups: [GroupSummary!]!
+  myInvitations: [GroupSummary!]!
+  myNotifications(limit: Int! = 20, offset: Int! = 0, unreadOnly: Boolean! = false): [AppNotification!]!
   myReferences: [UserReference!]!
+  myTransactions(limit: Int! = 20, offset: Int! = 0): [TransactionRecord!]!
   publicGroups(limit: Int! = 20, offset: Int! = 0): [GroupSummary!]!
+  unreadNotificationsCount: Int!
 }
 
 enum ReferenceRelationship {
@@ -233,6 +329,7 @@ type RoundPayment {
   memberId: ID!
   paidAt: DateTime
   status: RoundPaymentStatus!
+  txHash: String
 }
 
 enum RoundPaymentStatus {
@@ -255,8 +352,48 @@ input SubmitKycInput {
   ciNumber: String!
 }
 
+type TransactionRecord {
+  amountStroops: String!
+  createdAt: DateTime!
+  exchangeRate: String
+  fiatAmount: String
+  fiatCurrency: Currency
+  groupId: ID
+  id: ID!
+  roundId: ID
+  status: TransactionStatus!
+  stellarTxHash: String
+  type: TransactionType!
+  updatedAt: DateTime!
+  userFullName: String
+  userId: ID!
+}
+
+enum TransactionStatus {
+  CONFIRMED
+  FAILED
+  PENDING_CHAIN
+  PENDING_FIAT
+}
+
+enum TransactionType {
+  ARREARS_PAYMENT
+  DEPOSIT
+  GUARANTEE_DEPOSIT
+  GUARANTEE_REFUND
+  PAYOUT
+  PENALTY_SLASH
+  ROUND_PAYMENT
+}
+
 type TxResultType {
   txHash: String!
+}
+
+input UpdateGroupInput {
+  description: String
+  groupId: ID!
+  name: String
 }
 
 type User {
