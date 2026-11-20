@@ -7,6 +7,7 @@ import type {
   Contribution,
   CreateGroupInput,
   Group,
+  QrPayment,
   TurnSwap,
   User,
 } from '@core/models/domain.models';
@@ -27,10 +28,13 @@ export class GroupsStore {
   // --- Listas
   private readonly _myGroups = signal<Group[]>([]);
   private readonly _publicGroups = signal<Group[]>([]);
+  private readonly _invitations = signal<Group[]>([]);
   private readonly _listState = signal<LoadState>('idle');
 
   readonly myGroups = computed(() => sortMyGroups(this._myGroups()));
   readonly publicGroups = this._publicGroups.asReadonly();
+  /** Grupos privados a los que invitaron al usuario. */
+  readonly invitations = this._invitations.asReadonly();
   readonly listLoading = computed(() => this._listState() === 'loading');
   readonly listError = computed(() => this._listState() === 'error');
 
@@ -97,7 +101,71 @@ export class GroupsStore {
     return group;
   }
 
+  /** Invita por celular al grupo cargado. */
+  inviteByPhone(phone: string): Promise<void> {
+    return this.api.inviteByPhone(this.requireGroupId(), phone);
+  }
+
+  readonly demoRoundsAvailable = this.api.demoRoundsAvailable;
+  readonly qrPaymentsAvailable = this.api.qrPaymentsAvailable;
+
+  /** QR en bolivianos para el aporte de la ronda en curso. */
+  startQrContribution(): Promise<QrPayment> {
+    return this.api.startQrPayment(this.requireGroupId(), 'CONTRIBUTION');
+  }
+
+  simulateQrPayment(reference: string): Promise<void> {
+    return this.api.simulateQrPayment(reference);
+  }
+
+  /** Tras pagar el QR: espera el registro del aporte y actualiza el grupo. */
+  async confirmQrContribution(roundNumber: number): Promise<ContributeResult> {
+    const result = await this.api.waitForContribution(this.requireGroupId(), this.requireUser().id, roundNumber);
+    this.applyContribution(result);
+    return result;
+  }
+
+  /** Paga la deuda del usuario de esa ronda. */
+  async payArrears(roundNumber: number): Promise<void> {
+    const group = await this.api.payArrears(this.requireGroupId(), this.requireUser().id, roundNumber);
+    this._group.set(group);
+    void this.loadGroup(group.id);
+  }
+
+  /** El organizador cambia el nombre del grupo cargado. */
+  async renameGroup(name: string): Promise<void> {
+    const id = this.requireGroupId();
+    await this.api.renameGroup(id, name);
+    await this.loadGroup(id);
+  }
+
+  /** El organizador cancela el grupo cargado. */
+  async cancelGroup(): Promise<void> {
+    const id = this.requireGroupId();
+    await this.api.cancelGroup(id);
+    this._myGroups.update((groups) => groups.filter((g) => g.id !== id));
+    await this.loadGroup(id);
+  }
+
+  /** Recarga el grupo sin mostrar el estado de carga (para ver cambios de la cadena). */
+  refreshGroup(): void {
+    const id = this._group()?.id;
+    if (id && this._detailState() !== 'loading') {
+      void this.loadGroup(id);
+    }
+  }
+
   // --- Turnos
+  readonly organizerControlsTurns = this.api.organizerControlsTurns;
+
+  /** El organizador fija el orden y el grupo empieza. Lanza `TurnError`. */
+  async startWithOrder(userIds: string[]): Promise<Group> {
+    const group = await this.api.startWithOrder(this.requireGroupId(), userIds);
+    this._group.set(group);
+    void this.loadGroup(group.id);
+    return group;
+  }
+
   private readonly _swaps = signal<TurnSwap[]>([]);
   /** Propuestas de intercambio del grupo cargado (llegan junto con el grupo en loadGroup). */
   readonly swaps = this._swaps.asReadonly();
@@ -187,9 +255,14 @@ export class GroupsStore {
     const userId = this.currentUserId();
     this._listState.set('loading');
     try {
-      const [mine, publics] = await Promise.all([this.api.getMyGroups(userId), this.api.getPublicGroups(userId)]);
+      const [mine, publics, invitations] = await Promise.all([
+        this.api.getMyGroups(userId),
+        this.api.getPublicGroups(userId),
+        this.api.getInvitations().catch(() => []),
+      ]);
       this._myGroups.set(mine);
       this._publicGroups.set(publics);
+      this._invitations.set(invitations);
       this._listState.set('loaded');
     } catch {
       this._listState.set('error');

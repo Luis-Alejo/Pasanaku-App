@@ -46,6 +46,7 @@
       (valueChange)="pickAmount($event)"
     />
 
+    @if (store.assets().length > 1) {
     <div class="group" role="group" aria-labelledby="asset-label">
       <p id="asset-label" class="group-label">Moneda</p>
       <ion-segment formControlName="assetCode" aria-labelledby="asset-label">
@@ -54,6 +55,14 @@
         }
       </ion-segment>
     </div>
+    } @if (store.demoRoundsAvailable) {
+    <div class="pk-card demo">
+      <ion-toggle formControlName="demoRounds" justify="space-between">
+        <span class="option-title">Rondas de demostración</span>
+        <span class="option-help">Cada ronda dura 3 minutos, para ver el ciclo completo. Solo en Stellar Testnet.</span>
+      </ion-toggle>
+    </div>
+    }
 
     <div class="group" role="group" aria-labelledby="period-label">
       <p id="period-label" class="group-label">Periodicidad</p>
@@ -82,7 +91,7 @@
           <ion-item>
             <ion-radio value="PRIVATE" justify="start" labelPlacement="end">
               <span class="option-title">Privado</span>
-              <span class="option-help">Solo entra quien tenga el código de invitación.</span>
+              <span class="option-help">Solo entra quien reciba una invitación.</span>
             </ion-radio>
           </ion-item>
           <ion-item lines="none">
@@ -95,6 +104,7 @@
       </ion-list>
     </div>
 
+    @if (!store.organizerControlsTurns) {
     <div class="group">
       <p id="turns-label" class="group-label">Orden de cobro</p>
       <ion-list [inset]="true" class="options">
@@ -114,8 +124,7 @@
         </ion-radio-group>
       </ion-list>
     </div>
-
-    @if (summary(); as s) {
+    } @if (summary(); as s) {
     <p class="summary">
       Cada ronda se juntan
       <strong class="amount">{{ s.payout | money: s.asset }}</strong>
@@ -126,6 +135,10 @@
     <ion-button type="submit" expand="block" class="submit" [disabled]="submitting()">
       {{ submitting() ? 'Creando…' : 'Crear grupo' }}
     </ion-button>
+
+    @if (submitting() && store.organizerControlsTurns) {
+    <p class="disclaimer" role="status">Creando el contrato en Stellar Testnet. Puede tardar cerca de un minuto.</p>
+    }
 
     <p class="disclaimer">
       Funciona en Stellar Testnet con activos de prueba. Las cifras son ilustrativas: no es una oferta financiera.

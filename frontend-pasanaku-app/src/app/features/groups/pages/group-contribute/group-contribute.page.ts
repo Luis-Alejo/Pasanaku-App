@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import type { ContributeResult, ContributionErrorCode } from '@core/models/domain.models';
+import { AuthService } from '@core/auth/auth.service';
+import type { ContributeResult, ContributionErrorCode, QrPayment } from '@core/models/domain.models';
 import { ContributionError } from '@core/models/domain.models';
 import { explorerTxUrl, shortHash } from '@core/stellar/explorer';
 import {
@@ -18,6 +19,7 @@ import { MoneyPipe } from '@shared/pipes/money.pipe';
 import { AmountCardComponent } from '@shared/ui/amount-card/amount-card.component';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
 import { InfoRowComponent } from '@shared/ui/info-row/info-row.component';
+import { QrCodeComponent } from '@shared/ui/qr-code/qr-code.component';
 import { todayIso } from '@shared/utils/date';
 import { formatDate } from '@shared/utils/format';
 import {
@@ -32,7 +34,10 @@ import {
 import { myMember } from '../../data-access/group-view';
 import { GroupsStore } from '../../data-access/groups.store';
 
-type Phase = 'review' | 'sending' | 'done' | 'failed';
+type Phase = 'review' | 'sending' | 'qr' | 'done' | 'failed';
+
+/** Moneda local para mostrar el monto del QR. */
+const BOB = { code: 'Bs', decimals: 2 };
 
 const CONTRIBUTION_ERRORS: Record<ContributionErrorCode, string> = {
   NOT_FOUND: 'Este grupo ya no existe.',
@@ -61,10 +66,12 @@ const CONTRIBUTION_ERRORS: Record<ContributionErrorCode, string> = {
     AmountCardComponent,
     EmptyStateComponent,
     InfoRowComponent,
+    QrCodeComponent,
   ],
 })
 export class GroupContributePage {
   protected readonly store = inject(GroupsStore);
+  private readonly auth = inject(AuthService);
 
   /** De la ruta /tabs/groups/:id/contribute */
   readonly id = input.required<string>();
@@ -72,6 +79,10 @@ export class GroupContributePage {
   protected readonly phase = signal<Phase>('review');
   protected readonly result = signal<ContributeResult | null>(null);
   protected readonly errorMessage = signal('');
+  /** QR en bolivianos que se está pagando (Pollar). */
+  protected readonly qr = signal<QrPayment | null>(null);
+  protected readonly sendingText = signal('Procesando en Stellar Testnet…');
+  protected readonly bob = BOB;
 
   protected readonly icons = {
     error: cloudOfflineOutline,
@@ -91,6 +102,11 @@ export class GroupContributePage {
     const g = this.group();
     return g ? (myMember(g, this.store.currentUserId()) ?? null) : null;
   });
+
+  /** El backend no manda la dirección de cada miembro: la propia sale de la sesión. */
+  protected readonly walletAddress = computed(
+    () => this.me()?.walletAddress || this.auth.currentUser()?.walletAddress || '',
+  );
 
   protected readonly round = computed(() => {
     const g = this.group();
@@ -148,6 +164,7 @@ export class GroupContributePage {
 
   protected async send(): Promise<void> {
     if (this.phase() === 'sending') return;
+    this.sendingText.set('Procesando en Stellar Testnet…');
     this.phase.set('sending');
     try {
       this.result.set(await this.store.contribute());
@@ -155,14 +172,54 @@ export class GroupContributePage {
     } catch (error) {
       this.errorMessage.set(
         error instanceof ContributionError
-          ? CONTRIBUTION_ERRORS[error.code]
+          ? (error.detail ?? CONTRIBUTION_ERRORS[error.code])
           : 'La transacción no se pudo enviar. Revisa tu conexión e inténtalo de nuevo.',
       );
       this.phase.set('failed');
     }
   }
 
+  protected async payWithQr(): Promise<void> {
+    if (this.phase() === 'sending') return;
+    this.sendingText.set('Generando tu QR…');
+    this.phase.set('sending');
+    try {
+      this.qr.set(await this.store.startQrContribution());
+      this.phase.set('qr');
+    } catch (error) {
+      this.fail(error);
+    }
+  }
+
+  /** En simulación el QR se da por pagado; en real se espera la confirmación del banco. */
+  protected async confirmQr(): Promise<void> {
+    const qr = this.qr();
+    const round = this.round();
+    if (!qr || !round) return;
+    this.sendingText.set(qr.simulated ? 'Simulando el pago y aportando en Stellar…' : 'Confirmando tu pago…');
+    this.phase.set('sending');
+    try {
+      if (qr.simulated) {
+        await this.store.simulateQrPayment(qr.reference);
+      }
+      this.result.set(await this.store.confirmQrContribution(round.number));
+      this.phase.set('done');
+    } catch (error) {
+      this.fail(error);
+    }
+  }
+
+  private fail(error: unknown): void {
+    this.errorMessage.set(
+      error instanceof ContributionError
+        ? (error.detail ?? CONTRIBUTION_ERRORS[error.code])
+        : 'No se pudo completar el pago. Revisa tu conexión e inténtalo de nuevo.',
+    );
+    this.phase.set('failed');
+  }
+
   protected backToReview(): void {
+    this.qr.set(null);
     this.phase.set('review');
     void this.store.loadGroup(this.id());
   }

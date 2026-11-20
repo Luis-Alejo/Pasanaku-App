@@ -7,3 +7,6 @@ ios/
 # Skills de agentes de IA (no son código del proyecto).
 .agents/
 .claude/
+
+# Código generado por GraphQL Codegen.
+src/app/graphql/generated.ts

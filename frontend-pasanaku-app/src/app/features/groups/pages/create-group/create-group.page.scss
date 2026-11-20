@@ -27,6 +27,14 @@ ion-radio::part(label) {
   white-space: normal;
 }
 
+.demo {
+  padding: 0.75rem 1.25rem;
+}
+
+.demo ion-toggle::part(label) {
+  white-space: normal;
+}
+
 ion-item {
   --min-height: 3.5rem;
 }

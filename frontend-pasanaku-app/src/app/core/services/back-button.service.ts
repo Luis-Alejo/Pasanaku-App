@@ -4,8 +4,8 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { Platform } from '@ionic/angular';
 
-/** Raíces de las pestañas: desde aquí, "atrás" cierra la app (Material Design 3). */
-const TAB_ROOTS = ['/tabs/home', '/tabs/groups', '/tabs/profile'];
+/** Raíces de la navegación: desde aquí, "atrás" cierra la app (Material Design 3). */
+const ROOT_PATHS = ['/tabs/home', '/tabs/groups', '/tabs/wallet', '/tabs/profile', '/auth/login'];
 
 /**
  * Botón "atrás" de Android, predecible:
@@ -23,7 +23,7 @@ export class BackButtonService {
     if (!Capacitor.isNativePlatform()) return;
     this.platform.backButton.subscribeWithPriority(-1, () => {
       const path = this.router.url.split(/[?#]/)[0];
-      if (TAB_ROOTS.includes(path)) {
+      if (ROOT_PATHS.includes(path)) {
         void App.exitApp();
       } else {
         void this.router.navigateByUrl('/tabs/home', { replaceUrl: true });

@@ -30,13 +30,6 @@
   margin-top: 1.5rem;
 }
 
-.section-title {
-  margin: 0 0 0.75rem;
-  color: var(--ion-color-medium);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
 .text {
   margin: 0 0 0.75rem;
   text-wrap: pretty;
@@ -56,9 +49,39 @@
 .art {
   display: block;
   width: min(100%, 16rem);
-  height: auto;
-  aspect-ratio: 327 / 226;
   margin: 0 auto 1rem;
+}
+
+.order-list {
+  margin: 0 0 1rem;
+  list-style: none;
+}
+
+.order-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 3.5rem;
+}
+
+.order-row + .order-row {
+  border-top: 1px solid var(--pk-border);
+}
+
+.order-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.order-row ion-button {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+}
+
+.order-action {
+  margin: 0 0 0.75rem;
 }
 
 .timeline-card {

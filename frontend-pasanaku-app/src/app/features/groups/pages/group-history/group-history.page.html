@@ -37,8 +37,8 @@
 
     @if (events().length) {
     <ol class="timeline" aria-label="Movimientos del grupo, del más reciente al más antiguo">
-      @for (e of events(); track e.id) {
-      <li class="event" [class]="'event event--' + e.kind">
+      @for (e of events(); track e.id; let i = $index) {
+      <li [class]="'pk-enter event event--' + e.kind" [style.--pk-i]="i">
         <span class="icon" aria-hidden="true">
           <ion-icon [icon]="kindIcons[e.kind]" />
         </span>

@@ -1,0 +1,70 @@
+.screen-title {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.page {
+  padding: 2rem 1.5rem calc(1.5rem + var(--ion-safe-area-bottom, 0px));
+}
+
+.section + .section {
+  margin-top: 1.5rem;
+}
+
+.wallet {
+  padding: 1rem 1.25rem;
+}
+
+/* La dirección completa, seleccionable y partida en cualquier punto (no tiene espacios). */
+.address {
+  margin: 0 0 0.75rem;
+  font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
+.wallet-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.wallet-actions ion-button {
+  min-height: 48px;
+  margin: 0;
+}
+
+/* Área táctil de 48px. */
+.explorer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  min-height: 48px;
+  color: var(--ion-color-primary);
+  font-weight: 600;
+}
+
+.hint {
+  margin: 0.5rem 0 0;
+  color: var(--ion-color-medium);
+  font-size: 0.8125rem;
+  text-wrap: pretty;
+}
+
+.wallet .hint {
+  margin-top: 0.75rem;
+}
+
+.loading {
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 0;
+}
+
+.balances-error p {
+  margin: 0 0 0.5rem;
+}

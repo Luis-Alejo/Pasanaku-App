@@ -38,6 +38,14 @@
   margin: 1.5rem 0 0;
 }
 
+.qr {
+  margin: 1.5rem 0 0;
+}
+
+.qr-button {
+  margin: 0.75rem 0 0;
+}
+
 .notice {
   margin: 0.75rem 0 0;
   color: var(--ion-color-medium);
@@ -59,6 +67,24 @@
   gap: 0.5rem;
   padding: 2rem 1.5rem 1rem;
   text-align: center;
+}
+
+@keyframes pk-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .status-panel .art {
+    animation: pk-pop 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .status-panel .status-title,
+  .payout {
+    animation: pk-enter 260ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms both;
+  }
 }
 
 .status-title {

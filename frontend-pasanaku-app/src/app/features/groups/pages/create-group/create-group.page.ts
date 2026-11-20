@@ -2,6 +2,7 @@ import { Component, ElementRef, computed, effect, inject, signal } from '@angula
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { toApiError } from '@core/graphql/api-error';
 import type { CreateGroupInput, GroupVisibility, Periodicity, TurnMode } from '@core/models/domain.models';
 import { ToastService } from '@core/services/toast.service';
 import {
@@ -18,6 +19,7 @@ import {
   IonSegment,
   IonSegmentButton,
   IonTitle,
+  IonToggle,
   IonToolbar,
 } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
@@ -33,6 +35,9 @@ import {
   trimmedLengthValidator,
 } from '../../data-access/group-form';
 import { GroupsStore } from '../../data-access/groups.store';
+
+/** Debe coincidir con la duración de ronda que envía la API (3 minutos). */
+const DEMO_ROUND_MINUTES = 3;
 
 @Component({
   selector: 'app-create-group',
@@ -54,6 +59,7 @@ import { GroupsStore } from '../../data-access/groups.store';
     IonRadioGroup,
     IonRadio,
     IonButton,
+    IonToggle,
     MoneyPipe,
     AmountOptionsComponent,
   ],
@@ -90,6 +96,7 @@ export class CreateGroupPage {
     }),
     visibility: new FormControl<GroupVisibility>('PRIVATE', { nonNullable: true }),
     turnMode: new FormControl<TurnMode>('AGREEMENT', { nonNullable: true }),
+    demoRounds: new FormControl(true, { nonNullable: true }),
   });
 
   private readonly value = toSignal(this.form.valueChanges, { initialValue: this.form.getRawValue() });
@@ -114,10 +121,20 @@ export class CreateGroupPage {
       return null;
     }
     const unit =
-      this.value().periodicity === 'BIWEEKLY'
-        ? plural(members, 'quincena', 'quincenas')
-        : plural(members, 'mes', 'meses');
-    return { payout: multiplyAmount(amount, members, asset.decimals), asset, members, duration: `${members} ${unit}` };
+      this.store.demoRoundsAvailable && this.value().demoRounds
+        ? `minutos aprox., ${DEMO_ROUND_MINUTES} por ronda`
+        : this.value().periodicity === 'BIWEEKLY'
+          ? plural(members, 'quincena', 'quincenas')
+          : plural(members, 'mes', 'meses');
+    return {
+      payout: multiplyAmount(amount, members, asset.decimals),
+      asset,
+      members,
+      duration:
+        this.store.demoRoundsAvailable && this.value().demoRounds
+          ? `${members * DEMO_ROUND_MINUTES} ${unit}`
+          : `${members} ${unit}`,
+    };
   });
 
   /** Montos rápidos del kit (Amount / Default · Active). Tocar uno rellena el campo. */
@@ -192,14 +209,19 @@ export class CreateGroupPage {
       memberCount: Number(v.memberCount),
       visibility: v.visibility,
       turnMode: v.turnMode,
+      demoRounds: this.store.demoRoundsAvailable && v.demoRounds,
     };
     this.submitting.set(true);
     try {
       const group = await this.store.createGroup(input);
       void this.toast.show('Grupo creado', 'success');
       await this.router.navigate(['/tabs/groups', group.id], { replaceUrl: true });
-    } catch {
-      void this.toast.show('No pudimos crear el grupo. Inténtalo de nuevo.', 'danger');
+    } catch (error) {
+      const { kind, message } = toApiError(error);
+      void this.toast.show(
+        kind === 'forbidden' || kind === 'invalid' ? message : 'No pudimos crear el grupo. Inténtalo de nuevo.',
+        'danger',
+      );
     } finally {
       this.submitting.set(false);
     }

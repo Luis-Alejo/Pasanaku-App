@@ -1,0 +1,49 @@
+<ion-content [fullscreen]="true">
+  <app-auth-shell
+    screenTitle="Iniciar sesión"
+    heading="Te damos la bienvenida"
+    message="Entra a Pasanaku para ver tus grupos y tus aportes."
+    illustration="acceso"
+  >
+    <app-theme-toggle shellAction [dark]="theme.isDark()" (toggled)="theme.toggle()" />
+    <form class="form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <ion-input
+        formControlName="phone"
+        type="tel"
+        inputmode="tel"
+        autocomplete="off"
+        enterkeyhint="next"
+        label="Celular"
+        labelPlacement="stacked"
+        fill="outline"
+        placeholder="71234567"
+        errorText="Escribe un celular válido: 8 dígitos o con código de país (+591…)."
+      />
+      <ion-input
+        formControlName="password"
+        type="password"
+        autocomplete="new-password"
+        enterkeyhint="go"
+        label="Contraseña"
+        labelPlacement="stacked"
+        fill="outline"
+        errorText="Escribe tu contraseña."
+      >
+        <ion-input-password-toggle slot="end" [showIcon]="icons.show" [hideIcon]="icons.hide" />
+      </ion-input>
+
+      @if (error()) {
+      <p class="form-error" role="alert">{{ error() }}</p>
+      }
+
+      <ion-button type="submit" expand="block" [disabled]="submitting()">
+        {{ submitting() ? 'Entrando…' : 'Iniciar sesión' }}
+      </ion-button>
+    </form>
+
+    <p class="switch">
+      ¿Todavía no tienes cuenta?
+      <a routerLink="/auth/register" [queryParams]="returnUrl() ? { returnUrl: returnUrl() } : {}">Regístrate</a>
+    </p>
+  </app-auth-shell>
+</ion-content>

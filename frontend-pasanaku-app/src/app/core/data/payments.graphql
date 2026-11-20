@@ -1,0 +1,27 @@
+mutation InitiateQrPayment($input: InitiateQrPaymentInput!) {
+  initiateQrPayment(input: $input) {
+    transactionId
+    pollarReference
+    amountBob
+    amountStroops
+    exchangeRate
+    qrPayload
+    qrImageBase64
+    expiresAt
+    mock
+  }
+}
+
+mutation SimulateQrPayment($reference: String!) {
+  simulateQrPayment(pollarReference: $reference) {
+    id
+    status
+    stellarTxHash
+  }
+}
+
+mutation PayArrears($input: PayArrearsInput!) {
+  payArrears(input: $input) {
+    txHash
+  }
+}

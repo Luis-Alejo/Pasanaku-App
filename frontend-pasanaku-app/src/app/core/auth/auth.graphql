@@ -1,0 +1,38 @@
+fragment SessionUser on User {
+  id
+  fullName
+  phone
+  email
+  stellarPublicKey
+  kycStatus
+}
+
+mutation Login($input: LoginInput!) {
+  login(input: $input) {
+    accessToken
+    user {
+      ...SessionUser
+    }
+  }
+}
+
+mutation Register($input: RegisterInput!) {
+  register(input: $input) {
+    accessToken
+    user {
+      ...SessionUser
+    }
+  }
+}
+
+query Me {
+  me {
+    ...SessionUser
+  }
+}
+
+mutation SubmitKyc($input: SubmitKycInput!) {
+  submitKyc(input: $input) {
+    ...SessionUser
+  }
+}

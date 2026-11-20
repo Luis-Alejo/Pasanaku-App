@@ -6,28 +6,31 @@
     <div pkOverlap class="person">
       <app-avatar class="person-avatar" [name]="u.displayName" size="lg" />
       <p class="name">{{ u.displayName }}</p>
-      <p class="email">{{ u.email }}</p>
+      <p class="email">{{ u.email ?? u.phone }}</p>
     </div>
   </app-brand-header>
 
   <div class="page">
-    <section class="section" aria-labelledby="wallet-title">
-      <h2 id="wallet-title" class="pk-section-title">Billetera Stellar</h2>
+    @if (u.kycStatus !== 'VERIFIED') {
+    <section class="section" aria-labelledby="identity-title">
+      <h2 id="identity-title" class="pk-section-title">Identidad</h2>
       <div class="pk-card wallet">
-        <p id="address-label" class="label">Tu dirección (Testnet)</p>
-        <p class="address" aria-labelledby="address-label">{{ u.walletAddress }}</p>
-        <div class="wallet-actions">
-          <ion-button fill="outline" (click)="copyAddress()">
-            <ion-icon slot="start" [icon]="copied() ? icons.copied : icons.copy" aria-hidden="true" />
-            {{ copied() ? 'Copiada' : 'Copiar dirección' }}
-          </ion-button>
-          <a class="explorer" [href]="accountUrl()" target="_blank" rel="noopener noreferrer">
-            Ver en el explorador
-            <ion-icon [icon]="icons.external" aria-hidden="true" />
-            <span class="visually-hidden">(se abre en el explorador de Testnet)</span>
-          </a>
-        </div>
-        <p class="hint">Tu cuenta la administra Pasanaku de forma segura: no necesitas guardar claves.</p>
+        <p class="label">Verifícala para crear un grupo o unirte a uno.</p>
+        <ion-button class="identity" expand="block" fill="outline" routerLink="/auth/verify">
+          Verificar identidad
+        </ion-button>
+      </div>
+    </section>
+    }
+
+    <section class="section" aria-labelledby="account-title">
+      <h2 id="account-title" class="pk-section-title">Cuenta</h2>
+      <div class="pk-card">
+        <app-info-row label="Celular" [value]="u.phone" />
+        @if (u.email) {
+        <app-info-row label="Correo" [value]="u.email" />
+        }
+        <app-info-row label="Identidad" [value]="u.kycStatus === 'VERIFIED' ? 'Verificada' : 'Sin verificar'" />
       </div>
     </section>
 
@@ -45,32 +48,9 @@
       </div>
     </section>
 
-    <section class="section" aria-labelledby="balances-title">
-      <h2 id="balances-title" class="pk-section-title">Saldos en Testnet</h2>
-      @if (balancesState() === 'loading') {
-      <div class="loading" role="status">
-        <ion-spinner aria-hidden="true" />
-        <span class="visually-hidden">Consultando saldos</span>
-      </div>
-      } @else if (balancesState() === 'error') {
-      <div class="balances-error">
-        <p>No pudimos consultar tus saldos en Stellar.</p>
-        <ion-button fill="outline" (click)="loadBalances()">Reintentar</ion-button>
-      </div>
-      } @else if (balancesState() === 'loaded') { @if (balances().length) {
-      <div class="pk-card" role="group" aria-label="Saldos por moneda">
-        @for (b of balanceRows(); track b.code + (b.issuer ?? '')) {
-        <app-info-row [label]="b.code" [value]="b.number" tone="brand" />
-        }
-      </div>
-      } @else {
-      <p class="hint">Tu cuenta todavía no tiene fondos en Testnet.</p>
-      }
-      <p class="hint">
-        Activos de prueba, sin valor real. @if (isMock) { Con datos de prueba, estos saldos son de ejemplo. }
-      </p>
-      }
-    </section>
+    <ion-button class="logout" expand="block" fill="clear" color="danger" (click)="logout()">
+      Cerrar sesión
+    </ion-button>
   </div>
   }
 </ion-content>

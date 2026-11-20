@@ -1,0 +1,53 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/tabs/home" text="" aria-label="Volver a Inicio" />
+    </ion-buttons>
+    <ion-title>Notificaciones</ion-title>
+    @if (notifications.unread() > 0) {
+    <ion-buttons slot="end">
+      <ion-button (click)="notifications.markAllRead()">Leer todo</ion-button>
+    </ion-buttons>
+    }
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="page">
+    @if (notifications.loading() && !notifications.hasItems()) {
+    <div class="loading" role="status">
+      <ion-spinner aria-hidden="true" />
+      <span class="visually-hidden">Cargando notificaciones</span>
+    </div>
+    } @else if (!notifications.hasItems()) {
+    <app-empty-state
+      illustration="alcancia"
+      [title]="loadFailed() ? 'No pudimos cargar tus avisos' : 'No tienes notificaciones'"
+      [message]="
+        loadFailed() ? 'Revisa tu conexión e inténtalo de nuevo.' : 'Aquí te avisamos de aportes por vencer y de tus cobros.'
+      "
+    />
+    } @else {
+    <ul class="list" aria-label="Notificaciones, de la más reciente a la más antigua">
+      @for (n of notifications.items(); track n.id; let i = $index) {
+      <li class="pk-enter" [style.--pk-i]="i">
+        <button type="button" class="item" [class.unread]="!n.read" (click)="open(n)">
+          <span class="icon" [class]="'icon icon--' + kindAccents[n.kind]" aria-hidden="true">
+            <ion-icon [icon]="kindIcons[n.kind]" />
+          </span>
+          <span class="body">
+            <span class="title">
+              @if (!n.read) {
+              <span class="dot" aria-hidden="true"></span><span class="visually-hidden">Sin leer:</span>
+              } {{ n.title }}
+            </span>
+            <span class="message">{{ n.message }}</span>
+            <time class="date" [attr.datetime]="n.createdAt">{{ formatDateTime(n.createdAt) }}</time>
+          </span>
+        </button>
+      </li>
+      }
+    </ul>
+    }
+  </div>
+</ion-content>

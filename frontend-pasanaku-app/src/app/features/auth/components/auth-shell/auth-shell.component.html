@@ -1,0 +1,12 @@
+<app-brand-header>
+  <div class="bar">
+    <p class="screen-title">{{ screenTitle() }}</p>
+    <ng-content select="[shellAction]" />
+  </div>
+  <div pkOverlap class="body">
+    <h1 class="heading">{{ heading() }}</h1>
+    <p class="message">{{ message() }}</p>
+    <img class="art" [src]="'assets/illustrations/' + illustration() + '.svg'" alt="" decoding="async" />
+    <ng-content />
+  </div>
+</app-brand-header>

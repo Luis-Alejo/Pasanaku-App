@@ -2,12 +2,21 @@ import { MockGroupsApi } from '@core/data/groups.api';
 import type { User } from '@core/models/domain.models';
 import { JoinGroupError } from '@core/models/domain.models';
 
-const ANA: User = { id: 'user-ana', displayName: 'Ana', email: 'ana@example.com', walletAddress: 'GANA' };
+const ANA: User = {
+  id: 'user-ana',
+  displayName: 'Ana',
+  phone: '+59170000000',
+  email: 'ana@example.com',
+  walletAddress: 'GANA',
+  kycStatus: 'VERIFIED',
+};
 const OTHER = (n: number): User => ({
   id: `user-x${n}`,
   displayName: `X${n}`,
+  phone: `+5917000000${n}`,
   email: `x${n}@example.com`,
   walletAddress: `GX${n}`,
+  kycStatus: 'VERIFIED',
 });
 
 describe('MockGroupsApi', () => {

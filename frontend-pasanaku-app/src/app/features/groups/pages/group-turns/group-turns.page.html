@@ -28,8 +28,8 @@
     <header class="summary">
       <h1 class="name">{{ g.name }}</h1>
       <p class="mode">
-        {{ g.turnMode === 'DRAW' ? 'Orden por sorteo' : 'Orden por acuerdo' }} @if (g.turnsAssignedAt) { · definido el
-        {{ formatDate(g.turnsAssignedAt) }} }
+        {{ g.turnsByOrganizer ? 'Orden definido por el organizador' : g.turnMode === 'DRAW' ? 'Orden por sorteo' :
+        'Orden por acuerdo' }} @if (g.turnsAssignedAt) { · definido el {{ formatDate(g.turnsAssignedAt) }} }
       </p>
     </header>
 
@@ -41,10 +41,49 @@
               'Los turnos se definen cuando el grupo esté completo (' + g.members.length + ' de ' + g.memberCount + ').'
             "
     />
-    } @case ('ASSIGNING_TURNS') { @if (g.turnMode === 'DRAW') {
+    } @case ('ASSIGNING_TURNS') { @if (g.turnsByOrganizer) {
+    <section class="section" aria-labelledby="order-setup-title">
+      <h2 id="order-setup-title" class="pk-section-title">Orden de cobro</h2>
+      @if (isOrganizer()) {
+      <p class="text">Ordena a los miembros como lo acordaron, o haz un sorteo. Al confirmar, el grupo empieza.</p>
+      <ol class="pk-card order-list">
+        @for (m of orderedMembers(); track m.id; let i = $index; let first = $first; let last = $last) {
+        <li class="order-row">
+          <span class="turn-number" aria-hidden="true">{{ i + 1 }}</span>
+          <span class="order-name"><span class="visually-hidden">Turno {{ i + 1 }}:</span> {{ m.displayName }}</span>
+          <ion-button
+            fill="clear"
+            [disabled]="first || busy() !== null"
+            [attr.aria-label]="'Subir a ' + m.displayName"
+            (click)="move(i, -1)"
+          >
+            <ion-icon slot="icon-only" [icon]="icons.up" aria-hidden="true" />
+          </ion-button>
+          <ion-button
+            fill="clear"
+            [disabled]="last || busy() !== null"
+            [attr.aria-label]="'Bajar a ' + m.displayName"
+            (click)="move(i, 1)"
+          >
+            <ion-icon slot="icon-only" [icon]="icons.down" aria-hidden="true" />
+          </ion-button>
+        </li>
+        }
+      </ol>
+      <ion-button class="order-action" expand="block" [disabled]="busy() !== null" (click)="confirmOrder()">
+        {{ busy() === 'start' ? 'Iniciando en Stellar…' : 'Confirmar orden e iniciar' }}
+      </ion-button>
+      <ion-button class="order-action" expand="block" fill="outline" [disabled]="busy() !== null" (click)="draw()">
+        {{ busy() === 'draw' ? 'Sorteando…' : 'Sortear e iniciar' }}
+      </ion-button>
+      } @else {
+      <p class="text muted">Quien organiza el grupo está definiendo el orden de cobro.</p>
+      }
+    </section>
+    } @else if (g.turnMode === 'DRAW') {
     <section class="section draw" aria-labelledby="draw-title">
       <img class="art" src="assets/illustrations/ahorro-colectivo.svg" alt="" decoding="async" />
-      <h2 id="draw-title" class="section-title">Sorteo</h2>
+      <h2 id="draw-title" class="pk-section-title">Sorteo</h2>
       <p class="text">
         El grupo está completo. El sorteo asigna al azar quién cobra en cada ronda; el resultado queda visible para
         todos y el grupo empieza.
@@ -57,7 +96,7 @@
     </section>
     } @else {
     <section class="section" aria-labelledby="choose-title">
-      <h2 id="choose-title" class="section-title">Elige tu turno</h2>
+      <h2 id="choose-title" class="pk-section-title">Elige tu turno</h2>
       <p class="text">
         {{ chosenCount() }} de {{ g.memberCount }} eligieron. Cuando todos tengan turno, el grupo empieza.
       </p>
@@ -93,15 +132,15 @@
     </section>
     } } @default {
     <section class="section" aria-labelledby="order-title">
-      <h2 id="order-title" class="section-title">
+      <h2 id="order-title" class="pk-section-title">
         {{ g.turnMode === 'DRAW' ? 'Resultado del sorteo' : 'Orden de cobro' }}
       </h2>
       <div class="pk-card timeline-card"><app-turn-timeline [steps]="steps()" label="Orden de cobro" /></div>
     </section>
-    } } @if (g.turnMode === 'AGREEMENT' && me() && (g.status === 'ASSIGNING_TURNS' || g.status === 'ACTIVE')) { @if
-    (incoming().length) {
+    } } @if (!g.turnsByOrganizer && g.turnMode === 'AGREEMENT' && me() && (g.status === 'ASSIGNING_TURNS' || g.status
+    === 'ACTIVE')) { @if (incoming().length) {
     <section class="section" aria-labelledby="incoming-title">
-      <h2 id="incoming-title" class="section-title">Propuestas para ti</h2>
+      <h2 id="incoming-title" class="pk-section-title">Propuestas para ti</h2>
       @for (item of incoming(); track item.swap.id) {
       <div class="proposal">
         <p class="text">{{ item.view.text }}</p>
@@ -118,7 +157,7 @@
     </section>
     } @if (me()?.turnNumber) {
     <section class="section" aria-labelledby="propose-title">
-      <h2 id="propose-title" class="section-title">Proponer un intercambio</h2>
+      <h2 id="propose-title" class="pk-section-title">Proponer un intercambio</h2>
       @if (candidates().length) {
       <p class="text">Tu turno es el {{ me()?.turnNumber }}. Elige con quién quieres cambiarlo.</p>
       <ion-list [inset]="true">
@@ -150,7 +189,7 @@
     </section>
     } @if (history().length) {
     <section class="section" aria-labelledby="history-title">
-      <h2 id="history-title" class="section-title">Intercambios</h2>
+      <h2 id="history-title" class="pk-section-title">Intercambios</h2>
       <ion-list [inset]="true">
         @for (h of history(); track h.id; let last = $last) {
         <ion-item [lines]="last ? 'none' : undefined">

@@ -1,4 +1,4 @@
-import { formatDate, multiplyAmount, plural, sumAmounts } from './format';
+import { formatDate, formatDateTime, multiplyAmount, plural, sumAmounts } from './format';
 
 describe('formatDate', () => {
   it('no corre la fecha un día por la zona horaria', () => {
@@ -8,6 +8,20 @@ describe('formatDate', () => {
 
   it('devuelve vacío si la fecha no es válida', () => {
     expect(formatDate('no-es-fecha')).toBe('');
+  });
+
+  it('muestra los momentos con hora en la zona horaria local', () => {
+    const moment = '2026-11-20T02:30:00.000Z';
+    expect(formatDate(moment)).toMatch(new RegExp(`^${new Date(moment).getDate()} `));
+  });
+});
+
+describe('formatDateTime', () => {
+  it('incluye la hora local', () => {
+    const moment = '2026-11-20T02:30:00.000Z';
+    const hour = String(new Date(moment).getHours()).padStart(2, '0');
+    expect(formatDateTime(moment)).toContain(`${hour}:30`);
+    expect(formatDateTime('x')).toBe('');
   });
 });
 

@@ -35,7 +35,8 @@
             ],
             "styles": ["src/global.scss", "src/theme/variables.scss"],
             "scripts": [],
-            "browser": "src/main.ts"
+            "browser": "src/main.ts",
+            "allowedCommonJsDependencies": ["qrcode"]
           },
           "configurations": {
             "production": {
@@ -71,6 +72,14 @@
             },
             "ci": {
               "progress": false
+            },
+            "real": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.real.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
@@ -86,6 +95,10 @@
             },
             "ci": {
               "progress": false
+            },
+            "real": {
+              "buildTarget": "app:build:development,real",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"
@@ -108,19 +121,15 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html",
-              "e2e/**/*.ts",
-              "playwright.config.ts"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html", "e2e/**/*.ts", "playwright.config.ts"]
           }
         }
       }
     }
   },
   "cli": {
-    "schematicCollections": ["@ionic/angular-toolkit"]
+    "schematicCollections": ["@ionic/angular-toolkit"],
+    "analytics": "c0316398-dd60-4296-af6f-0282c29ef082"
   },
   "schematics": {
     "@ionic/angular-toolkit:component": {

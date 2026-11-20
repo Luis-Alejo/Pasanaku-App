@@ -4,7 +4,15 @@ import { GroupsApi } from '@core/data/groups.api';
 import type { Contribution, Group, TurnSwap } from '@core/models/domain.models';
 import { todayIso } from '@shared/utils/date';
 
-import { activeGroups, firstName, nextPayout, pendingPayments, todos } from './home-view';
+import {
+  activeGroups,
+  finishedGroups,
+  firstName,
+  nextPayout,
+  ongoingGroups,
+  pendingPayments,
+  todos,
+} from './home-view';
 
 type LoadState = 'idle' | 'loading' | 'loaded' | 'error';
 
@@ -17,6 +25,7 @@ export class HomeStore {
   private readonly _groups = signal<Group[]>([]);
   private readonly _contributions = signal<Record<string, Contribution[]>>({});
   private readonly _swaps = signal<Record<string, TurnSwap[]>>({});
+  private readonly _invitations = signal<Group[]>([]);
   private readonly _state = signal<LoadState>('idle');
 
   readonly loading = computed(() => this._state() === 'loading');
@@ -29,8 +38,12 @@ export class HomeStore {
   readonly hasGroups = computed(() => this._groups().length > 0);
   readonly pending = computed(() => pendingPayments(this._groups(), this._contributions(), this.userId(), todayIso()));
   readonly payout = computed(() => nextPayout(this._groups(), this.userId()));
-  readonly todos = computed(() => todos(this._groups(), this._swaps(), this.userId()));
+  readonly todos = computed(() => todos(this._groups(), this._swaps(), this.userId(), this._invitations()));
   readonly active = computed(() => activeGroups(this._groups()));
+  /** Todos los grupos que no terminaron (también los que suman miembros). */
+  readonly ongoing = computed(() => ongoingGroups(this._groups()));
+  /** Grupos que ya terminaron su ciclo. */
+  readonly finished = computed(() => finishedGroups(this._groups()));
 
   /** Carga (o refresca) el resumen. El spinner solo se usa la primera vez. */
   async load(): Promise<void> {
@@ -38,7 +51,11 @@ export class HomeStore {
       this._state.set('loading');
     }
     try {
-      const groups = await this.api.getMyGroups(this.userId());
+      const [groups, invitations] = await Promise.all([
+        this.api.getMyGroups(this.userId()),
+        this.api.getInvitations().catch(() => []),
+      ]);
+      this._invitations.set(invitations);
       // Aportes de los grupos en curso y propuestas de los que pueden tener intercambios.
       const withRounds = groups.filter((g) => g.status === 'ACTIVE');
       const withSwaps = groups.filter((g) => g.turnMode === 'AGREEMENT' && g.status !== 'COMPLETED');

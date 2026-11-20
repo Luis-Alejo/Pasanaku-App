@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { MOCK_ASSETS, MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from '@core/data/groups.mock';
+import { ApiError, UNKNOWN_ERROR_MESSAGE, toApiError } from '@core/graphql/api-error';
 import type {
   Asset,
   ContributeResult,
@@ -7,24 +8,77 @@ import type {
   CreateGroupInput,
   Group,
   Payout,
+  QrPayment,
   Round,
   TurnSwap,
   User,
 } from '@core/models/domain.models';
 import { ContributionError, JoinGroupError, TurnError } from '@core/models/domain.models';
 import { environment } from '@env/environment';
+import type { GroupDetailQuery, GroupSummaryFieldsFragment } from '@gql';
+import {
+  CancelGroupGQL,
+  CreateGroupGQL,
+  GroupDetailGQL,
+  GroupPreviewGQL,
+  InviteMemberGQL,
+  InitiateQrPaymentGQL,
+  JoinGroupGQL,
+  MyGroupsGQL,
+  MyInvitationsGQL,
+  PayArrearsGQL,
+  PayRoundGQL,
+  PublicGroupsGQL,
+  SetTurnOrderGQL,
+  SimulateQrPaymentGQL,
+  StartGroupGQL,
+  UpdateGroupGQL,
+} from '@gql';
 import { addDays, addMonths, todayIso } from '@shared/utils/date';
 import { multiplyAmount } from '@shared/utils/format';
+import type { Observable } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
+import {
+  USDC_ASSET,
+  contributionsFromDetail,
+  groupFromDetail,
+  groupFromSummary,
+  hiddenPrivateGroup,
+  stroopsToAmount,
+} from './group-mappers';
 import { isSwappable } from './group-rules';
 
 /**
  * De dónde salen los datos de grupos. El store solo conoce esta interfaz:
- * hoy se usa la versión mock; en el paso 9 se agrega la de GraphQL y se elige
- * con `environment.useMocks`, sin tocar el store ni las pantallas.
+ * la versión mock o la de GraphQL, según `environment.useMocks`.
  */
 @Injectable({ providedIn: 'root', useFactory: createGroupsApi })
 export abstract class GroupsApi {
+  /** Con la API real, el organizador define el orden de cobro. */
+  readonly organizerControlsTurns: boolean = false;
+  /** Se pueden crear grupos con rondas de demostración (solo Testnet). */
+  readonly demoRoundsAvailable: boolean = false;
+
+  /** Se puede aportar con un QR en bolivianos (Pollar). */
+  readonly qrPaymentsAvailable: boolean = false;
+
+  /** Pide un QR en bolivianos para el aporte de la ronda en curso o para pagar un atraso. */
+  abstract startQrPayment(groupId: string, purpose: 'CONTRIBUTION' | 'ARREARS', round?: number): Promise<QrPayment>;
+  /** Solo en simulación: da el QR por pagado. */
+  abstract simulateQrPayment(reference: string): Promise<void>;
+  /** Espera a que el aporte del usuario en la ronda quede registrado (tras pagar con QR). */
+  abstract waitForContribution(groupId: string, userId: string, roundNumber: number): Promise<ContributeResult>;
+  /** Paga completa la deuda del usuario de esa ronda. Devuelve el grupo actualizado. */
+  abstract payArrears(groupId: string, userId: string, roundNumber: number): Promise<Group>;
+
+  /** Grupos a los que invitaron al usuario y todavía no se unió. */
+  abstract getInvitations(): Promise<Group[]>;
+  /** El organizador cambia el nombre (solo antes de empezar). */
+  abstract renameGroup(groupId: string, name: string): Promise<void>;
+  /** El organizador cancela el grupo (solo antes de empezar y sin otros miembros). */
+  abstract cancelGroup(groupId: string): Promise<void>;
+
   /** Grupos donde el usuario es miembro. */
   abstract getMyGroups(userId: string): Promise<Group[]>;
   /** Grupos públicos que todavía aceptan miembros (y donde el usuario no está). */
@@ -52,6 +106,10 @@ export abstract class GroupsApi {
    * POR CONFIRMAR con el contrato: quién puede disparar el sorteo.
    */
   abstract runDraw(groupId: string, userId: string): Promise<Group>;
+  /** El organizador fija el orden (ids de usuario) y el grupo empieza. */
+  abstract startWithOrder(groupId: string, userIds: string[]): Promise<Group>;
+  /** El organizador invita por celular a alguien ya registrado. */
+  abstract inviteByPhone(groupId: string, phone: string): Promise<void>;
   /** Modo acuerdo: el usuario propone a otro miembro cambiar sus turnos. */
   abstract proposeSwap(groupId: string, userId: string, toMemberId: string): Promise<TurnSwap>;
   /** El miembro que recibió la propuesta la acepta o la rechaza. */
@@ -70,11 +128,7 @@ export abstract class GroupsApi {
 }
 
 function createGroupsApi(): GroupsApi {
-  if (environment.useMocks) {
-    return new MockGroupsApi();
-  }
-  // Paso 9: devolver aquí la implementación GraphQL.
-  throw new Error('GroupsApi: falta la implementación GraphQL (paso 9). Activa useMocks.');
+  return environment.useMocks ? new MockGroupsApi() : inject(GraphqlGroupsApi);
 }
 
 /** Demora simulada para que los estados de carga se vean como con la API real. */
@@ -241,6 +295,70 @@ export class MockGroupsApi extends GroupsApi {
       startCycle(group);
     }
     return delay(group);
+  }
+
+  startWithOrder(): Promise<Group> {
+    return fail(new TurnError('NOT_ALLOWED'));
+  }
+
+  getInvitations(): Promise<Group[]> {
+    return delay([]);
+  }
+
+  override readonly qrPaymentsAvailable = true;
+  private readonly qrs = new Map<string, { groupId: string; result?: ContributeResult }>();
+
+  startQrPayment(groupId: string): Promise<QrPayment> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (!group) return fail(new ContributionError('NOT_FOUND'));
+    const reference = `mock_${this.nextId++}`;
+    this.qrs.set(reference, { groupId });
+    const rate = '6.96';
+    return delay({
+      reference,
+      amountBob: (Number(group.contributionAmount) * Number(rate)).toFixed(2),
+      exchangeRate: rate,
+      amountUsdc: group.contributionAmount,
+      payload: `pasanaku-mock://pay/${reference}`,
+      simulated: true,
+    });
+  }
+
+  async simulateQrPayment(reference: string): Promise<void> {
+    const qr = this.qrs.get(reference);
+    if (!qr) throw new ContributionError('NOT_FOUND');
+    const group = this.groups.find((g) => g.id === qr.groupId);
+    const me = group?.members.find((m) => m.userId === 'user-ana');
+    if (group && me) qr.result = await this.contribute(group.id, me.userId);
+  }
+
+  waitForContribution(groupId: string): Promise<ContributeResult> {
+    const found = [...this.qrs.values()].find((q) => q.groupId === groupId && q.result);
+    return found?.result ? Promise.resolve(found.result) : fail(new ContributionError('NOT_ACTIVE'));
+  }
+
+  payArrears(groupId: string): Promise<Group> {
+    const group = this.groups.find((g) => g.id === groupId);
+    return group ? delay(group) : fail(new ContributionError('NOT_FOUND'));
+  }
+
+  renameGroup(groupId: string, name: string): Promise<void> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (group) group.name = name;
+    return delay(undefined);
+  }
+
+  cancelGroup(groupId: string): Promise<void> {
+    const group = this.groups.find((g) => g.id === groupId);
+    if (group) {
+      group.status = 'COMPLETED';
+      group.cancelled = true;
+    }
+    return delay(undefined);
+  }
+
+  inviteByPhone(): Promise<void> {
+    return delay(undefined);
   }
 
   runDraw(groupId: string, userId: string): Promise<Group> {
@@ -429,5 +547,387 @@ export class MockGroupsApi extends GroupsApi {
       ).join('');
     } while (this.groups.some((g) => g.inviteCode === code));
     return code;
+  }
+}
+
+/** Rondas de demostración: 3 minutos y 30 s de gracia (el backend lo permite solo en Testnet). */
+const DEMO_ROUND_SECONDS = 180;
+const DEMO_GRACE_SECONDS = 30;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const DETAIL_MEMO_MS = 1500;
+/** El backend refleja los eventos de la cadena unos segundos después de cada transacción. */
+const SYNC_TIMEOUT_MS = 60_000;
+const SYNC_INTERVAL_MS = 2500;
+const TX_KEY = 'pk-tx:';
+
+type GroupDetailData = GroupDetailQuery['groupDetail'];
+
+async function apiData<T>(request: Observable<{ data?: T | null }>): Promise<T> {
+  let data: T | null | undefined;
+  try {
+    ({ data } = await firstValueFrom(request));
+  } catch (error) {
+    throw toApiError(error);
+  }
+  if (!data) {
+    throw new ApiError('unknown', UNKNOWN_ERROR_MESSAGE);
+  }
+  return data;
+}
+
+function joinError(error: unknown): unknown {
+  if (!(error instanceof ApiError)) return error;
+  if (error.kind === 'not-found') return new JoinGroupError('NOT_FOUND', error.message);
+  if (error.kind === 'forbidden') return new JoinGroupError('CLOSED', error.message);
+  if (error.kind === 'conflict') {
+    const code = /miembro/i.test(error.message) ? 'ALREADY_MEMBER' : /lleno/i.test(error.message) ? 'FULL' : 'CLOSED';
+    return new JoinGroupError(code, error.message);
+  }
+  return error;
+}
+
+function turnError(error: unknown): unknown {
+  return error instanceof ApiError && error.kind !== 'network' && error.kind !== 'unknown'
+    ? new TurnError(error.kind === 'not-found' ? 'NOT_FOUND' : 'NOT_ALLOWED', error.message)
+    : error;
+}
+
+function contributionError(error: unknown): unknown {
+  if (!(error instanceof ApiError)) return error;
+  if (error.kind === 'not-found') return new ContributionError('NOT_FOUND', error.message);
+  if (error.kind === 'forbidden') return new ContributionError('NOT_MEMBER', error.message);
+  if (error.kind === 'conflict') {
+    return new ContributionError(/pag|registrad/i.test(error.message) ? 'ALREADY_PAID' : 'NOT_ACTIVE', error.message);
+  }
+  return error;
+}
+
+/** Datos reales del backend. Las transacciones las firma él con la clave custodiada. */
+@Injectable({ providedIn: 'root' })
+export class GraphqlGroupsApi extends GroupsApi {
+  override readonly organizerControlsTurns = true;
+  override readonly demoRoundsAvailable = !!environment.demoRounds;
+  override readonly qrPaymentsAvailable = true;
+
+  private readonly myGroupsGql = inject(MyGroupsGQL);
+  private readonly publicGroupsGql = inject(PublicGroupsGQL);
+  private readonly detailGql = inject(GroupDetailGQL);
+  private readonly createGql = inject(CreateGroupGQL);
+  private readonly previewGql = inject(GroupPreviewGQL);
+  private readonly invitationsGql = inject(MyInvitationsGQL);
+  private readonly updateGql = inject(UpdateGroupGQL);
+  private readonly cancelGql = inject(CancelGroupGQL);
+  private readonly qrGql = inject(InitiateQrPaymentGQL);
+  private readonly simulateGql = inject(SimulateQrPaymentGQL);
+  private readonly arrearsGql = inject(PayArrearsGQL);
+  private readonly joinGql = inject(JoinGroupGQL);
+  private readonly inviteGql = inject(InviteMemberGQL);
+  private readonly orderGql = inject(SetTurnOrderGQL);
+  private readonly startGql = inject(StartGroupGQL);
+  private readonly payGql = inject(PayRoundGQL);
+
+  private readonly details = new Map<string, { at: number; request: Promise<GroupDetailData> }>();
+
+  /** Detalle del grupo; varias lecturas seguidas comparten la misma consulta. */
+  private detail(id: string, fresh = false): Promise<GroupDetailData> {
+    const memo = this.details.get(id);
+    if (!fresh && memo && Date.now() - memo.at < DETAIL_MEMO_MS) {
+      return memo.request;
+    }
+    const request = apiData(this.detailGql.fetch({ variables: { groupId: id }, fetchPolicy: 'no-cache' })).then(
+      (data) => data.groupDetail,
+    );
+    this.details.set(id, { at: Date.now(), request });
+    request.catch(() => this.details.delete(id));
+    return request;
+  }
+
+  /**
+   * Espera a que el backend refleje una transacción; si tarda, devuelve lo último.
+   * Quien acaba de unirse recibe "no encontrado" hasta que se registre como miembro.
+   */
+  private async waitFor(id: string, done: (group: GroupDetailData) => boolean): Promise<GroupDetailData> {
+    const limit = Date.now() + SYNC_TIMEOUT_MS;
+    let group: GroupDetailData | null = null;
+    for (;;) {
+      try {
+        group = await this.detail(id, true);
+        if (done(group)) return group;
+      } catch (error) {
+        if (!(error instanceof ApiError) || error.kind !== 'not-found') throw error;
+      }
+      if (Date.now() >= limit) {
+        if (group) return group;
+        throw new ApiError('unknown', 'La transacción se envió, pero el grupo tarda en actualizarse.');
+      }
+      await new Promise((resolve) => setTimeout(resolve, SYNC_INTERVAL_MS));
+    }
+  }
+
+  private async summaries(kind: 'mine' | 'public'): Promise<GroupSummaryFieldsFragment[]> {
+    if (kind === 'mine') {
+      return (await apiData(this.myGroupsGql.fetch({ fetchPolicy: 'no-cache' }))).myGroups;
+    }
+    return (await apiData(this.publicGroupsGql.fetch({ fetchPolicy: 'no-cache' }))).publicGroups;
+  }
+
+  override async getMyGroups(): Promise<Group[]> {
+    const mine = await this.summaries('mine');
+    return Promise.all(mine.map(async (g) => groupFromDetail(await this.detail(g.id))));
+  }
+
+  override async getPublicGroups(): Promise<Group[]> {
+    const [publics, mine] = await Promise.all([this.summaries('public'), this.summaries('mine')]);
+    const myIds = new Set(mine.map((g) => g.id));
+    return publics.filter((g) => !myIds.has(g.id) && g.memberCount < g.maxParticipants).map(groupFromSummary);
+  }
+
+  override async getGroup(id: string): Promise<Group | null> {
+    try {
+      return groupFromDetail(await this.detail(id));
+    } catch (error) {
+      if (!(error instanceof ApiError) || error.kind !== 'not-found') throw error;
+    }
+    // Solo los miembros ven el detalle; los demás, la vista previa (públicos o con invitación).
+    try {
+      const { groupPreview } = await apiData(
+        this.previewGql.fetch({ variables: { groupId: id }, fetchPolicy: 'no-cache' }),
+      );
+      return groupFromSummary(groupPreview);
+    } catch (error) {
+      if (error instanceof ApiError && error.kind === 'not-found') return null;
+      throw error;
+    }
+  }
+
+  override async getGroupByCode(code: string): Promise<Group | null> {
+    if (!UUID.test(code)) return null;
+    const id = code.toLowerCase();
+    return (await this.getGroup(id)) ?? hiddenPrivateGroup(id);
+  }
+
+  override async getContributions(groupId: string): Promise<Contribution[]> {
+    try {
+      return contributionsFromDetail(await this.detail(groupId), (round, member) =>
+        this.readTxHash(groupId, round, member),
+      );
+    } catch (error) {
+      if (error instanceof ApiError && error.kind === 'not-found') return [];
+      throw error;
+    }
+  }
+
+  override getAssets(): Promise<Asset[]> {
+    return Promise.resolve([USDC_ASSET]);
+  }
+
+  override async createGroup(input: CreateGroupInput, user: User): Promise<Group> {
+    const { createGroup } = await apiData(
+      this.createGql.mutate({
+        variables: {
+          input: {
+            name: input.name,
+            contributionUsdc: input.contributionAmount,
+            frequency: input.periodicity,
+            maxParticipants: input.memberCount,
+            isPublic: input.visibility === 'PUBLIC',
+            ...(input.demoRounds && this.demoRoundsAvailable
+              ? { roundDurationSeconds: DEMO_ROUND_SECONDS, graceDurationSeconds: DEMO_GRACE_SECONDS }
+              : {}),
+          },
+        },
+      }),
+    );
+    // El contrato no incluye al creador: entra como cualquier miembro.
+    return this.joinGroup(createGroup.id, user);
+  }
+
+  override async joinGroup(groupId: string, user: User): Promise<Group> {
+    try {
+      await apiData(this.joinGql.mutate({ variables: { groupId } }));
+    } catch (error) {
+      throw joinError(error);
+    }
+    return groupFromDetail(await this.waitFor(groupId, (g) => g.members.some((m) => m.userId === user.id)));
+  }
+
+  override async getInvitations(): Promise<Group[]> {
+    const { myInvitations } = await apiData(this.invitationsGql.fetch({ fetchPolicy: 'no-cache' }));
+    return myInvitations.map((g) => ({ ...groupFromSummary(g), invited: true }));
+  }
+
+  override async renameGroup(groupId: string, name: string): Promise<void> {
+    await apiData(this.updateGql.mutate({ variables: { input: { groupId, name } } }));
+    this.details.delete(groupId);
+  }
+
+  override async cancelGroup(groupId: string): Promise<void> {
+    await apiData(this.cancelGql.mutate({ variables: { groupId } }));
+    this.details.delete(groupId);
+  }
+
+  override async startQrPayment(
+    groupId: string,
+    purpose: 'CONTRIBUTION' | 'ARREARS',
+    round?: number,
+  ): Promise<QrPayment> {
+    try {
+      const { initiateQrPayment: qr } = await apiData(
+        this.qrGql.mutate({
+          variables: { input: { groupId, purpose, round, idempotencyKey: crypto.randomUUID() } },
+        }),
+      );
+      return {
+        reference: qr.pollarReference,
+        amountBob: qr.amountBob,
+        exchangeRate: qr.exchangeRate,
+        amountUsdc: stroopsToAmount(qr.amountStroops),
+        payload: qr.qrPayload,
+        imageBase64: qr.qrImageBase64 ?? undefined,
+        expiresAt: qr.expiresAt ?? undefined,
+        simulated: qr.mock,
+      };
+    } catch (error) {
+      throw contributionError(error);
+    }
+  }
+
+  override async simulateQrPayment(reference: string): Promise<void> {
+    await apiData(this.simulateGql.mutate({ variables: { reference } }));
+  }
+
+  override async waitForContribution(groupId: string, userId: string, roundNumber: number): Promise<ContributeResult> {
+    const paid = (g: GroupDetailData) => {
+      const member = g.members.find((m) => m.userId === userId);
+      return g.rounds.some(
+        (r) =>
+          r.roundNumber === roundNumber && r.payments.some((p) => p.memberId === member?.id && p.status !== 'PENDING'),
+      );
+    };
+    const after = await this.waitFor(groupId, paid);
+    if (!paid(after)) {
+      throw new ContributionError(
+        'NOT_ACTIVE',
+        'Todavía no recibimos tu pago. Lo verás aquí cuando el banco lo confirme.',
+      );
+    }
+    const member = after.members.find((m) => m.userId === userId);
+    const contribution = contributionsFromDetail(after).find(
+      (c) => c.roundNumber === roundNumber && c.memberId === member?.id,
+    );
+    if (!contribution) throw new ContributionError('NOT_MEMBER');
+    return { group: groupFromDetail(after), contribution };
+  }
+
+  override async payArrears(groupId: string, userId: string, roundNumber: number): Promise<Group> {
+    try {
+      await apiData(this.arrearsGql.mutate({ variables: { input: { groupId, round: roundNumber } } }));
+    } catch (error) {
+      throw contributionError(error);
+    }
+    const settled = (g: GroupDetailData) => {
+      const member = g.members.find((m) => m.userId === userId);
+      const round = g.rounds.find((r) => r.roundNumber === roundNumber);
+      return !g.debts.some(
+        (d) => d.debtorMemberId === member?.id && d.originalRoundId === round?.id && d.status !== 'SETTLED',
+      );
+    };
+    return groupFromDetail(await this.waitFor(groupId, settled));
+  }
+
+  override async inviteByPhone(groupId: string, phone: string): Promise<void> {
+    await apiData(this.inviteGql.mutate({ variables: { input: { groupId, phone } } }));
+  }
+
+  override getTurnSwaps(): Promise<TurnSwap[]> {
+    return Promise.resolve([]);
+  }
+
+  override chooseTurn(): Promise<Group> {
+    return Promise.reject(new TurnError('NOT_ALLOWED'));
+  }
+
+  override proposeSwap(): Promise<TurnSwap> {
+    return Promise.reject(new TurnError('NOT_ALLOWED'));
+  }
+
+  override respondSwap(): Promise<TurnSwap> {
+    return Promise.reject(new TurnError('NOT_ALLOWED'));
+  }
+
+  /** El sorteo lo hace la app: mezcla a los miembros y envía ese orden. */
+  override async runDraw(groupId: string): Promise<Group> {
+    const ids = (await this.detail(groupId, true)).members.map((m) => m.userId);
+    for (let i = ids.length - 1; i > 0; i--) {
+      const j = crypto.getRandomValues(new Uint32Array(1))[0] % (i + 1);
+      [ids[i], ids[j]] = [ids[j], ids[i]];
+    }
+    return this.startWithOrder(groupId, ids);
+  }
+
+  override async startWithOrder(groupId: string, userIds: string[]): Promise<Group> {
+    try {
+      await apiData(this.orderGql.mutate({ variables: { input: { groupId, userIds } } }));
+      await apiData(this.startGql.mutate({ variables: { groupId } }));
+    } catch (error) {
+      throw turnError(error);
+    }
+    return groupFromDetail(await this.waitFor(groupId, (g) => g.status === 'ACTIVE' && g.rounds.length > 0));
+  }
+
+  override async contribute(groupId: string, userId: string): Promise<ContributeResult> {
+    let before: GroupDetailData;
+    let txHash: string;
+    try {
+      before = await this.detail(groupId, true);
+      ({
+        payRound: { txHash },
+      } = await apiData(this.payGql.mutate({ variables: { groupId } })));
+    } catch (error) {
+      throw contributionError(error);
+    }
+    const member = before.members.find((m) => m.userId === userId);
+    const roundNumber = before.currentRound;
+    if (!member) throw new ContributionError('NOT_MEMBER');
+    this.saveTxHash(groupId, roundNumber, member.id, txHash);
+
+    const after = await this.waitFor(groupId, (g) =>
+      g.rounds.some(
+        (r) =>
+          r.roundNumber === roundNumber && r.payments.some((p) => p.memberId === member.id && p.status !== 'PENDING'),
+      ),
+    );
+    const contribution = contributionsFromDetail(after, (round, id) => this.readTxHash(groupId, round, id)).find(
+      (c) => c.roundNumber === roundNumber && c.memberId === member.id,
+    );
+    return {
+      group: groupFromDetail(after),
+      contribution: contribution ?? {
+        id: `${roundNumber}-${member.id}`,
+        groupId,
+        memberId: member.id,
+        roundNumber,
+        amount: stroopsToAmount(after.contributionStroops),
+        status: 'PAID',
+        txHash,
+      },
+    };
+  }
+
+  // El backend todavía no expone el hash de cada aporte: se recuerda el propio.
+  private readTxHash(groupId: string, round: number, memberId: string): string | undefined {
+    try {
+      return localStorage.getItem(`${TX_KEY}${groupId}:${round}:${memberId}`) ?? undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private saveTxHash(groupId: string, round: number, memberId: string, txHash: string): void {
+    try {
+      localStorage.setItem(`${TX_KEY}${groupId}:${round}:${memberId}`, txHash);
+    } catch {
+      // Solo se pierde el enlace al explorador.
+    }
   }
 }

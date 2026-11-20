@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { JoinCodeService } from '@core/services/join-code.service';
+import { NotificationsService } from '@core/services/notifications.service';
 import { ThemeService } from '@core/services/theme.service';
 import { IonButton, IonContent, IonIcon, IonSpinner } from '@ionic/angular';
 import { MoneyPipe } from '@shared/pipes/money.pipe';
@@ -10,8 +11,10 @@ import { AmountCardComponent } from '@shared/ui/amount-card/amount-card.componen
 import { AvatarComponent } from '@shared/ui/avatar/avatar.component';
 import { BrandHeaderComponent } from '@shared/ui/brand-header/brand-header.component';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
+import { IconBadgeButtonComponent } from '@shared/ui/icon-badge-button/icon-badge-button.component';
 import type { QuickAction } from '@shared/ui/quick-actions/quick-actions.component';
 import { QuickActionsComponent } from '@shared/ui/quick-actions/quick-actions.component';
+import { ThemeToggleComponent } from '@shared/ui/theme-toggle/theme-toggle.component';
 import { formatDate } from '@shared/utils/format';
 import {
   addCircleOutline,
@@ -21,20 +24,25 @@ import {
   diceOutline,
   enterOutline,
   handLeftOutline,
-  moonOutline,
+  mailOutline,
   peopleOutline,
-  sunnyOutline,
   swapHorizontalOutline,
   walletOutline,
+  notificationsOutline,
+  alertCircleOutline,
+  checkmarkDoneOutline,
 } from 'ionicons/icons';
 
 import type { TodoKind } from '../../data-access/home-view';
+import { groupStatusText } from '../../data-access/home-view';
 import { HomeStore } from '../../data-access/home.store';
 
 const TODO_ICONS: Record<TodoKind, string> = {
   swap: swapHorizontalOutline,
   'choose-turn': handLeftOutline,
   draw: diceOutline,
+  invite: mailOutline,
+  debt: alertCircleOutline,
 };
 
 @Component({
@@ -54,11 +62,14 @@ const TODO_ICONS: Record<TodoKind, string> = {
     BrandHeaderComponent,
     EmptyStateComponent,
     QuickActionsComponent,
+    ThemeToggleComponent,
+    IconBadgeButtonComponent,
   ],
 })
 export class HomePage {
   protected readonly store = inject(HomeStore);
   protected readonly theme = inject(ThemeService);
+  protected readonly notifications = inject(NotificationsService);
   private readonly auth = inject(AuthService);
   private readonly joinCode = inject(JoinCodeService);
 
@@ -66,12 +77,13 @@ export class HomePage {
   protected readonly icons = {
     error: cloudOfflineOutline,
     ok: checkmarkCircleOutline,
-    sun: sunnyOutline,
-    moon: moonOutline,
     group: peopleOutline,
     payout: cashOutline,
+    bell: notificationsOutline,
+    done: checkmarkDoneOutline,
   };
   protected readonly formatDate = formatDate;
+  protected readonly groupStatusText = groupStatusText;
   protected readonly userName = computed(() => this.auth.currentUser()?.displayName ?? '');
 
   /**
@@ -94,7 +106,20 @@ export class HomePage {
       };
     }
     const p = this.store.payout();
-    if (p) {
+    if (!p) {
+      // Sin aportes ni cobros todavía: el grupo que se está armando.
+      const g = this.store.ongoing()[0];
+      return g
+        ? {
+            label: 'Aporte por ronda · ' + g.name,
+            amount: g.contributionAmount,
+            asset: g.asset,
+            meta: g.status === 'FORMING' ? 'Sumando miembros' : 'Definiendo turnos',
+            caption: groupStatusText(g),
+          }
+        : null;
+    }
+    {
       return {
         label: 'Tu próximo cobro · ' + p.group.name,
         amount: p.amount,
@@ -127,6 +152,7 @@ export class HomePage {
   /** Ionic: cada vez que la pestaña aparece, refresca el resumen y pinta la barra de estado en índigo. */
   ionViewWillEnter(): void {
     this.theme.setHeaderTone('brand');
+    void this.notifications.refreshCount();
     void this.store.load();
   }
 

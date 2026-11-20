@@ -26,7 +26,7 @@ export type GroupVisibility = 'PUBLIC' | 'PRIVATE';
 export type TurnMode = 'AGREEMENT' | 'DRAW';
 
 /** POR CONFIRMAR con backend: opciones exactas de periodicidad. */
-export type Periodicity = 'BIWEEKLY' | 'MONTHLY';
+export type Periodicity = 'WEEKLY' | 'BIWEEKLY' | 'MONTHLY';
 
 /**
  * Ciclo de vida: Creación → Incorporación de miembros → Asignación de turnos
@@ -110,6 +110,48 @@ export interface Group {
   /** Cuándo quedó definido el orden de cobro (elección completa o sorteo). */
   turnsAssignedAt?: string;
   createdAt: string;
+  /** Usuario que organiza el grupo (solo con la API real). */
+  organizerUserId?: string;
+  /** El orden de cobro lo define el organizador, no cada miembro. */
+  turnsByOrganizer?: boolean;
+  /** Quien no es miembro solo ve un resumen (o nada, si es privado). */
+  detailsHidden?: boolean;
+  /** Duración de cada ronda si es de demostración (minutos en vez de semanas). */
+  demoRoundSeconds?: number;
+  /** El organizador lo canceló antes de empezar. */
+  cancelled?: boolean;
+  /** El usuario tiene una invitación para unirse. */
+  invited?: boolean;
+  /** Deudas por aportes que no se pagaron a tiempo. */
+  debts?: Debt[];
+}
+
+/** Lo que un miembro quedó debiendo al que cobró una ronda (aporte no pagado a tiempo). */
+export interface Debt {
+  id: string;
+  roundNumber: number;
+  debtorMemberId: string;
+  beneficiaryMemberId: string;
+  original: string;
+  remaining: string;
+  settled: boolean;
+  lastTxHash?: string;
+}
+
+/** Cobro por QR en bolivianos (Pollar). El backend lo convierte a USDC. */
+export interface QrPayment {
+  reference: string;
+  amountBob: string;
+  /** Bolivianos por 1 USDC. */
+  exchangeRate: string;
+  /** Lo que se acredita en USDC. */
+  amountUsdc: string;
+  /** Texto del QR (si no viene la imagen, la app lo dibuja). */
+  payload: string;
+  imageBase64?: string;
+  expiresAt?: string;
+  /** Pago simulado (Testnet): se confirma con un botón. */
+  simulated: boolean;
 }
 
 /** Datos para crear un grupo (formulario "Crear grupo"). */
@@ -123,13 +165,19 @@ export interface CreateGroupInput {
   memberCount: number;
   visibility: GroupVisibility;
   turnMode: TurnMode;
+  /** Rondas de pocos minutos para probar el ciclo completo (solo Testnet). */
+  demoRounds?: boolean;
 }
 
 /** Por qué no se pudo unir alguien a un grupo. */
 export type JoinGroupErrorCode = 'NOT_FOUND' | 'ALREADY_MEMBER' | 'FULL' | 'CLOSED';
 
 export class JoinGroupError extends Error {
-  constructor(readonly code: JoinGroupErrorCode) {
+  constructor(
+    readonly code: JoinGroupErrorCode,
+    /** Mensaje del backend, si lo hay. */
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'JoinGroupError';
   }
@@ -146,7 +194,11 @@ export type TurnErrorCode =
   | 'SWAP_NOT_ALLOWED';
 
 export class TurnError extends Error {
-  constructor(readonly code: TurnErrorCode) {
+  constructor(
+    readonly code: TurnErrorCode,
+    /** Mensaje del backend, si lo hay. */
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'TurnError';
   }
@@ -172,16 +224,25 @@ export interface ContributeResult {
 export type ContributionErrorCode = 'NOT_FOUND' | 'NOT_MEMBER' | 'NOT_ACTIVE' | 'ALREADY_PAID';
 
 export class ContributionError extends Error {
-  constructor(readonly code: ContributionErrorCode) {
+  constructor(
+    readonly code: ContributionErrorCode,
+    /** Mensaje del backend, si lo hay. */
+    readonly detail?: string,
+  ) {
     super(code);
     this.name = 'ContributionError';
   }
 }
 
+/** Verificación de identidad. Un usuario nuevo empieza en PENDING. */
+export type KycStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+
 /** Usuario con sesión iniciada. */
 export interface User {
   id: string;
   displayName: string;
-  email: string;
+  phone: string;
+  email: string | null;
   walletAddress: string;
+  kycStatus: KycStatus;
 }

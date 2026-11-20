@@ -9,6 +9,10 @@ export const environment = {
    * false: usan la API GraphQL del backend (paso 9).
    */
   useMocks: true,
+  /** Endpoint GraphQL del backend. POR CONFIRMAR: URL accesible desde el celular. */
+  apiUrl: 'http://localhost:3000/graphql',
+  /** Ofrecer rondas de demostración al crear grupos (solo con la API real en Testnet). */
+  demoRounds: false,
   stellar: {
     network: 'testnet',
     /** Explorador público de Testnet; se le agrega el hash. POR CONFIRMAR con el equipo. */

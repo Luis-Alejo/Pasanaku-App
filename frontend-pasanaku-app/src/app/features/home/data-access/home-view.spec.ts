@@ -1,7 +1,15 @@
 import { MOCK_CONTRIBUTIONS, MOCK_GROUPS, MOCK_TURN_SWAPS } from '@core/data/groups.mock';
 import type { Contribution, TurnSwap } from '@core/models/domain.models';
 
-import { activeGroups, firstName, nextPayout, pendingPayments, todos } from './home-view';
+import {
+  activeGroups,
+  firstName,
+  groupStatusText,
+  nextPayout,
+  ongoingGroups,
+  pendingPayments,
+  todos,
+} from './home-view';
 
 const ANA = 'user-ana';
 const TODAY = '2026-11-18';
@@ -39,5 +47,13 @@ describe('home-view', () => {
   it('filtra los grupos en curso y saluda por el primer nombre', () => {
     expect(activeGroups(mine).map((g) => g.name)).toEqual(['Ahorro compañeros de oficina', 'Pasanaku familia Quispe']);
     expect(firstName('  Ana Quispe Mamani ')).toBe('Ana');
+  });
+
+  it('muestra también los grupos que todavía suman miembros', () => {
+    const ongoing = ongoingGroups(mine);
+    expect(ongoing.every((g) => g.status !== 'COMPLETED')).toBe(true);
+    expect(ongoing[0].status).toBe('ACTIVE');
+    const forming = { ...mine[0], status: 'FORMING' as const, memberCount: 4, members: mine[0].members.slice(0, 1) };
+    expect(groupStatusText(forming)).toBe('1 de 4 miembros · faltan 3');
   });
 });

@@ -1,0 +1,26 @@
+query MyNotifications {
+  myNotifications(limit: 30) {
+    id
+    type
+    title
+    message
+    groupId
+    isRead
+    createdAt
+  }
+}
+
+query UnreadNotificationsCount {
+  unreadNotificationsCount
+}
+
+mutation MarkNotificationAsRead($id: ID!) {
+  markNotificationAsRead(notificationId: $id) {
+    id
+    isRead
+  }
+}
+
+mutation MarkAllNotificationsAsRead {
+  markAllNotificationsAsRead
+}
