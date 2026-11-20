@@ -271,6 +271,19 @@ export class StellarService implements WalletKeyGenerator, OnModuleInit {
   async submitAndConfirm(
     tx: Transaction | FeeBumpTransaction,
   ): Promise<ConfirmedTransaction> {
+    const confirmed = await this.sendAndSettle(tx);
+
+    // Las invocaciones Soroban necesitan el valor de retorno (p. ej. el ID del contrato desplegado).
+    // Solo el RPC lo entrega; si la confirmación llegó por otra vía, se espera a que el RPC lo tenga.
+    if (!confirmed.returnValue && this.isSorobanInvocation(tx)) {
+      confirmed.returnValue = await this.recoverReturnValue(confirmed.hash);
+    }
+    return confirmed;
+  }
+
+  private async sendAndSettle(
+    tx: Transaction | FeeBumpTransaction,
+  ): Promise<ConfirmedTransaction> {
     const hash = Buffer.from(tx.hash()).toString('hex');
     let lastError: unknown;
 
@@ -389,17 +402,23 @@ export class StellarService implements WalletKeyGenerator, OnModuleInit {
           resultCode: this.resultCodeOf(response.resultXdr),
         };
       }
+      // El RPC respondió y aún no la ve: seguir esperando al RPC. Horizon no trae el valor de
+      // retorno (ya no envía result_meta_xdr) y confirmar por ahí dejaba sin ID al desplegar.
+      return { status: 'NOT_FOUND' };
     } catch (error) {
       rpcError = error;
     }
 
+    // Solo si el RPC NO respondió (error de red) se consulta Horizon como respaldo
     try {
       const record = await this.horizon.transactions().transaction(hash).call();
       if (record.successful) {
         return {
           status: 'SUCCESS',
           ledger: record.ledger_attr,
-          returnValue: this.returnValueFromMeta(record.result_meta_xdr),
+          returnValue: record.result_meta_xdr
+            ? this.returnValueFromMeta(record.result_meta_xdr)
+            : undefined,
         };
       }
       return {
@@ -413,6 +432,36 @@ export class StellarService implements WalletKeyGenerator, OnModuleInit {
       if (rpcError) throw rpcError;
       return { status: 'NOT_FOUND' };
     }
+  }
+
+  private isSorobanInvocation(tx: Transaction | FeeBumpTransaction): boolean {
+    const inner = tx instanceof FeeBumpTransaction ? tx.innerTransaction : tx;
+    return inner.operations.some(
+      (operation) => operation.type === 'invokeHostFunction',
+    );
+  }
+
+  /** Espera (hasta ~30 s) a que el RPC entregue el valor de retorno de una tx ya confirmada. */
+  private async recoverReturnValue(
+    hash: string,
+  ): Promise<xdr.ScVal | undefined> {
+    for (let attempt = 0; attempt < 30; attempt++) {
+      try {
+        const response = await this.server.getTransaction(hash);
+        if (
+          response.status === rpc.Api.GetTransactionStatus.SUCCESS &&
+          response.returnValue
+        ) {
+          return response.returnValue;
+        }
+      } catch (error) {
+        this.logger.warn(
+          `No se pudo leer el retorno de ${hash}: ${(error as Error).message}`,
+        );
+      }
+      await sleep(CONFIRM_POLL_MS);
+    }
+    return undefined;
   }
 
   /**

@@ -41,6 +41,9 @@ export class RoundPayment {
   @Column({ type: 'timestamptz', nullable: true })
   paidAt: Date | null;
 
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  txHash: string | null;
+
   @CreateDateColumn({ type: 'timestamptz' })
   createdAt: Date;
 

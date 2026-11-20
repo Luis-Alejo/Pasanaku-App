@@ -33,6 +33,7 @@ import {
   InviteMemberInput,
   PayArrearsInput,
   SetTurnOrderInput,
+  UpdateGroupInput,
 } from './dto/group.inputs.js';
 import { GroupMember } from './entities/group-member.entity.js';
 import { MemberDebt } from './entities/member-debt.entity.js';
@@ -41,6 +42,7 @@ import { RoundPayment } from './entities/round-payment.entity.js';
 import { Round } from './entities/round.entity.js';
 import { chainCall, chainErrorCode } from './groups.errors.js';
 import { applyQueueOrder, protectedTurnSlots } from './utils/queue.util.js';
+import { GroupInvitation } from './entities/group-invitation.entity.js';
 
 const DEFAULT_GRACE_SECONDS = 3 * 24 * 60 * 60;
 const FREQUENCY_SECONDS: Record<Frequency, number> = {
@@ -49,7 +51,7 @@ const FREQUENCY_SECONDS: Record<Frequency, number> = {
   [Frequency.MONTHLY]: 30 * 24 * 60 * 60,
 };
 /** Margen del scheduler sobre el fin de gracia (el reloj del servidor no es el del ledger). */
-const SETTLEMENT_MARGIN_MS = 30_000;
+const SETTLEMENT_MARGIN_MS = 5_000;
 const BENIGN_SETTLE_CODES = [17, 18]; // TooEarly, InvalidState (ya liquidada): benignos para el scheduler
 
 type WithCount = PasanakuGroup & { memberCount: number };
@@ -75,6 +77,8 @@ export class GroupsService {
     private readonly stellar: StellarService,
     private readonly registry: SorobanRegistryService,
     private readonly pasanaku: SorobanPasanakuService,
+    @InjectRepository(GroupInvitation)
+    private readonly invitations: Repository<GroupInvitation>,
   ) {}
 
   // ───────────────────────────── Queries ─────────────────────────────
@@ -278,6 +282,10 @@ export class GroupsService {
     const receipt = await chainCall(() =>
       this.pasanaku.inviteMember(contractId, invitee.stellarPublicKey),
     );
+    await this.invitations.upsert({ groupId: group.id, userId: invitee.id }, [
+      'groupId',
+      'userId',
+    ]);
     return { txHash: receipt.txHash };
   }
 
@@ -304,6 +312,14 @@ export class GroupsService {
       throw new ConflictException('Ya eres miembro de este grupo.');
     if ((await this.members.countBy({ groupId })) >= group.maxParticipants) {
       throw new ConflictException('El grupo está lleno.');
+    }
+
+    if (
+      !group.isPublic &&
+      group.creatorId !== userId &&
+      !(await this.invitations.existsBy({ groupId, userId }))
+    ) {
+      throw new ForbiddenException('No tienes invitación para este grupo.');
     }
 
     const publicKey = user.stellarPublicKey;
@@ -619,5 +635,68 @@ export class GroupsService {
     return groups.map((g) =>
       Object.assign(g, { memberCount: counts.get(g.id) ?? 0 }),
     );
+  }
+
+  async groupPreview(userId: string, groupId: string) {
+    const group = await this.groups.findOneBy({ id: groupId });
+    if (!group) throw new NotFoundException('Grupo no encontrado.');
+    const [isMember, isInvited] = await Promise.all([
+      this.members.existsBy({ groupId, userId }),
+      this.invitations.existsBy({ groupId, userId }),
+    ]);
+    if (
+      !group.isPublic &&
+      !isMember &&
+      !isInvited &&
+      group.creatorId !== userId
+    ) {
+      throw new NotFoundException('Grupo no encontrado.');
+    }
+    const [g] = await this.withMemberCount([group]);
+    return { ...g, isMember, isInvited };
+  }
+
+  async myInvitations(userId: string): Promise<WithCount[]> {
+    const rows = await this.invitations.find({
+      where: { userId },
+      relations: { group: true },
+      order: { createdAt: 'DESC' },
+    });
+    return this.withMemberCount(
+      rows.map((r) => r.group).filter((g) => g.status === GroupStatus.OPEN),
+    );
+  }
+
+  async updateGroup(
+    userId: string,
+    input: UpdateGroupInput,
+  ): Promise<WithCount> {
+    const group = await this.ownedGroup(userId, input.groupId);
+    if (group.status !== GroupStatus.OPEN)
+      throw new ConflictException('Solo se puede editar un grupo abierto.');
+    const patch: Partial<PasanakuGroup> = {};
+    if (input.name !== undefined) patch.name = input.name;
+    if (input.description !== undefined) patch.description = input.description;
+    if (Object.keys(patch).length) await this.groups.update(group.id, patch);
+    return (await this.withMemberCount([Object.assign(group, patch)]))[0];
+  }
+
+  async cancelGroup(userId: string, groupId: string): Promise<WithCount> {
+    const group = await this.ownedGroup(userId, groupId);
+    if (group.status !== GroupStatus.OPEN)
+      throw new ConflictException('Solo se puede cancelar un grupo abierto.');
+    const onChain =
+      group.contractAddress && group.setupCompleted
+        ? (await this.pasanaku.getParticipants(group.contractAddress)).length
+        : 0;
+    const mirrored = await this.members.countBy({ groupId });
+    if (Math.max(onChain, mirrored) > 1) {
+      throw new ConflictException(
+        'No se puede cancelar un grupo con más de un miembro: las garantías están en el contrato.',
+      );
+    }
+    await this.groups.update(groupId, { status: GroupStatus.CANCELLED });
+    group.status = GroupStatus.CANCELLED;
+    return (await this.withMemberCount([group]))[0];
   }
 }

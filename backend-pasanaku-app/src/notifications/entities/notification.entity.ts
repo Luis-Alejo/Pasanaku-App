@@ -14,6 +14,7 @@ import type { PasanakuGroup } from '../../groups/entities/pasanaku-group.entity.
 
 @Entity('notifications')
 @Index('IDX_notifications_user_read_created', ['userId', 'isRead', 'createdAt'])
+@Index('UQ_notifications_dedupe_key', ['dedupeKey'], { unique: true })
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -53,4 +54,7 @@ export class Notification {
   })
   @JoinColumn({ name: 'groupId' })
   group: Relation<PasanakuGroup> | null;
+
+  @Column({ type: 'varchar', length: 160, nullable: true })
+  dedupeKey: string | null;
 }

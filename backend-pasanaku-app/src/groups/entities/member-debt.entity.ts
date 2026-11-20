@@ -41,6 +41,9 @@ export class MemberDebt {
   @Column({ type: 'bigint' })
   remainingAmountStroops: string;
 
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  lastPaymentTxHash: string | null;
+
   @Column({
     type: 'enum',
     enum: DebtStatus,

@@ -7,9 +7,11 @@ import {
   InviteMemberInput,
   PayArrearsInput,
   SetTurnOrderInput,
+  UpdateGroupInput,
 } from './dto/group.inputs.js';
 import {
   GroupDetailType,
+  GroupPreviewType,
   GroupSummaryType,
   TxResultType,
 } from './dto/group.types.js';
@@ -38,6 +40,16 @@ export class GroupsResolver {
   @Query(() => GroupDetailType)
   groupDetail(@CurrentUser('id') userId: string, @GroupId() groupId: string) {
     return this.groups.getGroupDetail(userId, groupId);
+  }
+
+  @Query(() => GroupPreviewType)
+  groupPreview(@CurrentUser('id') userId: string, @GroupId() groupId: string) {
+    return this.groups.groupPreview(userId, groupId);
+  }
+
+  @Query(() => [GroupSummaryType])
+  myInvitations(@CurrentUser('id') userId: string) {
+    return this.groups.myInvitations(userId);
   }
 
   @Mutation(() => GroupSummaryType)
@@ -93,5 +105,18 @@ export class GroupsResolver {
     @Args('input') input: PayArrearsInput,
   ) {
     return this.groups.payArrears(userId, input);
+  }
+
+  @Mutation(() => GroupSummaryType)
+  updateGroup(
+    @CurrentUser('id') userId: string,
+    @Args('input') input: UpdateGroupInput,
+  ) {
+    return this.groups.updateGroup(userId, input);
+  }
+
+  @Mutation(() => GroupSummaryType)
+  cancelGroup(@CurrentUser('id') userId: string, @GroupId() groupId: string) {
+    return this.groups.cancelGroup(userId, groupId);
   }
 }

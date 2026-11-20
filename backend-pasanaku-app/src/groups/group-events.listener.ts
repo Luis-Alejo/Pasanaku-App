@@ -26,6 +26,7 @@ import { PasanakuGroup } from './entities/pasanaku-group.entity.js';
 import { RoundPayment } from './entities/round-payment.entity.js';
 import { Round } from './entities/round.entity.js';
 import { applyQueueOrder } from './utils/queue.util.js';
+import { GroupInvitation } from './entities/group-invitation.entity.js';
 
 const OPTS = { suppressErrors: false } as const;
 const add = (a: string, b: string | bigint): string =>
@@ -53,6 +54,7 @@ export class GroupEventsListener {
     const m = e.manager;
     const user = await m.findOneBy(User, { stellarPublicKey: e.user });
     if (!user) throw new Error(`joined: usuario ${e.user} no existe en BD`);
+    await m.delete(GroupInvitation, { groupId: group.id, userId: user.id });
     if (await m.existsBy(GroupMember, { groupId: group.id, userId: user.id }))
       return;
     const order = (await m.countBy(GroupMember, { groupId: group.id })) + 1;
@@ -103,6 +105,7 @@ export class GroupEventsListener {
           ? RoundPaymentStatus.PAID
           : RoundPaymentStatus.PAID_IN_GRACE,
       paidAt: e.ledgerClosedAt,
+      txHash: e.txHash,
     });
     await m.update(GroupMember, member.id, {
       totalContributedStroops: add(member.totalContributedStroops, e.amount),
@@ -120,6 +123,7 @@ export class GroupEventsListener {
     if (payment.status !== RoundPaymentStatus.PENDING) return;
     await m.update(RoundPayment, payment.id, {
       status: RoundPaymentStatus.COVERED_BY_GUARANTEE,
+      txHash: e.txHash,
     });
     await m.update(GroupMember, member.id, {
       guaranteeBalanceStroops: sub(member.guaranteeBalanceStroops, e.amount),
@@ -155,6 +159,7 @@ export class GroupEventsListener {
     await m.update(RoundPayment, payment.id, {
       status: RoundPaymentStatus.EXEMPT,
       paidAt: e.ledgerClosedAt,
+      txHash: e.txHash,
     });
   }
 
@@ -300,6 +305,7 @@ export class GroupEventsListener {
         BigInt(remaining) === 0n
           ? DebtStatus.SETTLED
           : DebtStatus.PARTIALLY_PAID,
+      lastPaymentTxHash: e.txHash,
     });
     await m.update(GroupMember, debtor.id, {
       totalDebtStroops: sub(debtor.totalDebtStroops, e.amount),
