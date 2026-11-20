@@ -100,3 +100,18 @@ export class PayArrearsInput {
   @Matches(USDC_REGEX, { message: 'amountUsdc inválido' })
   amountUsdc?: string;
 }
+
+@InputType()
+export class UpdateGroupInput {
+  @Field(() => ID) @IsUUID() groupId: string;
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  @Length(3, 120)
+  name?: string;
+  @Field(() => String, { nullable: true })
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  description?: string;
+}

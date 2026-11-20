@@ -58,6 +58,7 @@ export class RoundPaymentType {
   @Field(() => ID) memberId: string;
   @Field(() => RoundPaymentStatus) status: RoundPaymentStatus;
   @Field(() => Date, { nullable: true }) paidAt: Date | null;
+  @Field(() => String, { nullable: true }) txHash: string | null;
 }
 
 @ObjectType('Round')
@@ -85,6 +86,7 @@ export class MemberDebtType {
   @Field(() => String) remainingAmountStroops: string;
   @Field(() => DebtStatus) status: DebtStatus;
   @Field(() => Date) createdAt: Date;
+  @Field(() => String, { nullable: true }) lastPaymentTxHash: string | null;
 }
 
 @ObjectType('GroupDetail')
@@ -92,4 +94,10 @@ export class GroupDetailType extends GroupSummaryType {
   @Field(() => [GroupMemberType]) members: GroupMemberType[];
   @Field(() => [RoundType]) rounds: RoundType[];
   @Field(() => [MemberDebtType]) debts: MemberDebtType[];
+}
+
+@ObjectType('GroupPreview')
+export class GroupPreviewType extends GroupSummaryType {
+  @Field(() => Boolean) isMember: boolean;
+  @Field(() => Boolean) isInvited: boolean;
 }
