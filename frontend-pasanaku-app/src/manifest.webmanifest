@@ -1,0 +1,20 @@
+{
+  "name": "Pasanaku",
+  "short_name": "Pasanaku",
+  "description": "El ahorro colectivo de siempre, con confianza programable.",
+  "id": "/",
+  "start_url": "/tabs/home",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "es",
+  "dir": "ltr",
+  "background_color": "#ffffff",
+  "theme_color": "#281c9d",
+  "categories": ["finance"],
+  "icons": [
+    { "src": "assets/icon/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icon/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
