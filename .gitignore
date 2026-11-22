@@ -1,0 +1,6 @@
+# Herramientas locales de agentes de IA y registros (no se suben)
+.agent/
+.agents/
+.claude/
+.gemini/
+.logs/

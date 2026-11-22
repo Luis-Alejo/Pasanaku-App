@@ -74,3 +74,8 @@ Thumbs.db
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Skills de agentes de IA (de terceros, solo para uso local)
+/.agents/
+/.claude/
+/skills-lock.json
