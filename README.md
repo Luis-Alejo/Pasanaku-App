@@ -24,7 +24,9 @@ Plataforma móvil de ahorro colectivo rotativo (**Pasanaku**) digitalizado sobre
 - [Reglas principales del protocolo](#reglas-principales-del-protocolo)
 - [Requisitos previos](#requisitos-previos)
 - [Instalación y ejecución local](#instalación-y-ejecución-local)
+- [Despliegue en testnet](#despliegue-en-testnet)
 - [Seguridad y privacidad](#seguridad-y-privacidad)
+- [Licencia](#licencia)
 
 ---
 
@@ -291,9 +293,47 @@ El playground de **GraphQL** estará disponible en:
 ### 3. Frontend (Ionic + Angular)
 
 ```bash
-cd frontend
+cd frontend-pasanaku-app
 npm install
 ionic serve
+```
+
+---
+
+## Despliegue en testnet
+
+Los contratos están desplegados en **Stellar Testnet**. Todo se puede verificar en [stellar.expert](https://stellar.expert/explorer/testnet).
+
+### Contratos
+
+| Contrato | ID en testnet | Explorador |
+| --- | --- | --- |
+| `ReputationRegistry` | `<REPUTATION_REGISTRY_ID>` | [Ver en stellar.expert](https://stellar.expert/explorer/testnet/contract/<REPUTATION_REGISTRY_ID>) |
+| `PasanakuContract` (grupo de demostración) | `<PASANAKU_CONTRACT_ID>` | [Ver en stellar.expert](https://stellar.expert/explorer/testnet/contract/<PASANAKU_CONTRACT_ID>) |
+| USDC de testnet (Stellar Asset Contract) | `<USDC_CONTRACT_ID>` | [Ver en stellar.expert](https://stellar.expert/explorer/testnet/contract/<USDC_CONTRACT_ID>) |
+
+Hash del WASM de `PasanakuContract` (cada grupo es una instancia de este código): `<PASANAKU_WASM_HASH>`
+
+### Un ciclo completo, transacción por transacción
+
+| Paso | Transacción |
+| --- | --- |
+| 1. Crear el grupo (despliegue de la instancia) | [`<HASH_CREAR_GRUPO>`](https://stellar.expert/explorer/testnet/tx/<HASH_CREAR_GRUPO>) |
+| 2. Unirse y depositar la garantía 1x | [`<HASH_UNIRSE>`](https://stellar.expert/explorer/testnet/tx/<HASH_UNIRSE>) |
+| 3. Aportar la cuota de la ronda | [`<HASH_APORTE>`](https://stellar.expert/explorer/testnet/tx/<HASH_APORTE>) |
+| 4. Desembolsar el pozo al beneficiario | [`<HASH_DESEMBOLSO>`](https://stellar.expert/explorer/testnet/tx/<HASH_DESEMBOLSO>) |
+| 5. Actualizar la reputación al cerrar el grupo | [`<HASH_REPUTACION>`](https://stellar.expert/explorer/testnet/tx/<HASH_REPUTACION>) |
+
+### Cómo reproducirlo
+
+```bash
+cd contracts/reputation_registry && stellar contract build
+stellar contract deploy --wasm target/wasm32v1-none/release/reputation_registry.wasm \
+  --source admin --network testnet -- --administrator <ADMIN_PUBLIC>
+
+cd ../pasanaku && stellar contract build
+stellar contract upload --wasm target/wasm32v1-none/release/pasanaku.wasm \
+  --source admin --network testnet
 ```
 
 ---
@@ -302,3 +342,9 @@ ionic serve
 
 - **Privacidad on-chain:** Ningún dato personal (nombres, números de teléfono, carnets de identidad o contactos de referencia) se almacena en la blockchain.
 - **Custodia cifrada:** Las llaves privadas de Stellar y los documentos de identidad se cifran con **AES-256-GCM** y se indexan mediante hashes HMAC en PostgreSQL sin exponerse jamás en la API GraphQL.
+
+---
+
+## Licencia
+
+Los contratos inteligentes de `contracts/` se publican bajo la licencia [MIT](contracts/LICENSE).
