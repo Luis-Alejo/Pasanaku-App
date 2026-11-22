@@ -5,6 +5,9 @@ fragment SessionUser on User {
   email
   stellarPublicKey
   kycStatus
+  reputationScore
+  completedGroups
+  defaultCount
 }
 
 mutation Login($input: LoginInput!) {

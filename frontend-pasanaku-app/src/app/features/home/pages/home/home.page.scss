@@ -4,6 +4,15 @@
   gap: 0.875rem;
 }
 
+.greeting-block {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
 .greeting {
   flex: 1 1 auto;
   min-width: 0;

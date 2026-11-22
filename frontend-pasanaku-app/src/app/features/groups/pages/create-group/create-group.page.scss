@@ -44,6 +44,10 @@ ion-item {
   font-weight: 600;
 }
 
+.option-help.warning {
+  color: var(--pk-badge-danger-fg);
+}
+
 .option-help {
   display: block;
   margin-top: 0.125rem;

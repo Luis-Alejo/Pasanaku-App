@@ -120,37 +120,37 @@ export type UpdateGroupInput = {
   name?: string | null | undefined;
 };
 
-export type SessionUserFragment = { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus };
+export type SessionUserFragment = { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus, reputationScore: number, completedGroups: number, defaultCount: number };
 
 export type LoginMutationVariables = Exact<{
   input: LoginInput;
 }>;
 
 
-export type LoginMutation = { login: { accessToken: string, user: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus } } };
+export type LoginMutation = { login: { accessToken: string, user: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus, reputationScore: number, completedGroups: number, defaultCount: number } } };
 
 export type RegisterMutationVariables = Exact<{
   input: RegisterInput;
 }>;
 
 
-export type RegisterMutation = { register: { accessToken: string, user: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus } } };
+export type RegisterMutation = { register: { accessToken: string, user: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus, reputationScore: number, completedGroups: number, defaultCount: number } } };
 
 export type MeQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type MeQuery = { me: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus } };
+export type MeQuery = { me: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus, reputationScore: number, completedGroups: number, defaultCount: number } };
 
 export type SubmitKycMutationVariables = Exact<{
   input: SubmitKycInput;
 }>;
 
 
-export type SubmitKycMutation = { submitKyc: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus } };
+export type SubmitKycMutation = { submitKyc: { id: string, fullName: string, phone: string, email: string | null, stellarPublicKey: string, kycStatus: KycStatus, reputationScore: number, completedGroups: number, defaultCount: number } };
 
 export type GroupSummaryFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string };
 
-export type GroupDetailFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }>, debts: Array<{ id: string, debtorMemberId: string, beneficiaryMemberId: string, originalRoundId: string, originalAmountStroops: string, remainingAmountStroops: string, status: DebtStatus, lastPaymentTxHash: string | null }> };
+export type GroupDetailFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, reputationScore: number, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }>, debts: Array<{ id: string, debtorMemberId: string, beneficiaryMemberId: string, originalRoundId: string, originalAmountStroops: string, remainingAmountStroops: string, status: DebtStatus, lastPaymentTxHash: string | null }> };
 
 export type GroupPreviewFieldsFragment = { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, isInvited: boolean, isMember: boolean };
 
@@ -195,7 +195,7 @@ export type GroupDetailQueryVariables = Exact<{
 }>;
 
 
-export type GroupDetailQuery = { groupDetail: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }>, debts: Array<{ id: string, debtorMemberId: string, beneficiaryMemberId: string, originalRoundId: string, originalAmountStroops: string, remainingAmountStroops: string, status: DebtStatus, lastPaymentTxHash: string | null }> } };
+export type GroupDetailQuery = { groupDetail: { id: string, name: string, creatorId: string, contributionStroops: string, frequency: Frequency, maxParticipants: number, memberCount: number, isPublic: boolean, status: GroupStatus, currentRound: number, roundDurationSeconds: number, createdAt: string, members: Array<{ id: string, userId: string, fullName: string, reputationScore: number, initialTurnOrder: number, currentQueuePosition: number, hasReceivedPayout: boolean, joinedAt: string }>, rounds: Array<{ id: string, roundNumber: number, deadline: string, isSettled: boolean, beneficiaryMemberId: string | null, settleTxHash: string | null, settledAt: string | null, payments: Array<{ id: string, memberId: string, status: RoundPaymentStatus, paidAt: string | null, txHash: string | null }> }>, debts: Array<{ id: string, debtorMemberId: string, beneficiaryMemberId: string, originalRoundId: string, originalAmountStroops: string, remainingAmountStroops: string, status: DebtStatus, lastPaymentTxHash: string | null }> } };
 
 export type CreateGroupMutationVariables = Exact<{
   input: CreateGroupInput;
@@ -290,6 +290,9 @@ export const SessionUserFragmentDoc = gql`
   email
   stellarPublicKey
   kycStatus
+  reputationScore
+  completedGroups
+  defaultCount
 }
     `;
 export const GroupSummaryFieldsFragmentDoc = gql`
@@ -326,6 +329,7 @@ export const GroupDetailFieldsFragmentDoc = gql`
     id
     userId
     fullName
+    reputationScore
     initialTurnOrder
     currentQueuePosition
     hasReceivedPayout

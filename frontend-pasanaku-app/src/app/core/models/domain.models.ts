@@ -40,6 +40,8 @@ export interface Member {
   displayName: string;
   /** Cuenta Stellar pública (G...). Nunca una clave secreta. */
   walletAddress: string;
+  /** Reputación (100 al empezar, hasta 200). Puede faltar con datos de prueba. */
+  reputation?: number;
   /** Posición en el orden de cobro; `null` mientras no se asignan turnos. */
   turnNumber: number | null;
   joinedAt: string;
@@ -170,7 +172,7 @@ export interface CreateGroupInput {
 }
 
 /** Por qué no se pudo unir alguien a un grupo. */
-export type JoinGroupErrorCode = 'NOT_FOUND' | 'ALREADY_MEMBER' | 'FULL' | 'CLOSED';
+export type JoinGroupErrorCode = 'NOT_FOUND' | 'ALREADY_MEMBER' | 'FULL' | 'CLOSED' | 'LOW_REPUTATION';
 
 export class JoinGroupError extends Error {
   constructor(
@@ -245,4 +247,8 @@ export interface User {
   email: string | null;
   walletAddress: string;
   kycStatus: KycStatus;
+  /** Reputación (100 al empezar, hasta 200). */
+  reputation?: number;
+  completedGroups?: number;
+  defaultCount?: number;
 }

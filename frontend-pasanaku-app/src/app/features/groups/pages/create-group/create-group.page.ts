@@ -2,8 +2,10 @@ import { Component, ElementRef, computed, effect, inject, signal } from '@angula
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { AuthService } from '@core/auth/auth.service';
 import { toApiError } from '@core/graphql/api-error';
 import type { CreateGroupInput, GroupVisibility, Periodicity, TurnMode } from '@core/models/domain.models';
+import { REPUTATION, canUsePublicGroups } from '@core/models/reputation';
 import { ToastService } from '@core/services/toast.service';
 import {
   IonBackButton,
@@ -68,6 +70,10 @@ export class CreateGroupPage {
   protected readonly store = inject(GroupsStore);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
+  private readonly auth = inject(AuthService);
+
+  protected readonly publicLimit = REPUTATION.publicLimit;
+  protected readonly canPublic = computed(() => canUsePublicGroups(this.auth.currentUser()?.reputation));
   private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected readonly limits = GROUP_LIMITS;

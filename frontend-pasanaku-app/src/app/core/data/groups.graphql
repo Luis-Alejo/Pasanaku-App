@@ -30,6 +30,7 @@ fragment GroupDetailFields on GroupDetail {
     id
     userId
     fullName
+    reputationScore
     initialTurnOrder
     currentQueuePosition
     hasReceivedPayout

@@ -132,6 +132,13 @@
           <span class="person-name">
             {{ p.member.displayName }} @if (p.isMe) {
             <span class="pk-me">Tú</span>
+            } @if (p.member.reputation !== undefined) {
+            <app-reputation-badge
+              class="rep"
+              [score]="p.member.reputation"
+              [tone]="repTone(p.member.reputation)"
+              [label]="'Reputación ' + p.member.reputation"
+            />
             }
           </span>
           <app-payment-status-badge [status]="p.status" />
@@ -151,6 +158,13 @@
           <span class="person-name">
             {{ m.displayName }} @if (m.userId === store.currentUserId()) {
             <span class="pk-me">Tú</span>
+            } @if (m.reputation !== undefined) {
+            <app-reputation-badge
+              class="rep"
+              [score]="m.reputation"
+              [tone]="repTone(m.reputation)"
+              [label]="'Reputación ' + m.reputation"
+            />
             }
           </span>
           @if (m.turnNumber) {

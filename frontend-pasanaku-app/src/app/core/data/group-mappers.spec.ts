@@ -6,6 +6,7 @@ const member = (id: string, position: number, paid = false): GroupDetailFieldsFr
   id,
   userId: `user-${id}`,
   fullName: `Miembro ${id}`,
+  reputationScore: 100,
   initialTurnOrder: position,
   currentQueuePosition: position,
   hasReceivedPayout: paid,

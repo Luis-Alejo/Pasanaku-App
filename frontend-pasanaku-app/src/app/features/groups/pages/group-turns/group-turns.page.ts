@@ -1,6 +1,7 @@
 import { Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import type { Member, TurnErrorCode } from '@core/models/domain.models';
 import { TurnError } from '@core/models/domain.models';
+import { reputationTone } from '@core/models/reputation';
 import { ToastService } from '@core/services/toast.service';
 import {
   AlertController,
@@ -19,6 +20,7 @@ import {
   IonToolbar,
 } from '@ionic/angular';
 import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.component';
+import { ReputationBadgeComponent } from '@shared/ui/reputation-badge/reputation-badge.component';
 import { TurnTimelineComponent } from '@shared/ui/turn-timeline/turn-timeline.component';
 import { formatDate } from '@shared/utils/format';
 import {
@@ -72,6 +74,7 @@ const TURN_ERRORS: Record<TurnErrorCode, string> = {
     IonSpinner,
     EmptyStateComponent,
     TurnTimelineComponent,
+    ReputationBadgeComponent,
   ],
 })
 export class GroupTurnsPage {
@@ -94,6 +97,7 @@ export class GroupTurnsPage {
   };
   protected readonly swapStatusLabel = swapStatusLabel;
   protected readonly formatDate = formatDate;
+  protected readonly repTone = reputationTone;
 
   private readonly userId = this.store.currentUserId;
   protected readonly group = this.store.group;

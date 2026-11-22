@@ -1,6 +1,7 @@
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
+import { reputationLabel, reputationTone } from '@core/models/reputation';
 import { NotificationsService } from '@core/services/notifications.service';
 import { ThemeService } from '@core/services/theme.service';
 import { IonButton, IonContent, IonIcon, IonSpinner } from '@ionic/angular';
@@ -13,6 +14,7 @@ import { EmptyStateComponent } from '@shared/ui/empty-state/empty-state.componen
 import { IconBadgeButtonComponent } from '@shared/ui/icon-badge-button/icon-badge-button.component';
 import type { QuickAction } from '@shared/ui/quick-actions/quick-actions.component';
 import { QuickActionsComponent } from '@shared/ui/quick-actions/quick-actions.component';
+import { ReputationBadgeComponent } from '@shared/ui/reputation-badge/reputation-badge.component';
 import { ThemeToggleComponent } from '@shared/ui/theme-toggle/theme-toggle.component';
 import { formatDate } from '@shared/utils/format';
 import {
@@ -63,6 +65,7 @@ const TODO_ICONS: Record<TodoKind, string> = {
     QuickActionsComponent,
     ThemeToggleComponent,
     IconBadgeButtonComponent,
+    ReputationBadgeComponent,
   ],
 })
 export class HomePage {
@@ -83,6 +86,10 @@ export class HomePage {
   protected readonly formatDate = formatDate;
   protected readonly groupStatusText = groupStatusText;
   protected readonly userName = computed(() => this.auth.currentUser()?.displayName ?? '');
+  protected readonly myReputation = computed(() => {
+    const score = this.auth.currentUser()?.reputation;
+    return score === undefined ? null : { score, tone: reputationTone(score), label: reputationLabel(score) };
+  });
 
   /**
    * Tarjeta del encabezado: el próximo aporte; si no hay, el próximo cobro.
@@ -151,6 +158,7 @@ export class HomePage {
   ionViewWillEnter(): void {
     this.theme.setHeaderTone('brand');
     void this.notifications.refreshCount();
+    void this.auth.refreshUser();
     void this.store.load();
   }
 
