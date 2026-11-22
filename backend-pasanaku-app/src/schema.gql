@@ -115,12 +115,21 @@ type GroupPreview {
   isPublic: Boolean!
   maxParticipants: Int!
   memberCount: Int!
+  members: [GroupPreviewMember!]!
   minReputationReq: Int!
   name: String!
   nextDeadline: DateTime
   roundDurationSeconds: Int!
   setupCompleted: Boolean!
   status: GroupStatus!
+}
+
+type GroupPreviewMember {
+  completedGroups: Int!
+  defaultCount: Int!
+  fullName: String!
+  id: ID!
+  reputationScore: Int!
 }
 
 enum GroupStatus {
@@ -246,9 +255,12 @@ enum PaymentPurpose {
 }
 
 type PublicUser {
+  completedGroups: Int!
+  defaultCount: Int!
   fullName: String!
   id: ID!
   phone: String!
+  reputationScore: Int!
 }
 
 type QrPaymentType {
@@ -275,7 +287,9 @@ type Query {
   myReferences: [UserReference!]!
   myTransactions(limit: Int! = 20, offset: Int! = 0): [TransactionRecord!]!
   publicGroups(limit: Int! = 20, offset: Int! = 0): [GroupSummary!]!
+  publicUser(id: ID!): PublicUser
   unreadNotificationsCount: Int!
+  userByPhone(phone: String!): PublicUser
 }
 
 enum ReferenceRelationship {

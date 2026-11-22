@@ -234,10 +234,11 @@ Cada participante deposita una garantía equivalente a 1 cuota al unirse. Cubre 
 ### 3. Reputación global on-chain
 
 - Puntaje base inicial: **`100` puntos**.
+- Puntaje máximo: **`200` puntos**.
 - Primer incumplimiento (tras gracia): **`-10` puntos**.
 - Segundo incumplimiento: **`-30` puntos** adicionales.
 - Completar un grupo sin faltas ni uso de garantía: **`+10` puntos**.
-- Restricción: Usuarios con puntaje **`< 80`** no pueden ingresar a grupos públicos ni ocupar el primer **30 %** de los turnos, aunque sí pueden participar en grupos privados bajo aprobación del organizador.
+- Restricción: Usuarios con puntaje **`< 40`** no pueden ingresar a grupos públicos ni ocupar el primer **30 %** de los turnos, aunque sí pueden participar en grupos privados bajo aprobación del organizador.
 
 ### 4. Continuidad sin congelamiento
 

@@ -19,7 +19,7 @@ fn new_user_starts_with_base_score() {
 }
 
 #[test]
-fn applies_first_second_and_subsequent_default_rules() {
+fn default_penalties_reset_per_group_but_score_accumulates_globally() {
     let (env, admin, contract_id) = setup();
     env.mock_all_auths();
     let client = ReputationRegistryClient::new(&env, &contract_id);
@@ -34,9 +34,18 @@ fn applies_first_second_and_subsequent_default_rules() {
     assert_eq!(client.record_default(&group, &user, &2), 60);
     assert_eq!(client.get_score(&user), 60);
 
-    // Third and later defaults are recorded but carry no additional penalty.
+    // Third and later defaults in the same group carry no additional penalty.
     assert_eq!(client.record_default(&group, &user, &3), 60);
     assert_eq!(client.get_score(&user), 60);
+
+    // A different group starts its own penalty sequence, but subtracts from
+    // the user's same global reputation score.
+    let other_group = Address::generate(&env);
+    client.mock_all_auths().set_group(&admin, &other_group, &true);
+    assert_eq!(client.record_default(&other_group, &user, &1), 50);
+    assert_eq!(client.record_default(&other_group, &user, &2), 20);
+    assert_eq!(client.record_default(&other_group, &user, &3), 20);
+    assert_eq!(client.get_score(&user), 20);
 }
 
 #[test]
@@ -147,20 +156,37 @@ fn clean_completion_adds_ten_points_once() {
 }
 
 #[test]
-fn public_group_threshold_is_exactly_eighty() {
+fn public_group_threshold_is_exactly_forty_one() {
     let (env, _admin, contract_id) = setup();
     let client = ReputationRegistryClient::new(&env, &contract_id);
-    let user_80 = Address::generate(&env);
-    let user_79 = Address::generate(&env);
+    let user_41 = Address::generate(&env);
+    let user_40 = Address::generate(&env);
 
     // Seed exact boundary values in contract storage to test both sides.
     env.as_contract(&contract_id, || {
-        env.storage().persistent().set(&Key::Score(user_80.clone()), &80_u32);
-        env.storage().persistent().set(&Key::Score(user_79.clone()), &79_u32);
+        env.storage().persistent().set(&Key::Score(user_41.clone()), &41_u32);
+        env.storage().persistent().set(&Key::Score(user_40.clone()), &40_u32);
     });
 
-    assert!(client.can_join_public(&user_80));
-    assert!(!client.can_join_public(&user_79));
+    assert!(client.can_join_public(&user_41));
+    assert!(!client.can_join_public(&user_40));
+}
+
+#[test]
+fn completion_reward_is_capped_at_two_hundred() {
+    let (env, admin, contract_id) = setup();
+    env.mock_all_auths();
+    let client = ReputationRegistryClient::new(&env, &contract_id);
+    let group = Address::generate(&env);
+    let user = Address::generate(&env);
+
+    client.mock_all_auths().set_group(&admin, &group, &true);
+    env.as_contract(&contract_id, || {
+        env.storage().persistent().set(&Key::Score(user.clone()), &195_u32);
+    });
+
+    assert_eq!(client.reward_completion(&group, &user), 200);
+    assert_eq!(client.get_score(&user), 200);
 }
 
 #[test]
