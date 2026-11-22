@@ -3,6 +3,7 @@ import { Args, ID, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { CurrentUser } from '../common/decorators/current-user.decorator.js';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard.js';
 import {
+  PublicUserType,
   RequestReferenceInput,
   RespondReferenceInput,
   SubmitKycInput,
@@ -24,6 +25,18 @@ export class UsersResolver {
   @Query(() => [UserReference], { name: 'myReferences' })
   myReferences(@CurrentUser('id') userId: string): Promise<UserReference[]> {
     return this.users.listMyReferences(userId);
+  }
+
+  @Query(() => PublicUserType, { name: 'userByPhone', nullable: true })
+  userByPhone(@Args('phone') phone: string): Promise<User | null> {
+    return this.users.findByPhone(phone);
+  }
+
+  @Query(() => PublicUserType, { name: 'publicUser', nullable: true })
+  publicUser(
+    @Args('id', { type: () => ID }, ParseUUIDPipe) id: string,
+  ): Promise<User | null> {
+    return this.users.findById(id);
   }
 
   @Query(() => [UserReference], { name: 'defaulterReferences' })

@@ -653,7 +653,21 @@ export class GroupsService {
       throw new NotFoundException('Grupo no encontrado.');
     }
     const [g] = await this.withMemberCount([group]);
-    return { ...g, isMember, isInvited };
+    const members = await this.members.find({
+      where: { groupId },
+      relations: { user: true },
+      order: { joinedAt: 'ASC' },
+    });
+
+    return { ...g, isMember, isInvited,
+      members: members.map((m) => ({
+        id: m.userId,
+        fullName: m.user.fullName,
+        reputationScore: m.user.reputationScore,
+        completedGroups: m.user.completedGroups,
+        defaultCount: m.user.defaultCount,
+      })),
+    };
   }
 
   async myInvitations(userId: string): Promise<WithCount[]> {

@@ -85,7 +85,7 @@ export class PasanakuGroup {
   })
   frequency: Frequency;
 
-  @Column({ type: 'int', default: 80 })
+  @Column({ type: 'int', default: 41 })
   minReputationReq: number;
 
   @Column({
