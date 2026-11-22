@@ -62,7 +62,7 @@ export class SorobanRegistryService {
     return asU32(nativeOf(value), 'get_score');
   }
 
-  /** can_join_public(user) -> bool (false si el puntaje es menor a 80). */
+  /** can_join_public(user) -> bool (false si el puntaje es menor a 40). */
   async canJoinPublic(user: string): Promise<boolean> {
     const value = await this.invoker.read(
       'registry',

@@ -100,4 +100,14 @@ export class GroupDetailType extends GroupSummaryType {
 export class GroupPreviewType extends GroupSummaryType {
   @Field(() => Boolean) isMember: boolean;
   @Field(() => Boolean) isInvited: boolean;
+  @Field(() => [GroupPreviewMemberType]) members: GroupPreviewMemberType[];
+}
+
+@ObjectType('GroupPreviewMember')
+export class GroupPreviewMemberType {
+  @Field(() => ID) id: string; // userId (sirve para enlazar al perfil)
+  @Field(() => String) fullName: string;
+  @Field(() => Int) reputationScore: number;
+  @Field(() => Int) completedGroups: number;
+  @Field(() => Int) defaultCount: number;
 }

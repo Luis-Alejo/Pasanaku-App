@@ -3,7 +3,9 @@
 use soroban_sdk::{contract, contracterror, contractevent, contractimpl, contracttype, Address, Env};
 
 const BASE_SCORE: u32 = 100;
-const PUBLIC_MIN_SCORE: u32 = 80;
+const MAX_SCORE: u32 = 200;
+const PUBLIC_MIN_SCORE: u32 = 41;
+const EARLY_TURN_MIN_SCORE: u32 = 80;
 
 const TTL_THRESHOLD: u32 = 100_000;
 const TTL_EXTEND_TO: u32 = 200_000;
@@ -23,7 +25,7 @@ enum Key {
     Admin,
     AuthorizedGroup(Address),
     Score(Address),
-    DefaultCount(Address),
+    DefaultCount(Address, Address), // group, user
     DefaultEvent(Address, Address, u32), // group, user, round
     Completion(Address, Address),        // group, user
 }
@@ -126,7 +128,7 @@ impl ReputationRegistry {
         score_of(&env, &user)
     }
 
-    /// Users below 80 reputation cannot join public groups.
+    /// Users below 41 reputation cannot join public groups.
     pub fn can_join_public(env: Env, user: Address) -> bool {
         score_of(&env, &user) >= PUBLIC_MIN_SCORE
     }
@@ -144,7 +146,7 @@ impl ReputationRegistry {
             return false;
         }
 
-        if score_of(&env, &user) >= PUBLIC_MIN_SCORE {
+        if score_of(&env, &user) >= EARLY_TURN_MIN_SCORE {
             return true;
         }
 
@@ -176,7 +178,7 @@ impl ReputationRegistry {
             return Err(Error::AlreadyProcessed);
         }
 
-        let count_key = Key::DefaultCount(user.clone());
+        let count_key = Key::DefaultCount(group.clone(), user.clone());
         let count: u32 = env.storage().persistent().get(&count_key).unwrap_or(0);
         if env.storage().persistent().has(&count_key) {
             env.storage()
@@ -184,6 +186,7 @@ impl ReputationRegistry {
                 .extend_ttl(&count_key, TTL_THRESHOLD, TTL_EXTEND_TO);
         }
 
+        // Penalty sequence resets for each group, while the score remains global.
         let penalty = match count {
             0 => 10,
             1 => 30,
@@ -238,9 +241,7 @@ impl ReputationRegistry {
             return Err(Error::AlreadyProcessed);
         }
 
-        let next = score_of(&env, &user)
-            .checked_add(10)
-            .ok_or(Error::Overflow)?;
+        let next = score_of(&env, &user).saturating_add(10).min(MAX_SCORE);
 
         env.storage().persistent().set(&key, &true);
         env.storage()
